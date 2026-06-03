@@ -13,4 +13,6 @@ public interface MemberDAO {
 	int updatePassword(String username, String currentPassword, String newPassword);
 	int deleteMember(String username);
 	List<MemberVO> findAllMembers();
+	MemberVO findByKakaoId(String kakaoId);
+	int registerKakaoMember(KakaoUserInfo kakaoUserInfo);
 }

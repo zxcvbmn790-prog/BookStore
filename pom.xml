@@ -94,7 +94,7 @@
 			<artifactId>spring-jdbc</artifactId>
 			<version>5.3.39</version>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>javax.annotation</groupId>
 		    <artifactId>javax.annotation-api</artifactId>
@@ -156,13 +156,13 @@
 			<artifactId>spring-websocket</artifactId>
 			<version>5.3.30</version>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>com.opencsv</groupId>
 		    <artifactId>opencsv</artifactId>
 		    <version>5.9</version>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>com.fasterxml.jackson.core</groupId>
 		    <artifactId>jackson-databind</artifactId>
@@ -182,6 +182,29 @@
     		<scope>provided</scope>
 		</dependency>
 		-->
+		<!-- ... existing code ... -->
 
+		<!-- Commons Text -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.10.0</version>
+		</dependency>
+
+		<!-- URL Encoding / Utility -->
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.17.1</version>
+		</dependency>
+
+		<!-- SLF4J API -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>2.0.9</version>
+		</dependency>
+
+		<!-- ... existing code ... -->
 	</dependencies>
 </project>

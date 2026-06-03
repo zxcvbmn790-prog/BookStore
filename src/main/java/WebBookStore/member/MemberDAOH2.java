@@ -15,6 +15,8 @@ public class MemberDAOH2 implements MemberDAO {
 	@Autowired
 	Connection conn;
 
+	private static final String KAKAO_ID_PREFIX = "kakao_";
+
 	@Override
 	public MemberVO login(String username, String password) {
 		String sql = "SELECT num, id, pw, email, hp, nickname FROM member WHERE id = ? AND pw = ?";
@@ -96,12 +98,12 @@ public class MemberDAOH2 implements MemberDAO {
 	@Override
 	public int deleteMember(String username) {
 		String[] sqls = {
-			"DELETE FROM book_like WHERE userid = ?",
-			"DELETE FROM book_rating WHERE userid = ?",
-			"DELETE FROM cart WHERE userid = ?",
-			"DELETE FROM orders WHERE userid = ?",
-			"DELETE FROM chat_message WHERE room_id = ? OR sender = ?",
-			"DELETE FROM member WHERE id = ?"
+				"DELETE FROM book_like WHERE userid = ?",
+				"DELETE FROM book_rating WHERE userid = ?",
+				"DELETE FROM cart WHERE userid = ?",
+				"DELETE FROM orders WHERE userid = ?",
+				"DELETE FROM chat_message WHERE room_id = ? OR sender = ?",
+				"DELETE FROM member WHERE id = ?"
 		};
 		int result = 0;
 		for (String sql : sqls) {
@@ -130,6 +132,27 @@ public class MemberDAOH2 implements MemberDAO {
 			e.printStackTrace();
 		}
 		return list;
+	}
+
+	@Override
+	public MemberVO findByKakaoId(String kakaoId) {
+		return findByUsername(KAKAO_ID_PREFIX + kakaoId);
+	}
+
+	@Override
+	public int registerKakaoMember(KakaoUserInfo kakaoUserInfo) {
+		String sql = "MERGE INTO member (id, pw, hp, email, nickname) KEY(id) VALUES (?, ?, ?, ?, ?)";
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setString(1, KAKAO_ID_PREFIX + kakaoUserInfo.getKakaoId());
+			ps.setString(2, "KAKAO_LOGIN_USER");
+			ps.setString(3, "");
+			ps.setString(4, kakaoUserInfo.getEmail());
+			ps.setString(5, kakaoUserInfo.getNickname());
+			return ps.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 0;
 	}
 
 	private MemberVO mapRow(ResultSet rs) throws Exception {

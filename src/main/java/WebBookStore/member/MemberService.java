@@ -23,19 +23,26 @@ public class MemberService {
 		return dao.findByUsername(username);
 	}
 
-	public boolean updateProfile(MemberVO member) {
-		return dao.updateProfile(member) > 0;
-	}
-
-	public boolean updatePassword(String username, String currentPassword, String newPassword) {
-		return dao.updatePassword(username, currentPassword, newPassword) > 0;
-	}
-
-	public boolean deleteMember(String username) {
-		return dao.deleteMember(username) > 0;
-	}
 
 	public List<MemberVO> getAllMembers() {
 		return dao.findAllMembers();
 	}
+
+	public MemberVO getOrRegisterKakaoMember(KakaoUserInfo kakaoUserInfo) {
+		MemberVO member = dao.findByKakaoId(kakaoUserInfo.getKakaoId());
+
+		if (member != null) {
+			return member;
+		}
+
+		dao.registerKakaoMember(kakaoUserInfo);
+
+		member = dao.findByKakaoId(kakaoUserInfo.getKakaoId());
+
+		if (member == null) {
+			throw new IllegalStateException("카카오 회원 조회 또는 저장에 실패했습니다.");
+		}
+
+		return member;
+}
 }

@@ -16,21 +16,61 @@ public class MemberController {
 	@Autowired
 	private MemberService memberService;
 
+	@Autowired
+	private KakaoLoginService kakaoLoginService;
+
 	@RequestMapping(value = "login", method = RequestMethod.GET)
 	public String login(Model model) {
 		model.addAttribute("contentPage", "/WEB-INF/views/member/login.jsp");
 		return "layout/layout";
 	}
 
+
 	@RequestMapping(value = "login", method = RequestMethod.POST)
 	public String login(String username, String password, HttpSession session) {
 		MemberVO loginUser = memberService.getLoginUser(username, password);
 		if (loginUser != null) {
 			session.setAttribute("loginUser", loginUser.getUsername());
+			session.setAttribute("loginNickname", loginUser.getNickname());
 			return "redirect:/book/list";
 		}
 		return "redirect:/member/login?error=true";
 	}
+
+	@RequestMapping(value = "kakaoStart", method = RequestMethod.GET)
+	public String kakaoStart() {
+		return "redirect:" + kakaoLoginService.getAuthorizeUrl();
+	}
+
+	@RequestMapping(value = "kakaoLogin", method = RequestMethod.GET)
+	public String kakaoLogin(String code, String error, HttpSession session, RedirectAttributes ra) {
+		if (error != null) {
+			ra.addFlashAttribute("authError", "카카오 로그인이 취소되었거나 실패했습니다.");
+			return "redirect:/member/login";
+		}
+
+		if (code == null || code.trim().isEmpty()) {
+			ra.addFlashAttribute("authError", "카카오 인증 코드가 없습니다.");
+			return "redirect:/member/login";
+		}
+
+		try {
+			String accessToken = kakaoLoginService.getAccessToken(code);
+			KakaoUserInfo kakaoUserInfo = kakaoLoginService.getUserInfo(accessToken);
+			MemberVO member = memberService.getOrRegisterKakaoMember(kakaoUserInfo);
+
+			session.setAttribute("loginUser", member.getUsername());
+			session.setAttribute("loginNickname", member.getNickname());
+			session.setAttribute("loginType", "KAKAO");
+
+			return "redirect:/book/list";
+		} catch (Exception e) {
+			e.printStackTrace();
+			ra.addFlashAttribute("authError", "카카오 로그인 처리 중 오류가 발생했습니다.");
+			return "redirect:/member/login";
+		}
+	}
+
 
 	@RequestMapping(value = "register", method = RequestMethod.GET)
 	public String register(Model model) {
@@ -38,98 +78,6 @@ public class MemberController {
 		return "layout/layout";
 	}
 
-	@RequestMapping(value = "register", method = RequestMethod.POST)
-	public String register(MemberVO member, RedirectAttributes ra) {
-		if (memberService.registerMember(member)) {
-			ra.addFlashAttribute("authMessage", "회원가입이 완료되었습니다. 이제 로그인하시면 바로 이용할 수 있어요.");
-			return "redirect:/member/login";
-		}
-		ra.addFlashAttribute("authError", "회원가입에 실패했습니다. 입력값을 다시 확인해주세요.");
-		return "redirect:/member/register";
-	}
-
-	@RequestMapping(value = "profile", method = RequestMethod.GET)
-	public String profile(HttpSession session, Model model, RedirectAttributes ra) {
-		String loginUser = (String) session.getAttribute("loginUser");
-		if (loginUser == null || "admin".equals(loginUser)) {
-			ra.addFlashAttribute("authError", "로그인 후 이용해주세요.");
-			return "redirect:/member/login";
-		}
-		model.addAttribute("member", memberService.getMember(loginUser));
-		model.addAttribute("contentPage", "/WEB-INF/views/member/profile.jsp");
-		return "layout/layout";
-	}
-
-	@RequestMapping(value = "profile/update", method = RequestMethod.POST)
-	public String updateProfile(MemberVO member, HttpSession session, RedirectAttributes ra) {
-		String loginUser = (String) session.getAttribute("loginUser");
-		if (loginUser == null || "admin".equals(loginUser)) {
-			return "redirect:/member/login";
-		}
-		member.setUsername(loginUser);
-		if (memberService.updateProfile(member)) {
-			ra.addFlashAttribute("profileMessage", "회원 정보가 수정되었습니다.");
-		} else {
-			ra.addFlashAttribute("profileError", "회원 정보 수정에 실패했습니다.");
-		}
-		return "redirect:/member/profile";
-	}
-
-	@RequestMapping(value = "password", method = RequestMethod.GET)
-	public String passwordPage(HttpSession session, Model model) {
-		String loginUser = (String) session.getAttribute("loginUser");
-		if (loginUser == null || "admin".equals(loginUser)) {
-			return "redirect:/member/login";
-		}
-		model.addAttribute("contentPage", "/WEB-INF/views/member/password.jsp");
-		return "layout/layout";
-	}
-
-	@RequestMapping(value = "password/update", method = RequestMethod.POST)
-	public String updatePassword(String currentPassword, String newPassword, String confirmPassword, HttpSession session,
-			RedirectAttributes ra) {
-		String loginUser = (String) session.getAttribute("loginUser");
-		if (loginUser == null || "admin".equals(loginUser)) {
-			return "redirect:/member/login";
-		}
-		if (newPassword == null || !newPassword.equals(confirmPassword)) {
-			ra.addFlashAttribute("passwordError", "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
-			return "redirect:/member/password";
-		}
-		if (memberService.updatePassword(loginUser, currentPassword, newPassword)) {
-			ra.addFlashAttribute("passwordMessage", "비밀번호가 변경되었습니다.");
-			return "redirect:/member/profile";
-		}
-		ra.addFlashAttribute("passwordError", "현재 비밀번호를 다시 확인해주세요.");
-		return "redirect:/member/password";
-	}
-
-	@RequestMapping(value = "delete", method = RequestMethod.GET)
-	public String deletePage(HttpSession session, Model model) {
-		String loginUser = (String) session.getAttribute("loginUser");
-		if (loginUser == null || "admin".equals(loginUser)) {
-			return "redirect:/member/login";
-		}
-		model.addAttribute("contentPage", "/WEB-INF/views/member/delete.jsp");
-		return "layout/layout";
-	}
-
-	@RequestMapping(value = "delete", method = RequestMethod.POST)
-	public String deleteMember(String password, HttpSession session, RedirectAttributes ra) {
-		String loginUser = (String) session.getAttribute("loginUser");
-		if (loginUser == null || "admin".equals(loginUser)) {
-			return "redirect:/member/login";
-		}
-		MemberVO member = memberService.getLoginUser(loginUser, password);
-		if (member == null) {
-			ra.addFlashAttribute("deleteError", "비밀번호가 올바르지 않습니다.");
-			return "redirect:/member/delete";
-		}
-		memberService.deleteMember(loginUser);
-		session.invalidate();
-		ra.addFlashAttribute("authMessage", "회원 탈퇴가 완료되었습니다.");
-		return "redirect:/member/login";
-	}
 
 	@RequestMapping("/logout")
 	public String logout(HttpSession session) {

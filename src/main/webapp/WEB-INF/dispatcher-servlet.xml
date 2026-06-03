@@ -44,6 +44,8 @@
 			<mvc:exclude-mapping path="/member/login" />
 			<mvc:exclude-mapping path="/member/register" />
 			<mvc:exclude-mapping path="/member/logout" />
+			<mvc:exclude-mapping path="/member/kakaoStart" />
+			<mvc:exclude-mapping path="/member/kakaoLogin" />
 			<mvc:exclude-mapping path="/img/**" />
 			<mvc:exclude-mapping path="/css/**" />
 			<mvc:exclude-mapping path="/js/**" />
