@@ -97,4 +97,5 @@ public class MemberService implements UserDetailsService {
 		// DAO의 findByUsername을 호출하여 결과를 반환합니다.
 		return dao.findByUsernames(username);
 	}
+	
 }

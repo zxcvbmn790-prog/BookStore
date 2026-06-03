@@ -57,6 +57,7 @@
             // 임시 확인용 알림창
             alert(username + " 아이디의 중복 여부를 확인합니다.");
         }*/
+		
 		function checkDuplicate() {
 		    const username = $("#username").val().trim();
 		    
