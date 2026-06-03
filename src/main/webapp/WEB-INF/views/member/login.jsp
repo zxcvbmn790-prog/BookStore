@@ -47,7 +47,6 @@
     </div>
 </section>
 
-
 <script type="text/javascript">
 function doLogin() {
     const username = $("#username").val().trim();

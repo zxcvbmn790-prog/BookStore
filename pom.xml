@@ -151,6 +151,5 @@
 			<version>${security-version}</version>
 		</dependency>
 
-
 	</dependencies>
 </project>
