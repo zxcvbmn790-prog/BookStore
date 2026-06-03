@@ -347,5 +347,4 @@ public class MemberDAOH2 implements MemberDAO {
 		return member;
 	}
 	
-	
 }

@@ -39,9 +39,7 @@
 			<mvc:exclude-mapping path="/member/login" />
 			<mvc:exclude-mapping path="/member/register" />
 			<mvc:exclude-mapping path="/member/logout" />
-			
 			<mvc:exclude-mapping path="/member/checkId" />
-			
 			<mvc:exclude-mapping path="/img/**" />
 			<mvc:exclude-mapping path="/css/**" />
 			<mvc:exclude-mapping path="/js/**" />
