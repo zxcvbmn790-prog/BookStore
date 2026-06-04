@@ -1,0 +1,15 @@
+﻿# Eclipse & IDE Files
+.metadata/
+.settings/
+.project
+.classpath
+.factorypath
+
+# Build & Compiled Files
+bin/
+target/
+*.class
+
+# OS Generated Files
+Thumbs.db
+.DS_Store
