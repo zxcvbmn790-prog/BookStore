@@ -33,17 +33,21 @@ public class DatabaseInitializer {
 	}
 
 	private void createMemberTable() {
-		String sql = "CREATE TABLE IF NOT EXISTS member ("
-				+ "num INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "id VARCHAR(100) NOT NULL UNIQUE, "
-				+ "pw VARCHAR(100) NOT NULL, "
-				+ "email VARCHAR(200), "
-				+ "hp VARCHAR(30), "
-				+ "nickname VARCHAR(100)"
-				+ ")";
+    String sql = "CREATE TABLE IF NOT EXISTS member ("
+            + "num INT AUTO_INCREMENT PRIMARY KEY, "
+            + "id VARCHAR(100) NOT NULL UNIQUE, "
+            + "pw VARCHAR(100) NOT NULL, "
+            + "email VARCHAR(200), "
+            + "hp VARCHAR(30), "
+            + "nickname VARCHAR(100), "
+            + "role VARCHAR(50) DEFAULT 'ROLE_USER'"
+            + ")";
 
-		execute(sql, "member");
-	}
+    execute(sql, "member");
+
+    execute("ALTER TABLE member ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'ROLE_USER'", "member role column");
+    execute("UPDATE member SET role = 'ROLE_USER' WHERE role IS NULL", "member role default");
+}
 
 	private void createBookTable() {
 		String sql = "CREATE TABLE IF NOT EXISTS book ("
