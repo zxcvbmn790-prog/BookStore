@@ -1,7 +1,9 @@
 package WebBookStore.order;
 
 import java.util.List;
-
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +26,15 @@ public class OrderController {
 	private OrderService orderService;
 
 	@RequestMapping(value = "/checkout", method = RequestMethod.GET)
-	public String checkout(HttpSession session, Model model) {
+	public String checkout(HttpSession session, HttpServletRequest request, Model model) {
 		String userid = (String) session.getAttribute("loginUser");
 
 		if (userid == null) {
-			return "redirect:/member/login";
+			userid = getGuestId(request);
+		}
+
+		if (userid == null) {
+			return "redirect:/cart/list";
 		}
 
 		List<CartVO> cartList = cartService.getCartList(userid);
@@ -50,12 +56,18 @@ public class OrderController {
 
 	@RequestMapping(value = "/pay", method = RequestMethod.POST)
 	public String pay(String receiver, String phone, String address,
-			HttpSession session) {
+			HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 
 		String userid = (String) session.getAttribute("loginUser");
+		boolean isGuest = false;
 
 		if (userid == null) {
-			return "redirect:/member/login";
+			userid = getGuestId(request);
+			isGuest = true; 
+		}
+
+		if (userid == null) {
+			return "redirect:/cart/list";
 		}
 
 		List<CartVO> cartList = cartService.getCartList(userid);
@@ -73,6 +85,15 @@ public class OrderController {
 		int result = orderService.placeOrder(userid, cartList, receiver, phone, address);
 
 		if (result > 0) {
+			// [선택 사항] 비회원 주문 성공 시, 브라우저의 비회원 쿠키를 삭제하고 싶다면 아래 주석을 해제하세요.
+			/*
+			if (isGuest) {
+				Cookie cookie = new Cookie("guestId", null);
+				cookie.setPath("/");
+				cookie.setMaxAge(0); // 유효기간 0으로 만들어 즉시 삭제
+				response.addCookie(cookie);
+			}
+			*/
 			return "redirect:/order/complete";
 		}
 
@@ -85,9 +106,14 @@ public class OrderController {
 		return "layout/layout";
 	}
 
+	// [수정] 주문 내역 목록 (HttpServletRequest 추가)
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
-	public String list(HttpSession session, Model model) {
+	public String list(HttpSession session, HttpServletRequest request, Model model) {
 		String userid = (String) session.getAttribute("loginUser");
+
+		if (userid == null) {
+			userid = getGuestId(request);
+		}
 
 		if (userid == null) {
 			return "redirect:/member/login";
@@ -99,5 +125,15 @@ public class OrderController {
 		return "layout/layout";
 	}
 	
-	
+	private String getGuestId(HttpServletRequest request) {
+		Cookie[] cookies = request.getCookies();
+		if (cookies != null) {
+			for (Cookie cookie : cookies) {
+				if ("guestId".equals(cookie.getName())) {
+					return cookie.getValue();
+				}
+			}
+		}
+		return null;
+	}
 }
