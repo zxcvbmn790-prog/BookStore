@@ -3,6 +3,7 @@ package WebBookStore.member;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class MemberDAOH2 implements MemberDAO {
 			ps.setString(2, password);
 			try (ResultSet rs = ps.executeQuery()) {
 				if (rs.next()) {
-					return mapRow(rs);
+					return mapRow(rs); 
 				}
 			}
 		} catch (Exception e) {
@@ -57,7 +58,7 @@ public class MemberDAOH2 implements MemberDAO {
 			ps.setString(1, username);
 			try (ResultSet rs = ps.executeQuery()) {
 				if (rs.next()) {
-					return mapRow(rs);
+					return mapRow(rs); 
 				}
 			}
 		} catch (Exception e) {
@@ -81,13 +82,13 @@ public class MemberDAOH2 implements MemberDAO {
 		return 0;
 	}
 
+	// ⚠️ [수정됨] 인터페이스 변경에 맞춰 파라미터를 2개로 줄이고 쿼리문을 수정했습니다.
 	@Override
-	public int updatePassword(String username, String currentPassword, String newPassword) {
-		String sql = "UPDATE member SET pw = ? WHERE id = ? AND pw = ?";
+	public int updatePassword(String username, String newPassword) {
+		String sql = "UPDATE member SET pw = ? WHERE id = ?";
 		try (PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, newPassword);
 			ps.setString(2, username);
-			ps.setString(3, currentPassword);
 			return ps.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -126,7 +127,7 @@ public class MemberDAOH2 implements MemberDAO {
 		String sql = "SELECT num, id, pw, email, hp, nickname FROM member ORDER BY num DESC";
 		try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 			while (rs.next()) {
-				list.add(mapRow(rs));
+				list.add(mapRow(rs)); 
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -134,6 +135,7 @@ public class MemberDAOH2 implements MemberDAO {
 		return list;
 	}
 
+	// feature_kakaoLogin 브랜치: 카카오 관련 메서드 추가
 	@Override
 	public MemberVO findByKakaoId(String kakaoId) {
 		return findByUsername(KAKAO_ID_PREFIX + kakaoId);
@@ -154,9 +156,35 @@ public class MemberDAOH2 implements MemberDAO {
 		}
 		return 0;
 	}
+	
+	// dev 브랜치: 다수 유저 검색 (또는 오타로 생성된) 메서드 추가
+	@Override
+	public MemberVO findByUsernames(String username) {
+		String sql = "SELECT num, id, pw, email, hp, nickname FROM member WHERE id = ?";
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setString(1, username);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					return mapRow(rs); 
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null; 
+	}
 
-	private MemberVO mapRow(ResultSet rs) throws Exception {
-		return new MemberVO(rs.getInt("num"), rs.getString("id"), rs.getString("pw"), rs.getString("email"),
-				rs.getString("hp"), rs.getString("nickname"));
+	// dev 브랜치 채택: 안전한 Setter 방식의 mapRow 유지 (중복 생성된 메서드는 삭제함)
+	private MemberVO mapRow(ResultSet rs) throws SQLException {
+		MemberVO member = new MemberVO();
+		
+		member.setId(rs.getInt("num"));            
+		member.setUsername(rs.getString("id"));     
+		member.setPassword(rs.getString("pw"));     
+		member.setEmail(rs.getString("email"));
+		member.setPhone(rs.getString("hp"));        
+		member.setNickname(rs.getString("nickname"));
+		
+		return member;
 	}
 }
