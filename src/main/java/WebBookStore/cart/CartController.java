@@ -148,7 +148,7 @@ public class CartController {
 			Cookie cookie = new Cookie("guestId", guestId);
 			cookie.setPath("/");          // 웹사이트 전체에서 쿠키 접근 가능하도록 설정
 			cookie.setMaxAge(60 * 60 * 24 * 7); // 쿠키 유효기간: 7일
-			response.addCookie(cookie);   
+			response.addCookie(cookie);   // 사용자 브라우저에 쿠키 저장
 		}
 		return guestId;
 	}
