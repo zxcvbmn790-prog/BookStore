@@ -1,0 +1,174 @@
+package WebBookStore.common;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+
+import javax.annotation.PostConstruct;
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+public class DatabaseInitializer {
+
+	@Autowired
+	private DataSource ds;
+
+	@PostConstruct
+	public void init() {
+		System.out.println("[DatabaseInitializer] 전체 테이블 생성 시작");
+
+		createMemberTable();
+		createBookTable();
+		createCartTable();
+		createOrdersTable();
+		createBookLikeTable();
+		createBookRatingTable();
+		createChatMessageTable();
+		createQnaQuestionTable();
+		createQnaAnswerTable();
+
+		System.out.println("[DatabaseInitializer] 전체 테이블 생성 완료");
+	}
+
+	private void createMemberTable() {
+		String sql = "CREATE TABLE IF NOT EXISTS member ("
+				+ "num INT AUTO_INCREMENT PRIMARY KEY, "
+				+ "id VARCHAR(100) NOT NULL UNIQUE, "
+				+ "pw VARCHAR(100) NOT NULL, "
+				+ "email VARCHAR(200), "
+				+ "hp VARCHAR(30), "
+				+ "nickname VARCHAR(100)"
+				+ ")";
+
+		execute(sql, "member");
+	}
+
+	private void createBookTable() {
+		String sql = "CREATE TABLE IF NOT EXISTS book ("
+				+ "isbn INT PRIMARY KEY, "
+				+ "bookname VARCHAR(500), "
+				+ "author VARCHAR(300), "
+				+ "publisher VARCHAR(300), "
+				+ "image VARCHAR(1000), "
+				+ "price VARCHAR(50), "
+				+ "category VARCHAR(100)"
+				+ ")";
+
+		execute(sql, "book");
+	}
+
+	private void createCartTable() {
+		String sql = "CREATE TABLE IF NOT EXISTS cart ("
+				+ "cart_id INT AUTO_INCREMENT PRIMARY KEY, "
+				+ "userid VARCHAR(100) NOT NULL, "
+				+ "isbn INT NOT NULL, "
+				+ "amount INT DEFAULT 1"
+				+ ")";
+
+		execute(sql, "cart");
+	}
+
+	private void createOrdersTable() {
+		String sql = "CREATE TABLE IF NOT EXISTS orders ("
+				+ "order_id INT AUTO_INCREMENT PRIMARY KEY, "
+				+ "userid VARCHAR(100) NOT NULL, "
+				+ "isbn INT NOT NULL, "
+				+ "bookname VARCHAR(500), "
+				+ "price INT, "
+				+ "amount INT, "
+				+ "total_price INT, "
+				+ "receiver VARCHAR(100), "
+				+ "phone VARCHAR(30), "
+				+ "address VARCHAR(1000), "
+				+ "order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+				+ "status VARCHAR(50)"
+				+ ")";
+
+		execute(sql, "orders");
+	}
+
+	private void createBookLikeTable() {
+		String sql = "CREATE TABLE IF NOT EXISTS book_like ("
+				+ "like_id INT AUTO_INCREMENT PRIMARY KEY, "
+				+ "isbn INT NOT NULL, "
+				+ "userid VARCHAR(100) NOT NULL, "
+				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+				+ "CONSTRAINT uk_book_like UNIQUE (isbn, userid)"
+				+ ")";
+
+		execute(sql, "book_like");
+	}
+
+	private void createBookRatingTable() {
+		String sql = "CREATE TABLE IF NOT EXISTS book_rating ("
+				+ "rating_id INT AUTO_INCREMENT PRIMARY KEY, "
+				+ "isbn INT NOT NULL, "
+				+ "userid VARCHAR(100) NOT NULL, "
+				+ "rating INT NOT NULL, "
+				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+				+ "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+				+ "CONSTRAINT uk_book_rating UNIQUE (isbn, userid)"
+				+ ")";
+
+		execute(sql, "book_rating");
+	}
+
+	private void createChatMessageTable() {
+		String sql = "CREATE TABLE IF NOT EXISTS chat_message ("
+				+ "message_id INT AUTO_INCREMENT PRIMARY KEY, "
+				+ "room_id VARCHAR(100) NOT NULL, "
+				+ "sender VARCHAR(100) NOT NULL, "
+				+ "content VARCHAR(2000) NOT NULL, "
+				+ "sent_at VARCHAR(30) NOT NULL, "
+				+ "is_admin BOOLEAN DEFAULT FALSE"
+				+ ")";
+
+		execute(sql, "chat_message");
+	}
+
+	private void createQnaQuestionTable() {
+		String sql = "CREATE TABLE IF NOT EXISTS qna_question ("
+				+ "question_id INT AUTO_INCREMENT PRIMARY KEY, "
+				+ "userid VARCHAR(100) NOT NULL, "
+				+ "subject VARCHAR(200) NOT NULL, "
+				+ "content VARCHAR(4000) NOT NULL, "
+				+ "status VARCHAR(20) DEFAULT '답변대기', "
+				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+				+ "updated_at TIMESTAMP"
+				+ ")";
+
+		execute(sql, "qna_question");
+	}
+
+	private void createQnaAnswerTable() {
+		String sql = "CREATE TABLE IF NOT EXISTS qna_answer ("
+				+ "answer_id INT AUTO_INCREMENT PRIMARY KEY, "
+				+ "question_id INT NOT NULL, "
+				+ "writer VARCHAR(100) NOT NULL, "
+				+ "content VARCHAR(4000) NOT NULL, "
+				+ "is_admin BOOLEAN DEFAULT FALSE, "
+				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+				+ "CONSTRAINT fk_qna_answer_question "
+				+ "FOREIGN KEY (question_id) "
+				+ "REFERENCES qna_question(question_id) "
+				+ "ON DELETE CASCADE"
+				+ ")";
+
+		execute(sql, "qna_answer");
+	}
+
+	private void execute(String sql, String tableName) {
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
+
+			ps.execute();
+			System.out.println("[DatabaseInitializer] " + tableName + " 테이블 확인 완료");
+
+		} catch (Exception e) {
+			System.out.println("[DatabaseInitializer] " + tableName + " 테이블 생성 중 오류 발생");
+			e.printStackTrace();
+		}
+	}
+}
