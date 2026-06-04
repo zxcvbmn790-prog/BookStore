@@ -23,10 +23,21 @@
         </nav>
     </div>
 
+    <!-- ... existing code ... -->
+
     <div class="header-right">
         <c:choose>
             <c:when test="${not empty sessionScope.loginUser}">
-                <button type="button" class="user-chip" onclick="toggleProfileDrawer(true)">${sessionScope.loginUser}님</button>
+                <button type="button" class="user-chip" onclick="toggleProfileDrawer(true)">
+                    <c:choose>
+                        <c:when test="${not empty sessionScope.loginNickname}">
+                            ${sessionScope.loginNickname}님
+                        </c:when>
+                        <c:otherwise>
+                            ${sessionScope.loginUser}님
+                        </c:otherwise>
+                    </c:choose>
+                </button>
                 <a class="header-btn outline" href="${pageContext.request.contextPath}/member/logout">로그아웃</a>
             </c:when>
             <c:otherwise>
@@ -43,11 +54,22 @@
         <div class="profile-drawer-top">
             <div>
                 <div class="profile-drawer-label">MY MENU</div>
-                <div class="profile-drawer-name">${sessionScope.loginUser}님</div>
+                <div class="profile-drawer-name">
+                    <c:choose>
+                        <c:when test="${not empty sessionScope.loginNickname}">
+                            ${sessionScope.loginNickname}님
+                        </c:when>
+                        <c:otherwise>
+                            ${sessionScope.loginUser}님
+                        </c:otherwise>
+                    </c:choose>
+                </div>
                 <div class="profile-drawer-sub">회원 정보와 계정 설정을 관리할 수 있어요.</div>
             </div>
             <button type="button" class="profile-close" onclick="toggleProfileDrawer(false)">&times;</button>
         </div>
+
+        <!-- ... existing code ... -->
 
         <div class="profile-drawer-menu">
             <a href="${pageContext.request.contextPath}/member/profile">정보 수정</a>
