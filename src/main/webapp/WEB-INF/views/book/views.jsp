@@ -433,21 +433,14 @@
 				function plusSlides(n) {slideIndex += (n - 1); showSlides();}
 				showSlides();
 				function addCartAsync(isbn, loginUser) {
-					if (!loginUser || loginUser === "") {
-						alert("로그인이 필요한 서비스입니다.");
-						location.href = "${pageContext.request.contextPath}/member/login";
-						return;
-					}
-
-					fetch('${pageContext.request.contextPath}/cart/insert', {
-						method: 'POST',
-						headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-						body: new URLSearchParams({'isbn': isbn, 'amount': '1', 'userid': loginUser})
-					})
-						.then(() => {
-							alert("장바구니에 담았습니다.");
-							// 페이지 이동 안 함
-						})
-						.catch(err => alert("오류가 발생했습니다."));
-				}
+    fetch('${pageContext.request.contextPath}/cart/insert', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({'isbn': isbn, 'amount': '1', 'userid': loginUser})
+    })
+    .then(() => {
+        alert("장바구니에 담았습니다.");
+    })
+    .catch(err => alert("오류가 발생했습니다."));
+}
 			</script>
