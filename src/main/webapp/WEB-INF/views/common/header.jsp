@@ -8,6 +8,7 @@
         <nav class="main-nav">
             <a href="${pageContext.request.contextPath}/book/list">도서목록</a>
             <a href="${pageContext.request.contextPath}/support/faq">자주 묻는 질문</a>
+            <a href="${pageContext.request.contextPath}/qna/list">문의게시판</a>
 
             <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser ne 'admin'}">
                 <a href="${pageContext.request.contextPath}/cart/list">장바구니</a>
