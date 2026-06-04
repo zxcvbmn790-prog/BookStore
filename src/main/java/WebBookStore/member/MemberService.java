@@ -65,26 +65,29 @@ public class MemberService implements UserDetailsService {
 		return dao.findByUsername(username);
 	}
 
+	// dev 브랜치 반영: 프로필 업데이트
 	public boolean updateProfile(MemberVO member) {
 		return dao.updateProfile(member) > 0;
 	}
 
-	// MemberService.java 내부의 updatePassword 메소드를 아래와 같이 수정하세요.
+	// dev 브랜치 반영: 비밀번호 업데이트 (이전에 수정한 DAO와 완벽 호환됨)
 	public boolean updatePassword(String username, String currentPassword, String newPassword) {
 	    // 1. 디비에서 현재 유저 정보 가져오기
 	    MemberVO member = dao.findByUsername(username);
 	    if (member == null) return false;
 
-	    // 2. 입력한 현재 비밀번호가 암호화된 디비 비밀번호와 일치하는지 비교
+	    // 2. 입력한 현재 비밀번호가 암호화된 디비 비밀번호와 일치하는지 비교 (Service단 검증)
 	    if (!pwe.matches(currentPassword, member.getPassword())) {
 	        return false; // 비밀번호 불일치 시 실패 리턴
 	    }
 
 	    // 3. 일치한다면 새 비밀번호를 암호화하여 DB에 업데이트 요청
+	    // (DAO에는 username과 새 비밀번호 2개만 전달)
 	    String encryptedNewPassword = pwe.encode(newPassword);
 	    return dao.updatePassword(username, encryptedNewPassword) > 0;
 	}
 
+	// dev 브랜치 반영: 회원 탈퇴
 	public boolean deleteMember(String username) {
 		return dao.deleteMember(username) > 0;
 	}
@@ -93,9 +96,27 @@ public class MemberService implements UserDetailsService {
 		return dao.findAllMembers();
 	}
 
+	// feature_kakaoLogin 브랜치 반영: 카카오 회원가입/조회
+	public MemberVO getOrRegisterKakaoMember(KakaoUserInfo kakaoUserInfo) {
+		MemberVO member = dao.findByKakaoId(kakaoUserInfo.getKakaoId());
+
+		if (member != null) {
+			return member;
+		}
+
+		dao.registerKakaoMember(kakaoUserInfo);
+
+		member = dao.findByKakaoId(kakaoUserInfo.getKakaoId());
+
+		if (member == null) {
+			throw new IllegalStateException("카카오 회원 조회 또는 저장에 실패했습니다.");
+		}
+
+		return member;
+	}
+
+	// dev 브랜치 반영: 아이디 중복 확인용 유저 검색 (오타 의심 메서드)
 	public MemberVO getMemberByUsernames(String username) {
-		// DAO의 findByUsername을 호출하여 결과를 반환합니다.
 		return dao.findByUsernames(username);
 	}
-	
 }
