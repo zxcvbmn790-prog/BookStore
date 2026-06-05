@@ -67,6 +67,10 @@
 		<security:csrf disabled="true"/>
 		
 		<security:intercept-url pattern="/book/list" access="permitAll"/>
+		<security:intercept-url pattern="/book/view" access="permitAll"/>
+		<security:intercept-url pattern="/cart/**" access="permitAll"/>
+		<security:intercept-url pattern="/order/**" access="permitAll"/>
+		
 		<security:intercept-url pattern="/member/login" access="permitAll"/>
 		<security:intercept-url pattern="/member/register" access="permitAll"/>
 		<security:intercept-url pattern="/member/checkId" access="permitAll" />
