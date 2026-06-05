@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,11 +16,15 @@ public class DatabaseInitializer {
 	@Autowired
 	private DataSource ds;
 
+	private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
 	@PostConstruct
 	public void init() {
 		System.out.println("[DatabaseInitializer] 전체 테이블 생성 시작");
 
 		createMemberTable();
+		insertDefaultMembers();
+
 		createBookTable();
 		createCartTable();
 		createOrdersTable();
@@ -33,21 +38,70 @@ public class DatabaseInitializer {
 	}
 
 	private void createMemberTable() {
-    String sql = "CREATE TABLE IF NOT EXISTS member ("
-            + "num INT AUTO_INCREMENT PRIMARY KEY, "
-            + "id VARCHAR(100) NOT NULL UNIQUE, "
-            + "pw VARCHAR(100) NOT NULL, "
-            + "email VARCHAR(200), "
-            + "hp VARCHAR(30), "
-            + "nickname VARCHAR(100), "
-            + "role VARCHAR(50) DEFAULT 'ROLE_USER'"
-            + ")";
+		String sql = "CREATE TABLE IF NOT EXISTS member ("
+				+ "num INT AUTO_INCREMENT PRIMARY KEY, "
+				+ "id VARCHAR(100) NOT NULL UNIQUE, "
+				+ "pw VARCHAR(100) NOT NULL, "
+				+ "email VARCHAR(200), "
+				+ "hp VARCHAR(30), "
+				+ "nickname VARCHAR(100), "
+				+ "role VARCHAR(50) DEFAULT 'ROLE_USER'"
+				+ ")";
 
-    execute(sql, "member");
+		execute(sql, "member");
 
-    execute("ALTER TABLE member ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'ROLE_USER'", "member role column");
-    execute("UPDATE member SET role = 'ROLE_USER' WHERE role IS NULL", "member role default");
-}
+		execute("ALTER TABLE member ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'ROLE_USER'", "member role column");
+		execute("UPDATE member SET role = 'ROLE_USER' WHERE role IS NULL", "member role default");
+	}
+
+	private void insertDefaultMembers() {
+		System.out.println("[DatabaseInitializer] 기본 회원 데이터 생성 시작");
+
+		insertDefaultMember(
+				"admin",
+				"1234",
+				"admin@test.com",
+				"010-1111-1111",
+				"관리자",
+				"ROLE_ADMIN"
+		);
+
+		insertDefaultMember(
+				"user",
+				"1234",
+				"user@test.com",
+				"010-2222-2222",
+				"일반사용자",
+				"ROLE_USER"
+		);
+
+		System.out.println("[DatabaseInitializer] 기본 회원 데이터 생성 완료");
+	}
+
+	private void insertDefaultMember(String id, String rawPassword, String email, String hp, String nickname, String role) {
+		String sql = "MERGE INTO member (id, pw, email, hp, nickname, role) "
+				+ "KEY(id) "
+				+ "VALUES (?, ?, ?, ?, ?, ?)";
+
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
+
+			ps.setString(1, id);
+			ps.setString(2, passwordEncoder.encode(rawPassword));
+			ps.setString(3, email);
+			ps.setString(4, hp);
+			ps.setString(5, nickname);
+			ps.setString(6, role);
+
+			ps.executeUpdate();
+
+			System.out.println("[DatabaseInitializer] 기본 회원 확인 완료: " + id + " / " + role);
+
+		} catch (Exception e) {
+			System.out.println("[DatabaseInitializer] 기본 회원 생성 중 오류 발생: " + id);
+			e.printStackTrace();
+		}
+	}
 
 	private void createBookTable() {
 		String sql = "CREATE TABLE IF NOT EXISTS book ("
