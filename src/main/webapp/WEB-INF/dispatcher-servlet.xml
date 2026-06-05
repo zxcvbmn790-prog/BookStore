@@ -38,10 +38,15 @@
 			<mvc:mapping path="/**" />
 			<mvc:exclude-mapping path="/" />
 			<mvc:exclude-mapping path="/book/list" />
+			<mvc:exclude-mapping path="/book/view" />
+			
 			<mvc:exclude-mapping path="/member/login" />
 			<mvc:exclude-mapping path="/member/register" />
 			<mvc:exclude-mapping path="/member/logout" />
 			
+			<mvc:exclude-mapping path="/cart/**" />
+			<mvc:exclude-mapping path="/order/**" />
+
 			<mvc:exclude-mapping path="/member/kakaoStart" />
 			<mvc:exclude-mapping path="/member/kakaoLogin" />
 			<mvc:exclude-mapping path="/member/checkId" />
@@ -62,6 +67,10 @@
 		<security:csrf disabled="true"/>
 		
 		<security:intercept-url pattern="/book/list" access="permitAll"/>
+		<security:intercept-url pattern="/book/view" access="permitAll"/>
+		<security:intercept-url pattern="/cart/**" access="permitAll"/>
+		<security:intercept-url pattern="/order/**" access="permitAll"/>
+		
 		<security:intercept-url pattern="/member/login" access="permitAll"/>
 		<security:intercept-url pattern="/member/register" access="permitAll"/>
 		<security:intercept-url pattern="/member/checkId" access="permitAll" />
