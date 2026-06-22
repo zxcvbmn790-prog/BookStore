@@ -10,6 +10,7 @@
 						http://www.springframework.org/schema/security https://www.springframework.org/schema/security/spring-security.xsd">
 
 	<context:component-scan base-package="WebBookStore" />
+	<context:property-placeholder location="classpath:mail.properties" />
 
 	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix" value="/WEB-INF/views/" />
@@ -112,10 +113,10 @@
 	</security:authentication-manager>
 
 	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
-		<property name="host" value="smtp.gmail.com"/>
-		<property name="port" value="587"/>
-		<property name="username" value="zxcvbmn790@gmail.com"/>
-		<property name="password" value="czuvuwxrzfahmxxn"/>
+		<property name="host" value="${mail.smtp.host}"/>
+		<property name="port" value="${mail.smtp.port}"/>
+		<property name="username" value="${mail.smtp.username}"/>
+		<property name="password" value="${mail.smtp.password}"/>
 		<property name="javaMailProperties">
 			<props>
 				<prop key="mail.smtp.auth">true</prop>

@@ -13,3 +13,6 @@ target/
 # OS Generated Files
 Thumbs.db
 .DS_Store
+
+# Credentials
+src/main/resources/mail.properties
