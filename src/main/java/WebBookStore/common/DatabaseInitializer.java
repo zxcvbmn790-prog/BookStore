@@ -160,6 +160,9 @@ public class DatabaseInitializer {
 
 		execute(sql, "orders");
 		
+		// 기존 OrderDAO 주문 저장 SQL에서 사용하는 배송상태 컬럼
+		execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS traking_status VARCHAR(50) DEFAULT '접수'", "orders traking_status column");
+		
 		// 상윤 담당 기능: 주문별 마일리지 사용/적립/실결제금액 기록
 		execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS used_mileage INT DEFAULT 0", "orders used_mileage column");
 		execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS earned_mileage INT DEFAULT 0", "orders earned_mileage column");

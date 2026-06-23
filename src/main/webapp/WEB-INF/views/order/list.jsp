@@ -60,10 +60,13 @@
                                 </td>
 
                                 <td>${order.price}원</td>
-                                <td>${order.amount}</td>
-                                <td class="strong">${order.totalPrice}원</td>
-                                <td>${order.status}</td>
-                                <td>${order.orderDate}</td>
+								<td>${order.amount}</td>
+								<td class="strong">${order.totalPrice}원</td>
+								<td>${order.status}</td>
+								<td>${order.orderDate}</td>
+								<td>${order.usedMileage} P</td>
+								<td>${order.earnedMileage} P</td>
+								<td class="strong">${order.finalPayment}원</td>
                             </tr>
                         </c:forEach>
                     </tbody>
