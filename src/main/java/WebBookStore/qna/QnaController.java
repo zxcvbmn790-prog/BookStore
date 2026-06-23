@@ -91,7 +91,7 @@ public class QnaController {
 
 		String loginUser = (String) session.getAttribute("loginUser");
 
-		if (!"admin".equals(loginUser)) {
+		if (!"admin".equals(loginUser) && !"tracking".equals(loginUser)) {
 			ra.addFlashAttribute("qnaError", "관리자만 답변을 등록할 수 있습니다.");
 			return "redirect:/qna/list";
 		}
@@ -125,7 +125,7 @@ public class QnaController {
 			return "redirect:/member/login";
 		}
 
-		boolean admin = "admin".equals(loginUser);
+		boolean admin = "admin".equals(loginUser) || "tracking".equals(loginUser);
 
 		if (qnaService.deleteQuestion(questionId, loginUser, admin)) {
 			ra.addFlashAttribute("qnaMessage", "문의가 삭제되었습니다.");

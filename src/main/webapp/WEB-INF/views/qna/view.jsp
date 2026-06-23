@@ -250,7 +250,7 @@
             </c:otherwise>
         </c:choose>
 
-        <c:if test="${sessionScope.loginUser eq 'admin'}">
+        <c:if test="${sessionScope.loginUser eq 'admin' or sessionScope.loginUser eq 'tracking'}">
             <h3 class="qna-section-title">관리자 답변 작성</h3>
 
             <form class="answer-form"
@@ -280,7 +280,7 @@
             </div>
 
             <div class="qna-actions-right">
-                <c:if test="${sessionScope.loginUser eq question.userid or sessionScope.loginUser eq 'admin'}">
+                <c:if test="${sessionScope.loginUser eq question.userid or sessionScope.loginUser eq 'admin' or sessionScope.loginUser eq 'tracking'}">
                     <form action="${pageContext.request.contextPath}/qna/delete"
                           method="post"
                           onsubmit="return confirm('문의를 삭제하시겠습니까?');">

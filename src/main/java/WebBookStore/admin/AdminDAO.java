@@ -247,7 +247,7 @@ public class AdminDAO {
 
 	public List<WebBookStore.member.MemberVO> getMemberList() {
 		List<WebBookStore.member.MemberVO> list = new ArrayList<>();
-		String sql = "SELECT num, id, pw, email, hp, nickname FROM member ORDER BY num DESC";
+		String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member ORDER BY num DESC";
 		try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 			while (rs.next()) {
 				list.add(new WebBookStore.member.MemberVO(rs.getInt("num"), rs.getString("id"), rs.getString("pw"), rs.getString("email"), rs.getString("hp"), rs.getString("nickname"), rs.getString("ROLE")));
