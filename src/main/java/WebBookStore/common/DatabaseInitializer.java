@@ -74,6 +74,15 @@ public class DatabaseInitializer {
 				"일반사용자",
 				"ROLE_USER"
 		);
+		
+		insertDefaultMember(
+				"tracking",
+				"1234",
+				"traking@test.com",
+				"010-2222-2222",
+				"배송관리자",
+				"ROLE_TRAKING"
+		);
 
 		System.out.println("[DatabaseInitializer] 기본 회원 데이터 생성 완료");
 	}
@@ -141,6 +150,7 @@ public class DatabaseInitializer {
 				+ "phone VARCHAR(30), "
 				+ "address VARCHAR(1000), "
 				+ "order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+				+ "traking_status VARCHAR(50), "
 				+ "status VARCHAR(50)"
 				+ ")";
 
