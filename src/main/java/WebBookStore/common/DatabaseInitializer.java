@@ -81,7 +81,7 @@ public class DatabaseInitializer {
 				"tracking@test.com",
 				"010-3333-3333",
 				"배송관리자",
-				"ROLE_USER"
+				"ROLE_TRAKING"
 		);
 
 		System.out.println("[DatabaseInitializer] 기본 회원 데이터 생성 완료");
