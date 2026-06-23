@@ -24,4 +24,9 @@ public class OrderVO {
 	private String trakingstatus;
 	private String status;
 	private String image;
+
+	// 상윤 - 마일리지 기능을 위한 컬럼 추가
+	private int usedMileage;
+	private int earnedMileage;
+	private int finalPayment;
 }

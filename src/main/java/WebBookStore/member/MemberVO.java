@@ -19,4 +19,14 @@ public class MemberVO {
     private String phone;
     private String nickname;
     private String role;
+    
+    // 상윤 - 배송정보 자동입력용 필드 추가
+    private String defaultReceiver;
+    private String defaultPhone;
+    private String defaultAddress;
+
+    // 상윤 - 마일리지 / 회원등급용 필드 추가
+    private int mileage;
+    private int totalMileage;
+    private String grade;
 }

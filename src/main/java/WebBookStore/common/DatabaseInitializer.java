@@ -52,6 +52,20 @@ public class DatabaseInitializer {
 
 		execute("ALTER TABLE member ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'ROLE_USER'", "member role column");
 		execute("UPDATE member SET role = 'ROLE_USER' WHERE role IS NULL", "member role default");
+
+		// 상윤 담당 기능: 기본 배송정보 자동입력용 컬럼
+		execute("ALTER TABLE member ADD COLUMN IF NOT EXISTS default_receiver VARCHAR(100)", "member default_receiver column");
+		execute("ALTER TABLE member ADD COLUMN IF NOT EXISTS default_phone VARCHAR(30)", "member default_phone column");
+		execute("ALTER TABLE member ADD COLUMN IF NOT EXISTS default_address VARCHAR(1000)", "member default_address column");
+
+		// 상윤 담당 기능: 마일리지 / 회원등급 컬럼
+		execute("ALTER TABLE member ADD COLUMN IF NOT EXISTS mileage INT DEFAULT 0", "member mileage column");
+		execute("ALTER TABLE member ADD COLUMN IF NOT EXISTS total_mileage INT DEFAULT 0", "member total_mileage column");
+		execute("ALTER TABLE member ADD COLUMN IF NOT EXISTS grade VARCHAR(30) DEFAULT 'BRONZE'", "member grade column");
+
+		execute("UPDATE member SET mileage = 0 WHERE mileage IS NULL", "member mileage default");
+		execute("UPDATE member SET total_mileage = 0 WHERE total_mileage IS NULL", "member total_mileage default");
+		execute("UPDATE member SET grade = 'BRONZE' WHERE grade IS NULL", "member grade default");
 	}
 
 	private void insertDefaultMembers() {
@@ -150,11 +164,18 @@ public class DatabaseInitializer {
 				+ "phone VARCHAR(30), "
 				+ "address VARCHAR(1000), "
 				+ "order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
-				+ "status VARCHAR(50), "
-				+ "traking_status VARCHAR(50) DEFAULT '접수'"
+				+ "status VARCHAR(50)"
 				+ ")";
 
 		execute(sql, "orders");
+
+		// 기존 OrderDAO 주문 저장 SQL에서 사용하는 배송상태 컬럼
+		execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS traking_status VARCHAR(50) DEFAULT '접수'", "orders traking_status column");
+
+		// 상윤 담당 기능: 주문별 마일리지 사용/적립/실결제금액 기록
+		execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS used_mileage INT DEFAULT 0", "orders used_mileage column");
+		execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS earned_mileage INT DEFAULT 0", "orders earned_mileage column");
+		execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS final_payment INT DEFAULT 0", "orders final_payment column");
 	}
 
 	private void createBookLikeTable() {
