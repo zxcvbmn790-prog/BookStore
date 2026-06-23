@@ -20,13 +20,24 @@ public class OrderDAO {
 	private DataSource ds;
 
 	public int placeOrder(String userid, List<CartVO> cartList,
-			String receiver, String phone, String address) {
+	        String receiver, String phone, String address,
+	        int usedMileage, int earnedMileage, int finalPayment,
+	        String newGrade, boolean isMemberOrder) {
 
 		String insertSql = "INSERT INTO orders "
-				+ "(userid, isbn, bookname, price, amount, total_price, receiver, phone, address, order_date, status) "
-				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)";
+		        + "(userid, isbn, bookname, price, amount, total_price, "
+		        + "receiver, phone, address, order_date, status, traking_status, "
+		        + "used_mileage, earned_mileage, final_payment) "
+		        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, '접수', ?, ?, ?)";
 
 		String deleteCartSql = "DELETE FROM cart WHERE userid = ?";
+		
+		String updateMemberSql = "UPDATE member "
+		        + "SET default_receiver = ?, default_phone = ?, default_address = ?, "
+		        + "mileage = mileage - ? + ?, "
+		        + "total_mileage = total_mileage + ?, "
+		        + "grade = ? "
+		        + "WHERE id = ?";
 
 		int orderCount = 0;
 
@@ -34,9 +45,10 @@ public class OrderDAO {
 			conn.setAutoCommit(false);
 
 			try (
-				PreparedStatement insertPs = conn.prepareStatement(insertSql);
-				PreparedStatement deletePs = conn.prepareStatement(deleteCartSql)
-			) {
+				    PreparedStatement insertPs = conn.prepareStatement(insertSql);
+				    PreparedStatement deletePs = conn.prepareStatement(deleteCartSql);
+				    PreparedStatement updateMemberPs = conn.prepareStatement(updateMemberSql)
+				) {
 				for (CartVO cart : cartList) {
 					int price = parsePrice(cart.getPrice());
 					int totalPrice = price * cart.getAmount();
@@ -51,6 +63,9 @@ public class OrderDAO {
 					insertPs.setString(8, phone);
 					insertPs.setString(9, address);
 					insertPs.setString(10, "결제완료");
+					insertPs.setInt(11, usedMileage);
+					insertPs.setInt(12, earnedMileage);
+					insertPs.setInt(13, finalPayment);
 
 					insertPs.addBatch();
 					orderCount++;
@@ -61,6 +76,18 @@ public class OrderDAO {
 				deletePs.setString(1, userid);
 				deletePs.executeUpdate();
 
+				if (isMemberOrder) {
+				    updateMemberPs.setString(1, receiver);
+				    updateMemberPs.setString(2, phone);
+				    updateMemberPs.setString(3, address);
+				    updateMemberPs.setInt(4, usedMileage);
+				    updateMemberPs.setInt(5, earnedMileage);
+				    updateMemberPs.setInt(6, earnedMileage);
+				    updateMemberPs.setString(7, newGrade);
+				    updateMemberPs.setString(8, userid);
+				    updateMemberPs.executeUpdate();
+				}
+				
 				conn.commit();
 				return orderCount;
 

@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import WebBookStore.cart.CartService;
 import WebBookStore.cart.CartVO;
 
+import WebBookStore.member.MemberService;
+import WebBookStore.member.MemberVO;
+
 @Controller
 @RequestMapping("/order")
 public class OrderController {
@@ -24,80 +27,125 @@ public class OrderController {
 
 	@Autowired
 	private OrderService orderService;
+	
+	@Autowired
+	private MemberService memberService;
 
 	@RequestMapping(value = "/checkout", method = RequestMethod.GET)
 	public String checkout(HttpSession session, HttpServletRequest request, Model model) {
-		String userid = (String) session.getAttribute("loginUser");
+	    // 1. 로그인한 회원 아이디를 가져온다.
+	    String loginUser = (String) session.getAttribute("loginUser");
 
-		if (userid == null) {
-			userid = getGuestId(request);
-		}
+	    // 2. 장바구니 조회에 사용할 userid를 만든다.
+	    // 회원이면 loginUser를 사용하고, 비회원이면 쿠키의 guestId를 사용한다.
+	    String userid = loginUser;
 
-		if (userid == null) {
-			return "redirect:/cart/list";
-		}
+	    // 3. 현재 사용자가 회원인지 확인한다.
+	    boolean isMember = loginUser != null;
 
-		List<CartVO> cartList = cartService.getCartList(userid);
+	    // 4. 로그인 회원이 아니면 비회원 쿠키 id를 가져온다.
+	    if (userid == null) {
+	        userid = getGuestId(request);
+	    }
 
-		if (cartList == null || cartList.isEmpty()) {
-			return "redirect:/cart/list";
-		}
+	    // 5. 회원도 아니고 비회원 쿠키도 없으면 장바구니로 돌려보낸다.
+	    if (userid == null) {
+	        return "redirect:/cart/list";
+	    }
 
-		int sumMoney = 0;
-		for (CartVO cart : cartList) {
-			sumMoney += cart.getTotalPrice();
-		}
+	    // 6. 현재 사용자의 장바구니 목록을 가져온다.
+	    List<CartVO> cartList = cartService.getCartList(userid);
 
-		model.addAttribute("cartList", cartList);
-		model.addAttribute("sumMoney", sumMoney);
-		model.addAttribute("contentPage", "/WEB-INF/views/order/checkout.jsp");
-		return "layout/layout";
+	    // 7. 장바구니가 비어 있으면 주문 페이지로 갈 수 없다.
+	    if (cartList == null || cartList.isEmpty()) {
+	        return "redirect:/cart/list";
+	    }
+
+	    // 8. 장바구니 총 금액 계산
+	    int sumMoney = 0;
+	    for (CartVO cart : cartList) {
+	        sumMoney += cart.getTotalPrice();
+	    }
+
+	    // 9. 회원이면 회원 정보를 조회한다.
+	    // 비회원이면 member는 null이다.
+	    MemberVO member = null;
+	    int mileageRate = 0;
+
+	    if (isMember) {
+	        member = memberService.getMember(loginUser);
+
+	        if (member != null) {
+	            mileageRate = memberService.getMileageRate(member.getGrade());
+	        }
+	    }
+
+	    // 10. checkout.jsp에서 사용할 데이터 전달
+	    model.addAttribute("cartList", cartList);
+	    model.addAttribute("sumMoney", sumMoney);
+	    model.addAttribute("member", member);
+	    model.addAttribute("isMember", isMember);
+	    model.addAttribute("mileageRate", mileageRate);
+
+	    model.addAttribute("contentPage", "/WEB-INF/views/order/checkout.jsp");
+	    return "layout/layout";
 	}
 
 	@RequestMapping(value = "/pay", method = RequestMethod.POST)
-	public String pay(String receiver, String phone, String address,
-			HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+	public String pay(String receiver, String phone, String address, Integer useMileage,
+	        HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 
-		String userid = (String) session.getAttribute("loginUser");
-		boolean isGuest = false;
+	    // 1. 로그인 회원 아이디 확인
+	    String loginUser = (String) session.getAttribute("loginUser");
 
-		if (userid == null) {
-			userid = getGuestId(request);
-			isGuest = true; 
-		}
+	    // 2. 주문에 사용할 userid
+	    String userid = loginUser;
 
-		if (userid == null) {
-			return "redirect:/cart/list";
-		}
+	    // 3. 비회원 여부
+	    boolean isGuest = false;
 
-		List<CartVO> cartList = cartService.getCartList(userid);
+	    // 4. 로그인하지 않은 경우 비회원 쿠키 id 사용
+	    if (userid == null) {
+	        userid = getGuestId(request);
+	        isGuest = true;
+	    }
 
-		if (cartList == null || cartList.isEmpty()) {
-			return "redirect:/cart/list";
-		}
+	    // 5. 회원도 아니고 비회원 쿠키도 없으면 장바구니로 이동
+	    if (userid == null) {
+	        return "redirect:/cart/list";
+	    }
 
-		if (receiver == null || receiver.trim().isEmpty()
-				|| phone == null || phone.trim().isEmpty()
-				|| address == null || address.trim().isEmpty()) {
-			return "redirect:/order/checkout?error=true";
-		}
+	    // 6. 장바구니 목록 조회
+	    List<CartVO> cartList = cartService.getCartList(userid);
 
-		int result = orderService.placeOrder(userid, cartList, receiver, phone, address);
+	    // 7. 장바구니가 비어 있으면 주문 불가
+	    if (cartList == null || cartList.isEmpty()) {
+	        return "redirect:/cart/list";
+	    }
 
-		if (result > 0) {
-			// [선택 사항] 비회원 주문 성공 시, 브라우저의 비회원 쿠키를 삭제하고 싶다면 아래 주석을 해제하세요.
-			/*
-			if (isGuest) {
-				Cookie cookie = new Cookie("guestId", null);
-				cookie.setPath("/");
-				cookie.setMaxAge(0); // 유효기간 0으로 만들어 즉시 삭제
-				response.addCookie(cookie);
-			}
-			*/
-			return "redirect:/order/complete";
-		}
+	    // 8. 배송정보 검증
+	    if (receiver == null || receiver.trim().isEmpty()
+	            || phone == null || phone.trim().isEmpty()
+	            || address == null || address.trim().isEmpty()) {
+	        return "redirect:/order/checkout?error=true";
+	    }
 
-		return "redirect:/order/checkout?error=true";
+	    // 9. 마일리지 값 보정
+	    // 비회원은 마일리지를 사용할 수 없으므로 0 처리
+	    if (useMileage == null || isGuest) {
+	        useMileage = 0;
+	    }
+
+	    // 10. 주문 처리
+	    int result = orderService.placeOrder(userid, cartList, receiver, phone, address, useMileage);
+
+	    // 11. 주문 성공
+	    if (result > 0) {
+	        return "redirect:/order/complete";
+	    }
+
+	    // 12. 주문 실패
+	    return "redirect:/order/checkout?error=true";
 	}
 
 	@RequestMapping(value = "/complete", method = RequestMethod.GET)
