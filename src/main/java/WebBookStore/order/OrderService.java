@@ -26,4 +26,12 @@ public class OrderService {
 	public List<OrderVO> getOrderList(String userid) {
 		return orderDAO.getOrderList(userid);
 	}
+
+	public List<OrderVO> getAllOrderList() {
+		return orderDAO.getOrderAllList();
+	}
+
+	public void updateTrackingStatus(int orderId, String trakingstatus) {
+		orderDAO.updateTrackingStatus(orderId, trakingstatus);
+	}
 }

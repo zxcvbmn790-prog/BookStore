@@ -4,9 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import WebBookStore.order.OrderService;
+import WebBookStore.order.OrderVO;
+
+import java.security.Principal;
+import java.util.List;
 import javax.servlet.http.HttpSession;
 
 @Controller
@@ -92,9 +98,9 @@ public class AdminController {
 
 	@RequestMapping("/member/delete")
 	public String deleteMember(@RequestParam("username") String username, RedirectAttributes ra) {
-	    org.springframework.security.core.Authentication auth = 
+	    org.springframework.security.core.Authentication auth =
 	            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-	    
+
 	    boolean isAdmin = auth != null && auth.getAuthorities().stream()
 	            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
@@ -109,5 +115,40 @@ public class AdminController {
 			ra.addFlashAttribute("message", "회원 삭제에 실패했습니다.");
 		}
 		return "redirect:/admin/members";
+	}
+
+	@Autowired
+	private OrderService orderService;
+
+	@RequestMapping(value = "/traking", method = RequestMethod.GET)
+	public String trackingList(Principal principal, Model model) {
+		if (principal == null) {
+			return "redirect:/member/login";
+		}
+
+		String userid = principal.getName();
+
+		if (!"tracking".equals(userid) && !"admin".equals(userid)) {
+			return "redirect:/member/login";
+		}
+
+		List<OrderVO> deliveryList = orderService.getAllOrderList();
+
+		model.addAttribute("deliveryList", deliveryList);
+		model.addAttribute("contentPage", "/WEB-INF/views/admin/traking.jsp");
+
+		return "layout/layout";
+	}
+
+	@RequestMapping(value = "/updateTracking", method = RequestMethod.POST)
+	public String updateTracking(
+			@RequestParam("orderId") int orderId,
+			@RequestParam("trakingstatus") String trakingstatus) {
+		try {
+			orderService.updateTrackingStatus(orderId, trakingstatus);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "redirect:/admin/traking";
 	}
 }

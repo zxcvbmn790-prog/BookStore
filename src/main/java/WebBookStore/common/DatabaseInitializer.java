@@ -141,7 +141,8 @@ public class DatabaseInitializer {
 				+ "phone VARCHAR(30), "
 				+ "address VARCHAR(1000), "
 				+ "order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
-				+ "status VARCHAR(50)"
+				+ "status VARCHAR(50), "
+				+ "traking_status VARCHAR(50) DEFAULT '접수'"
 				+ ")";
 
 		execute(sql, "orders");

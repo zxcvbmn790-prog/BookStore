@@ -23,8 +23,8 @@ public class OrderDAO {
 			String receiver, String phone, String address) {
 
 		String insertSql = "INSERT INTO orders "
-				+ "(userid, isbn, bookname, price, amount, total_price, receiver, phone, address, order_date, status) "
-				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)";
+				+ "(userid, isbn, bookname, price, amount, total_price, receiver, phone, address, order_date, status, traking_status) "
+				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, '접수')";
 
 		String deleteCartSql = "DELETE FROM cart WHERE userid = ?";
 
@@ -107,7 +107,8 @@ public class OrderDAO {
 					order.setAddress(rs.getString("address"));
 					order.setOrderDate(rs.getTimestamp("order_date"));
 					order.setStatus(rs.getString("status"));
-					order.setImage(rs.getString("image"));   // 추가
+					order.setTrakingstatus(rs.getString("traking_status"));
+					order.setImage(rs.getString("image"));
 
 					list.add(order);
 				}
@@ -118,6 +119,61 @@ public class OrderDAO {
 		}
 
 		return list;
+	}
+
+	public List<OrderVO> getOrderAllList() {
+		List<OrderVO> list = new ArrayList<>();
+
+		String sql = "SELECT o.*, b.image "
+				+ "FROM orders o "
+				+ "LEFT JOIN book b ON o.isbn = b.isbn "
+				+ "ORDER BY o.order_id DESC";
+
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
+
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					OrderVO order = new OrderVO();
+					order.setOrderId(rs.getInt("order_id"));
+					order.setUserid(rs.getString("userid"));
+					order.setIsbn(rs.getInt("isbn"));
+					order.setBookname(rs.getString("bookname"));
+					order.setPrice(rs.getInt("price"));
+					order.setAmount(rs.getInt("amount"));
+					order.setTotalPrice(rs.getInt("total_price"));
+					order.setReceiver(rs.getString("receiver"));
+					order.setPhone(rs.getString("phone"));
+					order.setAddress(rs.getString("address"));
+					order.setOrderDate(rs.getTimestamp("order_date"));
+					order.setStatus(rs.getString("status"));
+					order.setTrakingstatus(rs.getString("traking_status"));
+					order.setImage(rs.getString("image"));
+
+					list.add(order);
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return list;
+	}
+
+	public void updateTrackingStatus(int orderId, String trakingstatus) {
+		String sql = "UPDATE orders SET traking_status = ? WHERE order_id = ?";
+
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
+
+			ps.setString(1, trakingstatus);
+			ps.setInt(2, orderId);
+			ps.executeUpdate();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private int parsePrice(String price) {
