@@ -92,4 +92,28 @@ public class MemberService implements UserDetailsService {
 	public MemberVO getMemberByUsernames(String username) {
 		return dao.findByUsernames(username);
 	}
+	
+	// 회원 등급에 따른 마일리지 적립률 계산
+	public int getMileageRate(String grade) {
+	    if ("VIP".equals(grade)) {
+	        return 5;
+	    } else if ("GOLD".equals(grade)) {
+	        return 3;
+	    } else if ("SILVER".equals(grade)) {
+	        return 2;
+	    }
+	    return 1;
+	}
+
+	// 누적 적립 마일리지 기준으로 회원 등급 계산
+	public String calculateGrade(int totalMileage) {
+	    if (totalMileage >= 10000) {
+	        return "VIP";
+	    } else if (totalMileage >= 5000) {
+	        return "GOLD";
+	    } else if (totalMileage >= 1000) {
+	        return "SILVER";
+	    }
+	    return "BRONZE";
+	}
 }
