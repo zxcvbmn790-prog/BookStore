@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
 <section class="cart-page">
     <div class="section-head">
@@ -103,26 +104,25 @@
 					    </c:otherwise>
 					</c:choose>
 
+                    <div class="checkout-summary-inline">
+                        <div class="summary-card">
+                            <span>총 상품 금액</span>
+                            <strong>${sumMoney}원</strong>
+                        </div>
+                        <c:if test="${isMember}">
+                            <div class="summary-card">
+                                <span>예상 적립 마일리지</span>
+                                <strong><fmt:formatNumber value="${sumMoney * mileageRate / 100}" pattern="#" /> P</strong>
+                            </div>
+                        </c:if>
+                    </div>
+
                     <div class="cart-actions">
                         <a href="${pageContext.request.contextPath}/cart/list" class="action-btn outline">장바구니로 돌아가기</a>
                         <button type="submit" class="action-btn dark">주문 완료</button>
                     </div>
                 </form>
             </div>
-
-            <div class="cart-summary checkout-summary">
-			    <div class="summary-card">
-			        <span>총 상품 금액</span>
-			        <strong>${sumMoney}원</strong>
-			    </div>
-			
-			    <c:if test="${isMember}">
-			        <div class="summary-card">
-			            <span>예상 적립 마일리지</span>
-			            <strong>${sumMoney * mileageRate / 100} P</strong>
-			        </div>
-			    </c:if>
-			</div>
         </div>
     </div>
 </section>

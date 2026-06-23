@@ -743,10 +743,8 @@ textarea {
 /* ===== checkout / shipping ===== */
 .checkout-bottom {
     margin-top: 32px;
-    display: grid;
-    grid-template-columns: 1fr 260px;
-    column-gap: 32px;
-    align-items: end;
+    display: flex;
+    justify-content: center;
 }
 
 .shipping-box {
@@ -812,14 +810,15 @@ textarea {
     margin-top: 8px;
 }
 
-.checkout-summary {
-    margin-top: 0;
-    justify-content: flex-end;
-    align-self: end;
+.checkout-summary-inline {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
 }
 
-.checkout-summary .summary-card {
-    min-width: 260px;
+.checkout-summary-inline .summary-card {
+    min-width: auto;
 }
 
 /* ===== sales stats ===== */

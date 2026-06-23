@@ -59,7 +59,8 @@ public class MemberController {
 			HttpSession session = request.getSession(true);
 			session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 			session.setAttribute("loginUser", authentication.getName());
-			session.setAttribute("loginNickname", member.getNickname());
+			MemberVO dbMember = memberService.getMember(authentication.getName());
+			session.setAttribute("loginNickname", dbMember != null ? dbMember.getNickname() : authentication.getName());
 
 			return ResponseEntity.ok(
 					Map.of("result", "success", "message", "로그인 성공", "username", authentication.getName())
