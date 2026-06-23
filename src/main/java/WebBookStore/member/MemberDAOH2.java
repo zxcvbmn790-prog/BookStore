@@ -16,6 +16,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class MemberDAOH2 implements MemberDAO, InitializingBean {
 
+	private static final String MEMBER_COLUMNS = "num, id, pw, email, hp, nickname, role, "
+	        + "default_receiver, default_phone, default_address, "
+	        + "mileage, total_mileage, grade";
+	
 	@Autowired
 	private DataSource ds;
 
@@ -29,7 +33,8 @@ public class MemberDAOH2 implements MemberDAO, InitializingBean {
 
 	@Override
 	public MemberVO login(String username, String password) {
-		String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member WHERE id = ? AND pw = ?";
+		// String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member WHERE id = ? AND pw = ?";
+		String sql = "SELECT " + MEMBER_COLUMNS + " FROM member WHERE id = ? AND pw = ?";
 		try (Connection conn = ds.getConnection();
 			 PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, username);
@@ -64,7 +69,8 @@ public class MemberDAOH2 implements MemberDAO, InitializingBean {
 
 	@Override
 	public MemberVO findByUsername(String username) {
-		String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member WHERE id = ?";
+		// String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member WHERE id = ?";
+		String sql = "SELECT " + MEMBER_COLUMNS + " FROM member WHERE id = ?";
 		try (Connection conn = ds.getConnection();
 			 PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, username);
@@ -81,13 +87,20 @@ public class MemberDAOH2 implements MemberDAO, InitializingBean {
 
 	@Override
 	public int updateProfile(MemberVO member) {
-		String sql = "UPDATE member SET nickname = ?, email = ?, hp = ? WHERE id = ?";
+		// String sql = "UPDATE member SET nickname = ?, email = ?, hp = ? WHERE id = ?";
+		String sql = "UPDATE member "
+		        + "SET nickname = ?, email = ?, hp = ?, "
+		        + "default_receiver = ?, default_phone = ?, default_address = ? "
+		        + "WHERE id = ?";
 		try (Connection conn = ds.getConnection();
 			 PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, member.getNickname());
 			ps.setString(2, member.getEmail());
 			ps.setString(3, member.getPhone());
-			ps.setString(4, member.getUsername());
+			ps.setString(4, member.getDefaultReceiver());
+			ps.setString(5, member.getDefaultPhone());
+			ps.setString(6, member.getDefaultAddress());
+			ps.setString(7, member.getUsername());
 			return ps.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -140,7 +153,8 @@ public class MemberDAOH2 implements MemberDAO, InitializingBean {
 	@Override
 	public List<MemberVO> findAllMembers() {
 		List<MemberVO> list = new ArrayList<>();
-		String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member ORDER BY num DESC";
+		// String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member ORDER BY num DESC";
+		String sql = "SELECT " + MEMBER_COLUMNS + " FROM member ORDER BY num DESC";
 		try (Connection conn = ds.getConnection();
 			 PreparedStatement ps = conn.prepareStatement(sql); 
 			 ResultSet rs = ps.executeQuery()) {
@@ -175,6 +189,24 @@ public class MemberDAOH2 implements MemberDAO, InitializingBean {
 		return 0;
 	}
 
+	@Override
+	public MemberVO findByUsernames(String username) {
+		// String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member WHERE id = ?";
+		String sql = "SELECT " + MEMBER_COLUMNS + " FROM member WHERE id = ?";
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setString(1, username);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					return mapRow(rs);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	private MemberVO mapRow(ResultSet rs) throws SQLException {
 		MemberVO member = new MemberVO();
 		
@@ -185,6 +217,14 @@ public class MemberDAOH2 implements MemberDAO, InitializingBean {
 		member.setPhone(rs.getString("hp"));        
 		member.setNickname(rs.getString("nickname"));
 		member.setRole(rs.getString("role")); // ⚠️ DB에서 꺼낸 권한 저장
+		
+		member.setDefaultReceiver(rs.getString("default_receiver"));
+		member.setDefaultPhone(rs.getString("default_phone"));
+		member.setDefaultAddress(rs.getString("default_address"));
+
+		member.setMileage(rs.getInt("mileage"));
+		member.setTotalMileage(rs.getInt("total_mileage"));
+		member.setGrade(rs.getString("grade"));
 		
 		return member;
 	}

@@ -206,8 +206,30 @@ public class MemberController {
 			ra.addFlashAttribute("authError", "로그인 후 이용해주세요.");
 			return "redirect:/member/login";
 		}
+
+		MemberVO member = memberService.getMember(loginUser);
+		model.addAttribute("member", member);
 		model.addAttribute("contentPage", "/WEB-INF/views/member/profile.jsp");
 		return "layout/layout";
+	}
+	
+	@RequestMapping(value = "profile/update", method = RequestMethod.POST)
+	public String updateProfile(MemberVO member, HttpSession session, RedirectAttributes ra) {
+	    String loginUser = (String) session.getAttribute("loginUser");
+	    if (loginUser == null || "admin".equals(loginUser)) {
+	        ra.addFlashAttribute("authError", "로그인 후 이용해주세요.");
+	        return "redirect:/member/login";
+	    }
+
+	    member.setUsername(loginUser);
+
+	    if (memberService.updateProfile(member)) {
+	        ra.addFlashAttribute("profileMessage", "회원 정보가 수정되었습니다.");
+	    } else {
+	        ra.addFlashAttribute("profileError", "회원 정보 수정에 실패했습니다.");
+	    }
+
+	    return "redirect:/member/profile";
 	}
 
 	@RequestMapping(value = "delete", method = RequestMethod.POST)
