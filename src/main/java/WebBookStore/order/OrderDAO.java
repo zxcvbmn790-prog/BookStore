@@ -135,6 +135,10 @@ public class OrderDAO {
 					order.setOrderDate(rs.getTimestamp("order_date"));
 					order.setStatus(rs.getString("status"));
 					order.setImage(rs.getString("image"));   // 추가
+					
+					order.setUsedMileage(rs.getInt("used_mileage"));
+					order.setEarnedMileage(rs.getInt("earned_mileage"));
+					order.setFinalPayment(rs.getInt("final_payment"));
 
 					list.add(order);
 				}
