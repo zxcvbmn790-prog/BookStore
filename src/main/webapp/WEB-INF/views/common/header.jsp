@@ -10,7 +10,7 @@
             <a href="${pageContext.request.contextPath}/support/faq">자주 묻는 질문</a>
 			<a href="${pageContext.request.contextPath}/qna/list">문의게시판</a>
 
-			<c:if test="${sessionScope.loginUser ne 'admin'}">
+			<c:if test="${sessionScope.loginUser ne 'admin' and sessionScope.loginUser ne 'tracking'}">
 			    <a href="${pageContext.request.contextPath}/cart/list">장바구니</a>
 			    <a href="${pageContext.request.contextPath}/order/list">주문내역</a>
 			</c:if>
@@ -20,6 +20,10 @@
                 <a href="${pageContext.request.contextPath}/admin/sales">판매통계</a>
                 <a href="${pageContext.request.contextPath}/admin/members">고객관리</a>
                 <a href="${pageContext.request.contextPath}/chat/admin">실시간상담</a>
+            </c:if>
+
+            <c:if test="${sessionScope.loginUser eq 'tracking'}">
+                <a href="${pageContext.request.contextPath}/admin/traking">배송관리</a>
             </c:if>
         </nav>
     </div>
