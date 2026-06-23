@@ -49,7 +49,7 @@ public class CartDAO {
 					cart.setPrice(rs.getString("price"));
 					cart.setImage(rs.getString("image"));
 
-					int priceInt = Integer.parseInt(rs.getString("price"));
+					int priceInt = parsePrice(rs.getString("price"));
 					cart.setTotalPrice(priceInt * rs.getInt("amount"));
 
 					list.add(cart);
@@ -99,6 +99,13 @@ public class CartDAO {
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
+	}
+
+	private int parsePrice(String price) {
+		if (price == null) return 0;
+		String onlyNumber = price.replaceAll("[^0-9]", "");
+		if (onlyNumber.isEmpty()) return 0;
+		return Integer.parseInt(onlyNumber);
 	}
 
 	// isbn만 쓰면 어떤 책인지만 알 수 있고 userid까지 같이 써야 누구 장바구니의 어떤 책인지를 정확히 지정할 수 있어서 userid + isbn 로수정

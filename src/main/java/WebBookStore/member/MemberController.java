@@ -62,7 +62,7 @@ public class MemberController {
 			
 			// 4. [기존 JSP 호환용] 기존 세션 방식 유지를 위해 속성 추가
 			session.setAttribute("loginUser", authentication.getName());
-			loginsession.setAttribute("loginNickname", member.getNickname());
+			session.setAttribute("loginNickname", member.getNickname());
 			return ResponseEntity.ok(
 					Map.of(
 							"result", "success",
