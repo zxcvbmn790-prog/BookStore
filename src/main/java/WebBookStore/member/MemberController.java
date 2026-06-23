@@ -43,7 +43,7 @@ public class MemberController {
 
 	// dev 브랜치 채택: Spring Security가 적용된 REST API 방식의 로그인 처리
 	@RequestMapping(value = "login", method = RequestMethod.POST)
-	public ResponseEntity<?> login(@RequestBody MemberVO member, HttpServletRequest request) {
+	public ResponseEntity<?> login(@RequestBody MemberVO member, HttpServletRequest request, HttpSession loginsession) {
 		try {
 			// 1. 시큐리티 인증 시도
 			Authentication authentication = authenticationManager.authenticate(
@@ -62,7 +62,7 @@ public class MemberController {
 			
 			// 4. [기존 JSP 호환용] 기존 세션 방식 유지를 위해 속성 추가
 			session.setAttribute("loginUser", authentication.getName());
-
+			loginsession.setAttribute("loginNickname", member.getNickname());
 			return ResponseEntity.ok(
 					Map.of(
 							"result", "success",
@@ -105,9 +105,23 @@ public class MemberController {
 			KakaoUserInfo kakaoUserInfo = kakaoLoginService.getUserInfo(accessToken);
 			MemberVO member = memberService.getOrRegisterKakaoMember(kakaoUserInfo);
 
+			// 1. [기존 방식] 세션 속성 직접 설정
 			session.setAttribute("loginUser", member.getUsername());
 			session.setAttribute("loginNickname", member.getNickname());
 			session.setAttribute("loginType", "KAKAO");
+
+			// 2. [추가] Spring Security 인증 객체 수동 생성 및 세션 등록
+			// 카카오 로그인은 비밀번호 검증이 완료된 상태이므로 UserDetails를 직접 로드하여 인증 객체 생성
+			org.springframework.security.core.userdetails.UserDetails userDetails = 
+					memberService.loadUserByUsername(member.getUsername());
+			
+			Authentication authentication = new UsernamePasswordAuthenticationToken(
+					userDetails, null, userDetails.getAuthorities());
+			
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+			
+			// 시큐리티가 세션에서 인증 정보를 인식할 수 있도록 세팅
+			session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 
 			return "redirect:/book/list";
 		} catch (Exception e) {
@@ -177,19 +191,20 @@ public class MemberController {
 	@RequestMapping(value = "checkId", method = RequestMethod.GET)
 	@ResponseBody
 	public boolean checkId(String username) {
+		if (username == null || username.trim().isEmpty()) {
+			return false;
+		}
 		try {
-			// ⚠️ 주의: 이전 DAO 충돌에서 언급했던 'findByUsernames'와 연관된 것으로 보입니다.
-			// 서비스단 메서드명이 정확히 'getMemberByUsernames'인지 확인해 주세요.
-			MemberVO existingUser = memberService.getMemberByUsernames(username);
+			// 서비스단의 getMember (또는 getMemberByUsernames)를 사용하여 중복 여부 확인
+			MemberVO existingUser = memberService.getMember(username);
 			
-			System.out.println("중복 체크 대상 아이디: " + username);
-			System.out.println("조회된 유저 결과 객체: " + existingUser);
+			System.out.println("중복 체크 대상 아이디: " + username + ", 결과: " + (existingUser == null ? "사용가능" : "중복"));
 
 			return existingUser == null;
 			
 		} catch (Exception e) {
-			System.out.println("조회 중 예외 발생(유저 없음 기인): " + e.getMessage());
-			return true; 
+			e.printStackTrace();
+			return false; // 예외 발생 시 안전하게 '중복됨' 또는 '사용불가'로 처리
 		}
 	}
 }

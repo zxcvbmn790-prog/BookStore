@@ -88,8 +88,4 @@ public class MemberService implements UserDetailsService {
 		}
 		return member;
 	}
-
-	public MemberVO getMemberByUsernames(String username) {
-		return dao.findByUsernames(username);
-	}
 }

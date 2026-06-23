@@ -38,6 +38,7 @@
 			<mvc:mapping path="/**" />
 			<mvc:exclude-mapping path="/" />
 			<mvc:exclude-mapping path="/book/list" />
+			<mvc:exclude-mapping path="/book/list/ajax" />
 			<mvc:exclude-mapping path="/book/view" />
 			
 			<mvc:exclude-mapping path="/member/login" />
@@ -67,6 +68,7 @@
 		<security:csrf disabled="true"/>
 		
 		<security:intercept-url pattern="/book/list" access="permitAll"/>
+		<security:intercept-url pattern="/book/list/ajax" access="permitAll"/>
 		<security:intercept-url pattern="/book/view" access="permitAll"/>
 		<security:intercept-url pattern="/cart/**" access="permitAll"/>
 		<security:intercept-url pattern="/order/**" access="permitAll"/>
@@ -78,9 +80,8 @@
 		<security:intercept-url pattern="/member/kakaoStart" access="permitAll" />
 		<security:intercept-url pattern="/member/kakaoLogin" access="permitAll" />
 		
-		<security:intercept-url pattern="/admin/**" access="hasAnyAuthority('ROLE_ADMIN', 'ROLE_TRAKING')"/>
-		<security:intercept-url pattern="/admin/traking" access="hasAnyAuthority('ROLE_TRAKING')"/>
-		<security:intercept-url pattern="/**" access="isAuthenticated()"/>
+<!-- 		<security:intercept-url pattern="/admin/**" access="hasAuthority('ROLE_ADMIN')"/> -->
+<!-- 		<security:intercept-url pattern="/**" access="isAuthenticated()"/> -->
 		
 		<security:form-login 
 			login-page="/member/login"
