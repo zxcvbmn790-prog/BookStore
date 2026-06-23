@@ -378,7 +378,7 @@
 
 					<%-- 2. 전체보기/카테고리 선택 모드 (가로 리스트형 출력) --%>
 						<c:otherwise>
-							<div class="list-view-container">
+							<div class="list-view-container" id="bookListContainer">
 								<c:forEach var="book" items="${list}">
 									<div class="list-item">
 										<div class="list-img-box">
@@ -406,16 +406,9 @@
 									</div>
 								</c:forEach>
 							</div>
-							<div class="control-box">
-								<c:if test="${startPage > 1}">
-									<a href="${pageContext.request.contextPath}/book/list?category=${category}&page=${startPage - 1}" class="page-link">&lt; 이전</a>
-								</c:if>
-								<c:forEach var="i" begin="${startPage}" end="${endPage}">
-									<a href="${pageContext.request.contextPath}/book/list?category=${category}&page=${i}" class="page-link ${currentPage == i ? 'active' : ''}">${i}</a>
-								</c:forEach>
-								<c:if test="${endPage < totalPages}">
-									<a href="${pageContext.request.contextPath}/book/list?category=${category}&page=${endPage + 1}" class="page-link">다음 &gt;</a>
-								</c:if>
+							<%-- 인피니트 스크롤 로딩 표시자 --%>
+							<div id="scrollLoader" style="text-align:center; padding: 20px; display:none;">
+								<p>도서를 더 불러오는 중입니다...</p>
 							</div>
 						</c:otherwise>
 			</c:choose>
@@ -424,23 +417,109 @@
 				let slideIndex = 0;
 				function showSlides() {
 					let slides = document.getElementsByClassName("banner-slide");
+					if (slides.length === 0) return;
 					for (let i = 0; i < slides.length; i++) slides[i].style.display = "none";
 					slideIndex++;
 					if (slideIndex > slides.length) slideIndex = 1;
-					if (slides.length > 0) slides[slideIndex - 1].style.display = "block";
+					slides[slideIndex - 1].style.display = "block";
 					setTimeout(showSlides, 4500);
 				}
 				function plusSlides(n) {slideIndex += (n - 1); showSlides();}
 				showSlides();
+
 				function addCartAsync(isbn, loginUser) {
-    fetch('${pageContext.request.contextPath}/cart/insert', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: new URLSearchParams({'isbn': isbn, 'amount': '1', 'userid': loginUser})
-    })
-    .then(() => {
-        alert("장바구니에 담았습니다.");
-    })
-    .catch(err => alert("오류가 발생했습니다."));
-}
+					fetch('${pageContext.request.contextPath}/cart/insert', {
+						method: 'POST',
+						headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+						body: new URLSearchParams({'isbn': isbn, 'amount': '1', 'userid': loginUser})
+					})
+					.then(() => {
+						alert("장바구니에 담았습니다.");
+					})
+					.catch(err => alert("오류가 발생했습니다."));
+				}
+
+				// --- 인피니트 스크롤 관련 변수 및 로직 (Vanilla JS 전환) ---
+				let currentPage = 1;
+				let isLoading = false;
+				let hasNext = true;
+				const currentCategory = '${category}';
+				const isMain = ${isMain ? 'true' : 'false'};
+
+				if (!isMain) {
+					window.addEventListener('scroll', function() {
+						const scrollTop = window.scrollY || document.documentElement.scrollTop;
+						const windowHeight = window.innerHeight;
+						const documentHeight = document.documentElement.scrollHeight;
+
+						if (scrollTop + windowHeight >= documentHeight - 200) {
+							if (!isLoading && hasNext) {
+								console.log("Loading more books (Vanilla JS)...");
+								loadMoreBooks();
+							}
+						}
+					});
+				}
+
+				function loadMoreBooks() {
+					isLoading = true;
+					const loader = document.getElementById("scrollLoader");
+					if (loader) loader.style.display = "block";
+					currentPage++;
+
+					const url = '${pageContext.request.contextPath}/book/list/ajax?category=' + encodeURIComponent(currentCategory) + '&page=' + currentPage;
+
+					fetch(url)
+						.then(res => res.json())
+						.then(response => {
+							console.log("Ajax success (Vanilla JS):", response);
+							if (response.list && response.list.length > 0) {
+								appendBooks(response.list);
+								hasNext = response.hasNext;
+							} else {
+								hasNext = false;
+							}
+							isLoading = false;
+							if (loader) loader.style.display = "none";
+						})
+						.catch(error => {
+							isLoading = false;
+							if (loader) loader.style.display = "none";
+							console.error("데이터 로딩 중 오류 발생:", error);
+						});
+				}
+
+				function appendBooks(books) {
+					const container = document.getElementById("bookListContainer");
+					if (!container) return;
+					const loginUser = '${sessionScope.loginUser}';
+					
+					books.forEach(book => {
+						const priceFormatted = Number(book.price).toLocaleString();
+						const avgRating = book.averageRating ? book.averageRating.toFixed(1) : "0.0";
+						
+						const div = document.createElement('div');
+						div.className = 'list-item';
+						div.innerHTML = `
+							<div class="list-img-box">
+								<a href="view?isbn=\${book.isbn}"><img src="\${book.image}"></a>
+							</div>
+							<div class="list-info-box">
+								<a href="view?isbn=\${book.isbn}" class="list-item-title">\${book.bookname}</a>
+								<div class="list-meta">\${book.author} | \${book.publisher} | \${book.category}</div>
+								<div style="display:flex; gap:14px; align-items:center; margin-bottom:10px; color:#666; font-size:13px;">
+									<span>♥ \${book.likeCount}</span>
+									<span>★ \${avgRating} (\${book.ratingCount})</span>
+								</div>
+								<div class="list-item-price">\${priceFormatted}원</div>
+							</div>
+							<div class="list-btn-box">
+								<button type="button" class="list-btn cart-btn"
+									onclick="addCartAsync('\${book.isbn}', '\${loginUser}')">장바구니</button>
+								<button class="list-btn buy-btn" onclick="directBuy('\${book.isbn}')">바로구매</button>
+							</div>
+						`;
+						container.appendChild(div);
+					});
+				}
 			</script>

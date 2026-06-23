@@ -42,8 +42,8 @@ public class DatabaseInitializer {
 				+ "num INT AUTO_INCREMENT PRIMARY KEY, "
 				+ "id VARCHAR(100) NOT NULL UNIQUE, "
 				+ "pw VARCHAR(100) NOT NULL, "
-				+ "email VARCHAR(200), "
-				+ "hp VARCHAR(30), "
+				+ "hp VARCHAR(50), " // 30 -> 50로 맞춤
+				+ "email VARCHAR(100), " // 200 -> 100로 맞춤
 				+ "nickname VARCHAR(100), "
 				+ "role VARCHAR(50) DEFAULT 'ROLE_USER'"
 				+ ")";
@@ -73,15 +73,6 @@ public class DatabaseInitializer {
 				"010-2222-2222",
 				"일반사용자",
 				"ROLE_USER"
-		);
-		
-		insertDefaultMember(
-				"tracking",
-				"1234",
-				"traking@test.com",
-				"010-2222-2222",
-				"배송관리자",
-				"ROLE_TRAKING"
 		);
 
 		System.out.println("[DatabaseInitializer] 기본 회원 데이터 생성 완료");
@@ -150,7 +141,6 @@ public class DatabaseInitializer {
 				+ "phone VARCHAR(30), "
 				+ "address VARCHAR(1000), "
 				+ "order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
-				+ "traking_status VARCHAR(50), "
 				+ "status VARCHAR(50)"
 				+ ")";
 

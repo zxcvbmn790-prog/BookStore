@@ -4,20 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import WebBookStore.order.OrderService;
-import WebBookStore.order.OrderVO;
-
-import java.util.List;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-
-import java.security.Principal;
 
 @Controller
 @RequestMapping("/admin")
@@ -63,10 +53,15 @@ public class AdminController {
 	}
 	
 	@RequestMapping("/sales")
-	public String sales(@RequestParam(value = "period", defaultValue = "day") String period, HttpSession session, Model model) {
-	    String loginUser = (String) session.getAttribute("loginUser");
+	public String sales(@RequestParam(value = "period", defaultValue = "day") String period, Model model) {
+	    // Spring Security를 이용한 권한 체크
+	    org.springframework.security.core.Authentication auth = 
+	            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+	    
+	    boolean isAdmin = auth != null && auth.getAuthorities().stream()
+	            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-	    if (!"admin".equals(loginUser)) {
+	    if (!isAdmin) {
 	        return "redirect:/book/list";
 	    }
 
@@ -80,9 +75,14 @@ public class AdminController {
 	}
 
 	@RequestMapping("/members")
-	public String members(HttpSession session, Model model) {
-		String loginUser = (String) session.getAttribute("loginUser");
-		if (!"admin".equals(loginUser)) {
+	public String members(Model model) {
+	    org.springframework.security.core.Authentication auth = 
+	            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+	    
+	    boolean isAdmin = auth != null && auth.getAuthorities().stream()
+	            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+		if (!isAdmin) {
 			return "redirect:/book/list";
 		}
 		model.addAttribute("memberList", adminService.getMemberList());
@@ -91,9 +91,14 @@ public class AdminController {
 	}
 
 	@RequestMapping("/member/delete")
-	public String deleteMember(@RequestParam("username") String username, HttpSession session, RedirectAttributes ra) {
-		String loginUser = (String) session.getAttribute("loginUser");
-		if (!"admin".equals(loginUser)) {
+	public String deleteMember(@RequestParam("username") String username, RedirectAttributes ra) {
+	    org.springframework.security.core.Authentication auth = 
+	            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+	    
+	    boolean isAdmin = auth != null && auth.getAuthorities().stream()
+	            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+		if (!isAdmin) {
 			return "redirect:/book/list";
 		}
 		if ("admin".equals(username)) {
@@ -105,55 +110,4 @@ public class AdminController {
 		}
 		return "redirect:/admin/members";
 	}
-	
-	
-	@Autowired
-	private OrderService orderService;
-
-	@RequestMapping(value = "/traking", method = RequestMethod.GET)
-	public String trackingList(Principal principal, Model model) {
-	    
-	    // 1. 스프링 시큐리티를 통해 로그인한 유저의 ID(username)를 가져옵니다.
-	    if (principal == null) {
-	        // 로그인이 안 되어 있다면 로그인 페이지로 이동
-	        return "redirect:/member/login"; 
-	    }
-	    
-	    String userid = principal.getName(); // 로그인한 아이디 (예: tracking)
-
-	    // 2. 권한 검증 (아이디가 'tracking'이거나 권한이 맞는지 확인)
-	    // 시큐리티 설정(XML)에서 이미 ROLE_TRAKING만 들어오도록 막았기 때문에 이 조건은 생략해도 안전합니다.
-	    if (!"tracking".equals(userid) && !"admin".equals(userid)) {
-	        return "redirect:/member/login";
-	    }
-
-	    // 3. 전체 주문 내역 가져오기
-	    List<OrderVO> deliveryList = orderService.getAllOrderList(); 
-	    
-	    model.addAttribute("deliveryList", deliveryList);
-	    model.addAttribute("contentPage", "/WEB-INF/views/admin/traking.jsp");
-	    
-	    return "layout/layout";
-	}
-	
-	@RequestMapping(value = "/updateTracking", method = RequestMethod.POST)
-	public String updateTracking(
-	        @RequestParam("orderId") int orderId, 
-	        @RequestParam("trakingstatus") String trakingstatus) {
-	    
-	    try {
-	        // 1. 서비스 레이어를 호출하여 DB의 배송 상태를 업데이트합니다.
-	        // (파라미터로 받은 주문번호(orderId)와 변경할 상태(trakingstatus)를 전달)
-	        orderService.updateTrackingStatus(orderId, trakingstatus);
-	        
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        // 에러 발생 시 로그를 남기거나 예외 처리를 진행합니다.
-	    }
-	    
-	    // 2. 처리가 완료되면 다시 배송 관리 리스트 페이지로 새로고침(리다이렉트) 합니다.
-	    // ※ 현재 사용 중인 배송 관리 목록 매핑 주소가 "/admin/traking"이 맞는지 확인해 주세요!
-	    return "redirect:/admin/traking";
-	}
-	
 }

@@ -23,8 +23,8 @@ public class OrderDAO {
 			String receiver, String phone, String address) {
 
 		String insertSql = "INSERT INTO orders "
-				+ "(userid, isbn, bookname, price, amount, total_price, receiver, phone, address, order_date, status, traking_status) "
-				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, '접수')";
+				+ "(userid, isbn, bookname, price, amount, total_price, receiver, phone, address, order_date, status) "
+				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)";
 
 		String deleteCartSql = "DELETE FROM cart WHERE userid = ?";
 
@@ -107,7 +107,6 @@ public class OrderDAO {
 					order.setAddress(rs.getString("address"));
 					order.setOrderDate(rs.getTimestamp("order_date"));
 					order.setStatus(rs.getString("status"));
-					order.setTrakingstatus(rs.getString("traking_status"));
 					order.setImage(rs.getString("image"));   // 추가
 
 					list.add(order);
@@ -134,75 +133,4 @@ public class OrderDAO {
 
 		return Integer.parseInt(onlyNumber);
 	}
-
-	public List<OrderVO> getOrderAllList() {
-		List<OrderVO> list = new ArrayList<>();
-
-		String sql = "SELECT o.*, b.image "
-				+ "FROM orders o "
-				+ "LEFT JOIN book b ON o.isbn = b.isbn "
-				+ "ORDER BY o.order_id DESC";
-
-		try (Connection conn = ds.getConnection();
-			 PreparedStatement ps = conn.prepareStatement(sql)) {
-
-			
-
-			try (ResultSet rs = ps.executeQuery()) {
-				while (rs.next()) {
-					OrderVO order = new OrderVO();
-					order.setOrderId(rs.getInt("order_id"));
-					order.setUserid(rs.getString("userid"));
-					order.setIsbn(rs.getInt("isbn"));
-					order.setBookname(rs.getString("bookname"));
-					order.setPrice(rs.getInt("price"));
-					order.setAmount(rs.getInt("amount"));
-					order.setTotalPrice(rs.getInt("total_price"));
-					order.setReceiver(rs.getString("receiver"));
-					order.setPhone(rs.getString("phone"));
-					order.setAddress(rs.getString("address"));
-					order.setOrderDate(rs.getTimestamp("order_date"));
-					order.setStatus(rs.getString("status"));
-					order.setTrakingstatus(rs.getString("traking_status"));
-					order.setImage(rs.getString("image"));   // 추가
-
-					list.add(order);
-				}
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return list;
-	}
-
-	public void updateTrackingStatus(int orderId, String trakingstatus) {
-		// 1. 실행할 SQL UPDATE 쿼리문 작성 (orders 테이블의 traking_status 변경)
-		String sql = "UPDATE orders SET traking_status = ? WHERE order_id = ?";
-
-		// 2. DataSource를 이용해 Connection 및 PreparedStatement 생성 (try-with-resources 구조)
-		try (Connection conn = ds.getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql)) {
-
-			// 3. ? 파라미터 바인딩
-			ps.setString(1, trakingstatus); // 첫 번째 ?: 변경할 상태 문자열 (예: 배송중, 배송완료)
-			ps.setInt(2, orderId);          // 두 번째 ?: 타겟 주문 번호 (PK)
-
-			// 4. 쿼리 실행
-			int result = ps.executeUpdate();
-			
-			// 콘솔창 확인용 로그 (선택 사항)
-			if (result > 0) {
-				System.out.println("[Success] 주문번호 " + orderId + "의 배송 상태가 [" + trakingstatus + "](으)로 변경되었습니다.");
-			} else {
-				System.out.println("[Fail] 주문번호 " + orderId + "를 찾지 못해 배송 상태를 변경하지 못했습니다.");
-			}
-
-		} catch (Exception e) {
-			// 예외 발생 시 에러 추적 로그 출력
-			e.printStackTrace();
-		}
-	}
-
 }

@@ -61,6 +61,29 @@ public class UserBookController {
 		return "layout/layout";
 	}
 
+	@RequestMapping(value = "/list/ajax", method = RequestMethod.GET)
+	@org.springframework.web.bind.annotation.ResponseBody
+	public java.util.Map<String, Object> listAjax(
+			@RequestParam(value = "category", defaultValue = "전체") String category,
+			@RequestParam(value = "page", defaultValue = "1") int page,
+			@RequestParam(value = "viewAll", defaultValue = "false") boolean viewAll) {
+
+		int limit = 10; // 인피니트 스크롤시에는 한 번에 10개씩 로딩
+		int offset = (page - 1) * limit;
+
+		List<BookVO> list = bookService.getBookListByPage(category, offset, limit, viewAll);
+		int totalCount = bookService.getTotalCount(category);
+		int totalPages = (int) Math.ceil((double) totalCount / limit);
+
+		java.util.Map<String, Object> result = new java.util.HashMap<>();
+		result.put("list", list);
+		result.put("totalPages", totalPages);
+		result.put("currentPage", page);
+		result.put("hasNext", page < totalPages);
+
+		return result;
+	}
+
 	@RequestMapping(value = "/view", method = RequestMethod.GET)
 	public String view(@RequestParam("isbn") int isbn, HttpSession session, Model model) {
 		String loginUser = (String) session.getAttribute("loginUser");
