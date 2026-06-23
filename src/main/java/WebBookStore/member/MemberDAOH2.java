@@ -23,23 +23,8 @@ public class MemberDAOH2 implements MemberDAO, InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		// ⚠️ role 컬럼을 포함한 테이블 생성 로직
-		String sql = "CREATE TABLE IF NOT EXISTS member ("
-				+ "num INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "id VARCHAR(100) NOT NULL UNIQUE, "
-				+ "pw VARCHAR(100) NOT NULL, "
-				+ "hp VARCHAR(50), "
-				+ "email VARCHAR(100), "
-				+ "nickname VARCHAR(100), "
-				+ "role VARCHAR(50) DEFAULT 'ROLE_USER'" 
-				+ ")";
-
-		try (Connection conn = ds.getConnection();
-			 PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.execute();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		// ⚠️ 테이블 생성 로직은 DatabaseInitializer에서 통합 관리하므로 여기서는 로그만 남깁니다.
+		System.out.println("[MemberDAOH2] Bean initialized");
 	}
 
 	@Override
@@ -188,23 +173,6 @@ public class MemberDAOH2 implements MemberDAO, InitializingBean {
 			e.printStackTrace();
 		}
 		return 0;
-	}
-	
-	@Override
-	public MemberVO findByUsernames(String username) {
-		String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member WHERE id = ?";
-		try (Connection conn = ds.getConnection();
-			 PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setString(1, username);
-			try (ResultSet rs = ps.executeQuery()) {
-				if (rs.next()) {
-					return mapRow(rs); 
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null; 
 	}
 
 	private MemberVO mapRow(ResultSet rs) throws SQLException {

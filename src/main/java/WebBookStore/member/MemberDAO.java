@@ -15,6 +15,4 @@ public interface MemberDAO {
     
     MemberVO findByKakaoId(String kakaoId);
     int registerKakaoMember(KakaoUserInfo kakaoUserInfo);
-    
-    MemberVO findByUsernames(String username);
 }
