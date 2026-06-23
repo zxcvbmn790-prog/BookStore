@@ -10,6 +10,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import WebBookStore.member.MemberVO;
+
 @Repository
 public class AdminDAO {
 
@@ -245,17 +247,44 @@ public class AdminDAO {
 	}
 
 
-	public List<WebBookStore.member.MemberVO> getMemberList() {
-		List<WebBookStore.member.MemberVO> list = new ArrayList<>();
-		String sql = "SELECT num, id, pw, email, hp, nickname FROM member ORDER BY num DESC";
-		try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-			while (rs.next()) {
-				list.add(new WebBookStore.member.MemberVO(rs.getInt("num"), rs.getString("id"), rs.getString("pw"), rs.getString("email"), rs.getString("hp"), rs.getString("nickname"), rs.getString("ROLE")));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return list;
+	public List<MemberVO> getMemberList() {
+	    List<MemberVO> list = new ArrayList<>();
+
+	    String sql = "SELECT num, id, pw, email, hp, nickname, role, "
+	            + "default_receiver, default_phone, default_address, "
+	            + "mileage, total_mileage, grade "
+	            + "FROM member ORDER BY num DESC";
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql);
+	         ResultSet rs = ps.executeQuery()) {
+
+	        while (rs.next()) {
+	            MemberVO member = new MemberVO();
+
+	            member.setId(rs.getInt("num"));
+	            member.setUsername(rs.getString("id"));
+	            member.setPassword(rs.getString("pw"));
+	            member.setEmail(rs.getString("email"));
+	            member.setPhone(rs.getString("hp"));
+	            member.setNickname(rs.getString("nickname"));
+	            member.setRole(rs.getString("role"));
+
+	            member.setDefaultReceiver(rs.getString("default_receiver"));
+	            member.setDefaultPhone(rs.getString("default_phone"));
+	            member.setDefaultAddress(rs.getString("default_address"));
+
+	            member.setMileage(rs.getInt("mileage"));
+	            member.setTotalMileage(rs.getInt("total_mileage"));
+	            member.setGrade(rs.getString("grade"));
+
+	            list.add(member);
+	        }
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+
+	    return list;
 	}
 
 	public int deleteMember(String username) {

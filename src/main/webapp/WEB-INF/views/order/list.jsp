@@ -22,6 +22,9 @@
                             <th>합계</th>
                             <th>상태</th>
                             <th>주문일</th>
+                            <th>사용 마일리지</th>
+							<th>적립 마일리지</th>
+							<th>실결제금액</th>
                         </tr>
                     </thead>
                     <tbody>
