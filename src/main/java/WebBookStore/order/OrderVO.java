@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class OrderVO {
 	private int orderId;
 	private String userid;
-	private int isbn;
+	private long isbn;
 	private String bookname;
 	private int price;
 	private int amount;

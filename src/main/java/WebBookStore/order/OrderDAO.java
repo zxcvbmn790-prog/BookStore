@@ -42,7 +42,7 @@ public class OrderDAO {
 					int totalPrice = price * cart.getAmount();
 
 					insertPs.setString(1, userid);
-					insertPs.setInt(2, cart.getIsbn());
+					insertPs.setLong(2, cart.getIsbn());
 					insertPs.setString(3, cart.getBookname());
 					insertPs.setInt(4, price);
 					insertPs.setInt(5, cart.getAmount());
@@ -97,7 +97,7 @@ public class OrderDAO {
 					OrderVO order = new OrderVO();
 					order.setOrderId(rs.getInt("order_id"));
 					order.setUserid(rs.getString("userid"));
-					order.setIsbn(rs.getInt("isbn"));
+					order.setIsbn(rs.getLong("isbn"));
 					order.setBookname(rs.getString("bookname"));
 					order.setPrice(rs.getInt("price"));
 					order.setAmount(rs.getInt("amount"));
@@ -137,7 +137,7 @@ public class OrderDAO {
 					OrderVO order = new OrderVO();
 					order.setOrderId(rs.getInt("order_id"));
 					order.setUserid(rs.getString("userid"));
-					order.setIsbn(rs.getInt("isbn"));
+					order.setIsbn(rs.getLong("isbn"));
 					order.setBookname(rs.getString("bookname"));
 					order.setPrice(rs.getInt("price"));
 					order.setAmount(rs.getInt("amount"));

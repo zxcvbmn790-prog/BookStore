@@ -23,7 +23,7 @@ public class CartController {
 
 	// [수정] 장바구니 담기 (HttpServletRequest, HttpServletResponse 파라미터 추가)
 	@RequestMapping(value = "/insert", method = RequestMethod.POST)
-	public String insert(@RequestParam("isbn") int isbn,
+	public String insert(@RequestParam("isbn") long isbn,
 						 @RequestParam("amount") int amount,
 						 HttpSession session,
 						 HttpServletRequest request,
@@ -80,7 +80,7 @@ public class CartController {
 	
 	// [수정] 수량 변경
 	@RequestMapping(value="/update", method=RequestMethod.POST)
-	public String update(@RequestParam("isbn") int isbn,
+	public String update(@RequestParam("isbn") long isbn,
 						 @RequestParam("amount") int amount,
 						 HttpSession session,
 						 HttpServletRequest request) {
@@ -112,7 +112,7 @@ public class CartController {
 	
 	// [수정] 삭제
 	@RequestMapping(value="/delete", method=RequestMethod.POST)
-	public String delete(@RequestParam("isbn") int isbn, HttpSession session, HttpServletRequest request) {
+	public String delete(@RequestParam("isbn") long isbn, HttpSession session, HttpServletRequest request) {
 		String userid = (String) session.getAttribute("loginUser");
 		
 		if (userid == null) {

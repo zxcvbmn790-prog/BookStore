@@ -39,7 +39,7 @@ public class UserBookDAO {
 
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
-					BookVO book = new BookVO(rs.getInt("isbn"), rs.getString("bookname"), rs.getString("author"),
+					BookVO book = new BookVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
 							rs.getString("publisher"), rs.getString("image"), rs.getString("price"),
 							rs.getString("category"));
 					list.add(book);
@@ -82,7 +82,7 @@ public class UserBookDAO {
 			}
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
-					BookVO book = new BookVO(rs.getInt("isbn"), rs.getString("bookname"), rs.getString("author"),
+					BookVO book = new BookVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
 							rs.getString("publisher"), rs.getString("image"), rs.getString("price"),
 							rs.getString("category"));
 					book.setLikeCount(rs.getInt("like_count"));
@@ -119,14 +119,14 @@ public class UserBookDAO {
 		return 0;
 	}
 
-	public BookVO findByIsbn(int isbn) {
+	public BookVO findByIsbn(long isbn) {
 		String sql = "SELECT * FROM book WHERE isbn = ?";
 
 		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setInt(1, isbn);
+			ps.setLong(1, isbn);
 			try (ResultSet rs = ps.executeQuery()) {
 				if (rs.next()) {
-					return new BookVO(rs.getInt("isbn"), rs.getString("bookname"), rs.getString("author"),
+					return new BookVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
 							rs.getString("publisher"), rs.getString("image"), rs.getString("price"),
 							rs.getString("category"));
 				}
@@ -152,7 +152,7 @@ public class UserBookDAO {
 
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
-					BookVO book = new BookVO(rs.getInt("isbn"), rs.getString("bookname"), rs.getString("author"),
+					BookVO book = new BookVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
 							rs.getString("publisher"), rs.getString("image"), rs.getString("price"),
 							rs.getString("category"));
 					book.setLikeCount(rs.getInt("like_count"));
@@ -175,14 +175,14 @@ public class UserBookDAO {
 	private void ensureFeedbackTables() {
 		String createLikeTable = "CREATE TABLE IF NOT EXISTS book_like ("
 				+ "like_id INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "isbn INT NOT NULL, "
+				+ "isbn BIGINT NOT NULL, "
 				+ "userid VARCHAR(100) NOT NULL, "
 				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
 				+ "CONSTRAINT uk_book_like UNIQUE (isbn, userid))";
 
 		String createRatingTable = "CREATE TABLE IF NOT EXISTS book_rating ("
 				+ "rating_id INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "isbn INT NOT NULL, "
+				+ "isbn BIGINT NOT NULL, "
 				+ "userid VARCHAR(100) NOT NULL, "
 				+ "rating INT NOT NULL, "
 				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
@@ -197,17 +197,17 @@ public class UserBookDAO {
 		}
 	}
 
-	public BookFeedbackVO getBookFeedback(int isbn, String loginUser) {
+	public BookFeedbackVO getBookFeedback(long isbn, String loginUser) {
 		String createLikeTable = "CREATE TABLE IF NOT EXISTS book_like ("
 				+ "like_id INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "isbn INT NOT NULL, "
+				+ "isbn BIGINT NOT NULL, "
 				+ "userid VARCHAR(100) NOT NULL, "
 				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
 				+ "CONSTRAINT uk_book_like UNIQUE (isbn, userid))";
 
 		String createRatingTable = "CREATE TABLE IF NOT EXISTS book_rating ("
 				+ "rating_id INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "isbn INT NOT NULL, "
+				+ "isbn BIGINT NOT NULL, "
 				+ "userid VARCHAR(100) NOT NULL, "
 				+ "rating INT NOT NULL, "
 				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
@@ -227,9 +227,9 @@ public class UserBookDAO {
 			BookFeedbackVO feedback = new BookFeedbackVO(0, 0.0, 0, null, false);
 
 			try (PreparedStatement ps = conn.prepareStatement(summarySql)) {
-				ps.setInt(1, isbn);
-				ps.setInt(2, isbn);
-				ps.setInt(3, isbn);
+				ps.setLong(1, isbn);
+				ps.setLong(2, isbn);
+				ps.setLong(3, isbn);
 				try (ResultSet rs = ps.executeQuery()) {
 					if (rs.next()) {
 						feedback.setLikeCount(rs.getInt("like_count"));
@@ -241,7 +241,7 @@ public class UserBookDAO {
 
 			if (loginUser != null && !loginUser.trim().isEmpty()) {
 				try (PreparedStatement ps = conn.prepareStatement(likedSql)) {
-					ps.setInt(1, isbn);
+					ps.setLong(1, isbn);
 					ps.setString(2, loginUser);
 					try (ResultSet rs = ps.executeQuery()) {
 						if (rs.next()) {
@@ -251,7 +251,7 @@ public class UserBookDAO {
 				}
 
 				try (PreparedStatement ps = conn.prepareStatement(myRatingSql)) {
-					ps.setInt(1, isbn);
+					ps.setLong(1, isbn);
 					ps.setString(2, loginUser);
 					try (ResultSet rs = ps.executeQuery()) {
 						if (rs.next()) {
@@ -269,10 +269,10 @@ public class UserBookDAO {
 		return new BookFeedbackVO(0, 0.0, 0, null, false);
 	}
 
-	public boolean toggleLike(int isbn, String userid) {
+	public boolean toggleLike(long isbn, String userid) {
 		String createLikeTable = "CREATE TABLE IF NOT EXISTS book_like ("
 				+ "like_id INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "isbn INT NOT NULL, "
+				+ "isbn BIGINT NOT NULL, "
 				+ "userid VARCHAR(100) NOT NULL, "
 				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
 				+ "CONSTRAINT uk_book_like UNIQUE (isbn, userid))";
@@ -285,7 +285,7 @@ public class UserBookDAO {
 		try {
 			boolean alreadyLiked = false;
 			try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
-				ps.setInt(1, isbn);
+				ps.setLong(1, isbn);
 				ps.setString(2, userid);
 				try (ResultSet rs = ps.executeQuery()) {
 					if (rs.next()) {
@@ -295,7 +295,7 @@ public class UserBookDAO {
 			}
 
 			try (PreparedStatement ps = conn.prepareStatement(alreadyLiked ? deleteSql : insertSql)) {
-				ps.setInt(1, isbn);
+				ps.setLong(1, isbn);
 				ps.setString(2, userid);
 				return ps.executeUpdate() > 0;
 			}
@@ -306,12 +306,12 @@ public class UserBookDAO {
 		return false;
 	}
 
-	public boolean saveRating(int isbn, String userid, int rating) {
+	public boolean saveRating(long isbn, String userid, int rating) {
 		String mergeSql = "MERGE INTO book_rating (isbn, userid, rating, updated_at) KEY (isbn, userid) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
 
 		ensureFeedbackTables();
 		try (PreparedStatement ps = conn.prepareStatement(mergeSql)) {
-			ps.setInt(1, isbn);
+			ps.setLong(1, isbn);
 			ps.setString(2, userid);
 			ps.setInt(3, rating);
 			return ps.executeUpdate() > 0;
@@ -322,11 +322,11 @@ public class UserBookDAO {
 	}
 
 
-	public boolean deleteRating(int isbn, String userid) {
+	public boolean deleteRating(long isbn, String userid) {
 		String sql = "DELETE FROM book_rating WHERE isbn = ? AND userid = ?";
 		ensureFeedbackTables();
 		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setInt(1, isbn);
+			ps.setLong(1, isbn);
 			ps.setString(2, userid);
 			ps.executeUpdate();
 			return true;

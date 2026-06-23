@@ -31,12 +31,12 @@ public class AdminService {
     }
 
     // 삭제
-    public int deleteBook(int isbn) {
+    public int deleteBook(long isbn) {
         return dao.delete(isbn);
     }
 
     // 세부 조회
-    public AdminVO getBookById(int isbn) {
+    public AdminVO getBookById(long isbn) {
         return dao.findById(isbn);
     }
 
