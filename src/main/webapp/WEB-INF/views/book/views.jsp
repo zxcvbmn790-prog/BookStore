@@ -439,6 +439,24 @@
 					.catch(err => alert("오류가 발생했습니다."));
 				}
 
+				function directBuy(isbn) {
+					var loginUser = '${sessionScope.loginUser}';
+					if (!loginUser) {
+						alert("로그인이 필요합니다.");
+						location.href = '${pageContext.request.contextPath}/member/login';
+						return;
+					}
+					fetch('${pageContext.request.contextPath}/cart/insert', {
+						method: 'POST',
+						headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+						body: new URLSearchParams({'isbn': isbn, 'amount': '1', 'userid': loginUser})
+					})
+					.then(function() {
+						location.href = '${pageContext.request.contextPath}/order/checkout';
+					})
+					.catch(function() { alert("오류가 발생했습니다."); });
+				}
+
 				// --- 인피니트 스크롤 관련 변수 및 로직 (Vanilla JS 전환) ---
 				let currentPage = 1;
 				let isLoading = false;
