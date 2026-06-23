@@ -206,7 +206,8 @@ public class MemberDAOH2 implements MemberDAO, InitializingBean {
 	
 	@Override
 	public MemberVO findByUsernames(String username) {
-		String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member WHERE id = ?";
+		// String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member WHERE id = ?";
+		String sql = "SELECT " + MEMBER_COLUMNS + " FROM member WHERE id = ?";
 		try (Connection conn = ds.getConnection();
 			 PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, username);
