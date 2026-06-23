@@ -21,7 +21,6 @@
                             <th>수량</th>
                             <th>합계</th>
                             <th>상태</th>
-                            <th>배송 상태</th>
                             <th>주문일</th>
                         </tr>
                     </thead>
@@ -61,7 +60,6 @@
                                 <td>${order.amount}</td>
                                 <td class="strong">${order.totalPrice}원</td>
                                 <td>${order.status}</td>
-                                <td>${order.trakingstatus}</td>
                                 <td>${order.orderDate}</td>
                             </tr>
                         </c:forEach>

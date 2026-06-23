@@ -21,7 +21,6 @@ public class OrderVO {
 	private String phone;
 	private String address;
 	private Timestamp orderDate;
-	private String trakingstatus;
 	private String status;
 	private String image;
 }
