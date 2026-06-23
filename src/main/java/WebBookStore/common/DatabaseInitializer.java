@@ -114,7 +114,7 @@ public class DatabaseInitializer {
 
 	private void createBookTable() {
 		String sql = "CREATE TABLE IF NOT EXISTS book ("
-				+ "isbn INT PRIMARY KEY, "
+				+ "isbn BIGINT PRIMARY KEY, "
 				+ "bookname VARCHAR(500), "
 				+ "author VARCHAR(300), "
 				+ "publisher VARCHAR(300), "
@@ -130,7 +130,7 @@ public class DatabaseInitializer {
 		String sql = "CREATE TABLE IF NOT EXISTS cart ("
 				+ "cart_id INT AUTO_INCREMENT PRIMARY KEY, "
 				+ "userid VARCHAR(100) NOT NULL, "
-				+ "isbn INT NOT NULL, "
+				+ "isbn BIGINT NOT NULL, "
 				+ "amount INT DEFAULT 1"
 				+ ")";
 
@@ -141,7 +141,7 @@ public class DatabaseInitializer {
 		String sql = "CREATE TABLE IF NOT EXISTS orders ("
 				+ "order_id INT AUTO_INCREMENT PRIMARY KEY, "
 				+ "userid VARCHAR(100) NOT NULL, "
-				+ "isbn INT NOT NULL, "
+				+ "isbn BIGINT NOT NULL, "
 				+ "bookname VARCHAR(500), "
 				+ "price INT, "
 				+ "amount INT, "
@@ -160,7 +160,7 @@ public class DatabaseInitializer {
 	private void createBookLikeTable() {
 		String sql = "CREATE TABLE IF NOT EXISTS book_like ("
 				+ "like_id INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "isbn INT NOT NULL, "
+				+ "isbn BIGINT NOT NULL, "
 				+ "userid VARCHAR(100) NOT NULL, "
 				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
 				+ "CONSTRAINT uk_book_like UNIQUE (isbn, userid)"
@@ -172,7 +172,7 @@ public class DatabaseInitializer {
 	private void createBookRatingTable() {
 		String sql = "CREATE TABLE IF NOT EXISTS book_rating ("
 				+ "rating_id INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "isbn INT NOT NULL, "
+				+ "isbn BIGINT NOT NULL, "
 				+ "userid VARCHAR(100) NOT NULL, "
 				+ "rating INT NOT NULL, "
 				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "

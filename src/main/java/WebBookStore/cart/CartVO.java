@@ -16,7 +16,7 @@ import lombok.ToString;
 public class CartVO {
 	private int cart_id;
 	private String userid;
-	private int isbn;
+	private long isbn;
 	private int amount;
 
 	private String bookname;

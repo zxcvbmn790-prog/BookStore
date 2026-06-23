@@ -85,7 +85,7 @@ public class UserBookController {
 	}
 
 	@RequestMapping(value = "/view", method = RequestMethod.GET)
-	public String view(@RequestParam("isbn") int isbn, HttpSession session, Model model) {
+	public String view(@RequestParam("isbn") long isbn, HttpSession session, Model model) {
 		String loginUser = (String) session.getAttribute("loginUser");
 		model.addAttribute("book", bookService.getBook(isbn));
 		model.addAttribute("feedback", bookService.getBookFeedback(isbn, loginUser));
@@ -94,7 +94,7 @@ public class UserBookController {
 	}
 
 	@RequestMapping(value = "/like", method = RequestMethod.POST)
-	public String like(@RequestParam("isbn") int isbn, HttpSession session, RedirectAttributes ra) {
+	public String like(@RequestParam("isbn") long isbn, HttpSession session, RedirectAttributes ra) {
 		String loginUser = (String) session.getAttribute("loginUser");
 		if (loginUser == null || "admin".equals(loginUser)) {
 			return "redirect:/member/login";
@@ -106,7 +106,7 @@ public class UserBookController {
 	}
 
 	@RequestMapping(value = "/rate", method = RequestMethod.POST)
-	public String rate(@RequestParam("isbn") int isbn, @RequestParam("rating") int rating, HttpSession session,
+	public String rate(@RequestParam("isbn") long isbn, @RequestParam("rating") int rating, HttpSession session,
 			RedirectAttributes ra) {
 		String loginUser = (String) session.getAttribute("loginUser");
 		if (loginUser == null || "admin".equals(loginUser)) {
@@ -125,7 +125,7 @@ public class UserBookController {
 
 
 	@RequestMapping(value = "/rate/cancel", method = RequestMethod.POST)
-	public String cancelRate(@RequestParam("isbn") int isbn, HttpSession session, RedirectAttributes ra) {
+	public String cancelRate(@RequestParam("isbn") long isbn, HttpSession session, RedirectAttributes ra) {
 		String loginUser = (String) session.getAttribute("loginUser");
 		if (loginUser == null || "admin".equals(loginUser)) {
 			return "redirect:/member/login";

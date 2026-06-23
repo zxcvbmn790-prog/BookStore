@@ -20,7 +20,7 @@ public class CartDAO {
 		String sql = "INSERT INTO cart (userid, isbn, amount) VALUES (?, ?, ?)";
 		try (PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, cartVO.getUserid());
-			ps.setInt(2, cartVO.getIsbn());
+			ps.setLong(2, cartVO.getIsbn());
 			ps.setInt(3, cartVO.getAmount());
 			ps.executeUpdate();
 		} catch (Exception e) {
@@ -42,7 +42,7 @@ public class CartDAO {
 					CartVO cart = new CartVO();
 					cart.setCart_id(rs.getInt("cart_id"));
 					cart.setUserid(rs.getString("userid"));
-					cart.setIsbn(rs.getInt("isbn"));
+					cart.setIsbn(rs.getLong("isbn"));
 					cart.setAmount(rs.getInt("amount"));
 
 					cart.setBookname(rs.getString("bookname"));
@@ -61,11 +61,11 @@ public class CartDAO {
 		return list;
 	}
 
-	public int checkCart(String userid, int isbn) {
+	public int checkCart(String userid, long isbn) {
 		String sql = "SELECT COUNT(*) FROM cart WHERE userid = ? AND isbn = ?";
 		try (PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, userid);
-			ps.setInt(2, isbn);
+			ps.setLong(2, isbn);
 			try (ResultSet rs = ps.executeQuery()) {
 				if (rs.next()) {
 					return rs.getInt(1); // 0이면 없음, 1 이상이면 이미 존재함
@@ -82,19 +82,19 @@ public class CartDAO {
 		try (PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setInt(1, cartVO.getAmount());
 			ps.setString(2, cartVO.getUserid());
-			ps.setInt(3, cartVO.getIsbn());
+			ps.setLong(3, cartVO.getIsbn());
 			ps.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void updateAmount(CartVO cartVO) {
 	    String sql = "UPDATE cart SET amount = ? WHERE userid = ? AND isbn = ?";
 	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
 	        ps.setInt(1, cartVO.getAmount());
 	        ps.setString(2, cartVO.getUserid());
-	        ps.setInt(3, cartVO.getIsbn());
+	        ps.setLong(3, cartVO.getIsbn());
 	        ps.executeUpdate();
 	    } catch (Exception e) {
 	        e.printStackTrace();
@@ -109,11 +109,11 @@ public class CartDAO {
 	}
 
 	// isbn만 쓰면 어떤 책인지만 알 수 있고 userid까지 같이 써야 누구 장바구니의 어떤 책인지를 정확히 지정할 수 있어서 userid + isbn 로수정
-	public int delete(String userid, int isbn) {
+	public int delete(String userid, long isbn) {
 	    String sql = "DELETE FROM cart WHERE userid = ? AND isbn = ?";
 	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
 	        ps.setString(1, userid);
-	        ps.setInt(2, isbn);
+	        ps.setLong(2, isbn);
 	        return ps.executeUpdate();
 	    } catch (Exception e) {
 	        e.printStackTrace();

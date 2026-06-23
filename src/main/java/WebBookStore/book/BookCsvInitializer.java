@@ -52,7 +52,7 @@ public class BookCsvInitializer {
 						continue;
 					}
 
-					int isbn = Integer.parseInt(arr[0].trim());
+					long isbn = Long.parseLong(arr[0].trim());
 					String bookname = arr[1].trim();
 					String author = arr[2].trim();
 					String publisher = arr[3].trim();
@@ -71,7 +71,7 @@ public class BookCsvInitializer {
 	}
 
 	private void createBookTableIfNotExists() throws Exception {
-		String sql = "CREATE TABLE IF NOT EXISTS book (" + "isbn INT PRIMARY KEY, " + "bookname VARCHAR(500), "
+		String sql = "CREATE TABLE IF NOT EXISTS book (" + "isbn BIGINT PRIMARY KEY, " + "bookname VARCHAR(500), "
 				+ "author VARCHAR(300), " + "publisher VARCHAR(300), " + "image VARCHAR(1000), " + "price VARCHAR(50), "
 				+ "category VARCHAR(100)" // 💡 카테고리 추가
 				+ ")";
@@ -93,13 +93,13 @@ public class BookCsvInitializer {
 		}
 	}
 
-	private void insertBook(int isbn, String bookname, String author, String publisher, String image, String price,
+	private void insertBook(long isbn, String bookname, String author, String publisher, String image, String price,
 			String category) throws Exception {
 		String sql = "INSERT INTO book (isbn, bookname, author, publisher, image, price, category) "
 				+ "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
 		try (Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setInt(1, isbn);
+			ps.setLong(1, isbn);
 			ps.setString(2, bookname);
 			ps.setString(3, author);
 			ps.setString(4, publisher);

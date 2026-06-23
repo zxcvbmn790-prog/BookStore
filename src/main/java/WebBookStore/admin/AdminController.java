@@ -36,7 +36,7 @@ public class AdminController {
 	}
 
 	@RequestMapping("/updateform")
-	public String updateform(@RequestParam("isbn") int isbn, Model model) {
+	public String updateform(@RequestParam("isbn") long isbn, Model model) {
 		model.addAttribute("admin", adminService.getBookById(isbn));
 		model.addAttribute("contentPage", "/WEB-INF/views/admin/updateform.jsp");
 		return "layout/layout";
@@ -53,7 +53,7 @@ public class AdminController {
 	}
 
 	@RequestMapping("/delete")
-	public String delete(@RequestParam("isbn") int isbn) { // id 대신 isbn으로 명시
+	public String delete(@RequestParam("isbn") long isbn) {
 		adminService.deleteBook(isbn);
 		return "redirect:/book/list";
 	}

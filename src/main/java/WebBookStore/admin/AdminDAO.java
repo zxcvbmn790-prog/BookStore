@@ -28,7 +28,7 @@ public class AdminDAO {
 			ResultSet rs = ps.executeQuery();
 			List<AdminVO> list = new ArrayList<AdminVO>();
 			while (rs.next()) {
-				list.add(new AdminVO(rs.getInt("isbn"), rs.getString("bookname"), rs.getString("author"),
+				list.add(new AdminVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
 						rs.getString("publisher"), rs.getString("image"), rs.getString("price")));
 			}
 			rs.close();
@@ -42,10 +42,10 @@ public class AdminDAO {
 
 	// 등록
 	public int insert(AdminVO book) {
-		String sql = "INSERT INTO book VALUES (?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO book (isbn, bookname, author, publisher, image, price) VALUES (?, ?, ?, ?, ?, ?)";
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
-			ps.setInt(1, book.getIsbn());
+			ps.setLong(1, book.getIsbn());
 			ps.setString(2, book.getBookname());
 			ps.setString(3, book.getAuthor());
 			ps.setString(4, book.getPublisher());
@@ -70,7 +70,7 @@ public class AdminDAO {
 			ps.setString(3, book.getPublisher());
 			ps.setString(4, book.getImage());
 			ps.setString(5, book.getPrice());
-			ps.setInt(6, book.getIsbn());
+			ps.setLong(6, book.getIsbn());
 			int result = ps.executeUpdate();
 			ps.close();
 			return result;
@@ -80,18 +80,18 @@ public class AdminDAO {
 		}
 	}
 
-	public int delete(int isbn) {
+	public int delete(long isbn) {
 		String sqlCart = "DELETE FROM cart WHERE isbn = ?";
 		String sqlBook = "DELETE FROM book WHERE isbn = ?";
 
 		try {
 			PreparedStatement psCart = conn.prepareStatement(sqlCart);
-			psCart.setInt(1, isbn);
+			psCart.setLong(1, isbn);
 			psCart.executeUpdate();
 			psCart.close();
 
 			PreparedStatement psBook = conn.prepareStatement(sqlBook);
-			psBook.setInt(1, isbn);
+			psBook.setLong(1, isbn);
 			int result = psBook.executeUpdate();
 			psBook.close();
 
@@ -103,14 +103,14 @@ public class AdminDAO {
 	}
 
 	// 단건 조회
-	public AdminVO findById(int isbn) {
+	public AdminVO findById(long isbn) {
 		String sql = "SELECT * FROM book WHERE isbn = ?";
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
-			ps.setInt(1, isbn);
+			ps.setLong(1, isbn);
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-				AdminVO book = new AdminVO(rs.getInt("isbn"), rs.getString("bookname"), rs.getString("author"),
+				AdminVO book = new AdminVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
 						rs.getString("publisher"), rs.getString("image"), rs.getString("price"));
 				rs.close();
 				ps.close();
@@ -228,7 +228,7 @@ public class AdminDAO {
 
 	        while (rs.next()) {
 	            BookSalesVO vo = new BookSalesVO();
-	            vo.setIsbn(rs.getInt("isbn"));
+	            vo.setIsbn(rs.getLong("isbn"));
 	            vo.setBookname(rs.getString("bookname"));
 	            vo.setTotalQuantity(rs.getInt("total_quantity"));
 	            vo.setTotalSales(rs.getInt("total_sales"));

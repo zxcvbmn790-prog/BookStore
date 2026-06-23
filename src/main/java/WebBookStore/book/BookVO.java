@@ -12,7 +12,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class BookVO {
- private int isbn;
+ private long isbn;
  private String bookname;
  private String author;
  private String publisher;
@@ -23,7 +23,7 @@ public class BookVO {
  private double averageRating;
  private int ratingCount;
 
- public BookVO(int isbn, String bookname, String author, String publisher, String image, String price, String category) {
+ public BookVO(long isbn, String bookname, String author, String publisher, String image, String price, String category) {
   this.isbn = isbn;
   this.bookname = bookname;
   this.author = author;

@@ -14,7 +14,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class AdminVO {
-	private int isbn;         // 도서 번호
+	private long isbn;         // 도서 번호
     private String bookname;  // 도서 제목
     private String author;    // 저자
     private String publisher; // 출판사

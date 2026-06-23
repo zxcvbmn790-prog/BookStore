@@ -45,14 +45,14 @@ public class KakaoBookController {
 	public Map<String, Object> kakaoBookSearch(@RequestParam("isbn") String isbn) {
 
 		Map<String, Object> result = new HashMap<>();
+		HttpURLConnection conn = null;
 
 		try {
-			// 카카오 도서 검색 API 호출 URL 구성
 			String encodedIsbn = URLEncoder.encode(isbn.trim(), StandardCharsets.UTF_8.toString());
 			String apiUrl = KAKAO_BOOK_API_URL + "?target=isbn&query=" + encodedIsbn;
 
 			URL url = new URL(apiUrl);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("GET");
 			conn.setRequestProperty("Authorization", "KakaoAK " + REST_API_KEY);
 			conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -62,18 +62,8 @@ public class KakaoBookController {
 			int responseCode = conn.getResponseCode();
 
 			if (responseCode == HttpURLConnection.HTTP_OK) {
-				// 응답 읽기
-				BufferedReader br = new BufferedReader(
-						new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-				StringBuilder sb = new StringBuilder();
-				String line;
-				while ((line = br.readLine()) != null) {
-					sb.append(line);
-				}
-				br.close();
-
-				// JSON 파싱
-				JsonNode root = objectMapper.readTree(sb.toString());
+				String body = readStream(conn.getInputStream());
+				JsonNode root = objectMapper.readTree(body);
 				JsonNode documents = root.get("documents");
 
 				if (documents != null && documents.size() > 0) {
@@ -82,7 +72,6 @@ public class KakaoBookController {
 					result.put("success", true);
 					result.put("title", book.has("title") ? book.get("title").asText() : "");
 
-					// authors 배열 → 콤마로 연결
 					if (book.has("authors") && book.get("authors").size() > 0) {
 						StringBuilder authors = new StringBuilder();
 						for (int i = 0; i < book.get("authors").size(); i++) {
@@ -103,28 +92,35 @@ public class KakaoBookController {
 					result.put("message", "해당 ISBN에 대한 검색 결과가 없습니다.");
 				}
 			} else {
-				// API 오류 응답 읽기
-				BufferedReader br = new BufferedReader(
-						new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
-				StringBuilder sb = new StringBuilder();
-				String line;
-				while ((line = br.readLine()) != null) {
-					sb.append(line);
+				java.io.InputStream errorStream = conn.getErrorStream();
+				if (errorStream != null) {
+					readStream(errorStream);
 				}
-				br.close();
-
 				result.put("success", false);
 				result.put("message", "카카오 API 호출 오류 (HTTP " + responseCode + ")");
 			}
-
-			conn.disconnect();
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			result.put("success", false);
 			result.put("message", "서버 오류가 발생했습니다: " + e.getMessage());
+		} finally {
+			if (conn != null) {
+				conn.disconnect();
+			}
 		}
 
 		return result;
+	}
+
+	private String readStream(java.io.InputStream is) throws java.io.IOException {
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+			StringBuilder sb = new StringBuilder();
+			String line;
+			while ((line = br.readLine()) != null) {
+				sb.append(line);
+			}
+			return sb.toString();
+		}
 	}
 }
