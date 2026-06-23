@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOOK FOREST - Project Presentation</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f6f7fb;
+    --surface: #ffffff;
+    --surface-2: #f1f3f9;
+    --text: #181c32;
+    --sub: #6b7280;
+    --line: #e5e7eb;
+    --primary: #4f46e5;
+    --primary-dark: #3730a3;
+    --accent: #0f172a;
+    --danger: #dc2626;
+    --shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+    --radius: 20px;
+  }
+
+  html { scroll-behavior: smooth; scroll-snap-type: y mandatory; }
+
+  body {
+    font-family: "Pretendard", "Noto Sans KR", sans-serif;
+    font-size: 16px; font-weight: 400; line-height: 1.6;
+    color: var(--text); background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Slide ── */
+  .slide {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    padding: 80px 28px; scroll-snap-align: start;
+  }
+
+  .inner { max-width: 1080px; width: 100%; margin: 0 auto; text-align: center; }
+
+  /* ── Typography ── */
+  .t-hero { font-size: 48px; font-weight: 800; line-height: 1.2; letter-spacing: -1px; color: #fff; }
+  .t-lg   { font-size: 36px; font-weight: 800; line-height: 1.25; letter-spacing: -0.5px; }
+  .t-lead { font-size: 18px; font-weight: 500; line-height: 1.6; color: var(--sub); }
+  .t-cap  { font-size: 14px; font-weight: 500; color: var(--sub); }
+
+  .badge {
+    display: inline-block; padding: 6px 14px; border-radius: 999px;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+    background: rgba(79, 70, 229, 0.1); color: var(--primary);
+    margin-bottom: 16px;
+  }
+
+  /* ── Hero slide ── */
+  .slide-hero {
+    background: linear-gradient(135deg, #111827, #4f46e5);
+    border-radius: 0;
+  }
+  .slide-hero .badge { background: rgba(255,255,255,0.14); color: #fff; }
+  .slide-hero .t-lead { color: rgba(255,255,255,0.75); }
+
+  /* ── Content slides ── */
+  .slide-light { background: var(--bg); }
+  .slide-white { background: var(--surface); }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-block; padding: 14px 28px; border-radius: 999px;
+    font-size: 15px; font-weight: 700; text-decoration: none; border: none;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary { background: #fff; color: var(--accent); }
+  .btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+  .btn-dark { background: var(--accent); color: #fff; }
+
+  /* ── Feature cards ── */
+  .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1080px; margin: 0 auto; }
+  .feat {
+    padding: 28px; border-radius: 22px; text-align: left;
+    background: var(--surface); border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    transition: transform 0.2s;
+  }
+  .feat:hover { transform: translateY(-3px); }
+  .feat-icon { font-size: 28px; margin-bottom: 14px; display: block; }
+  .feat-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+  .feat-desc { font-size: 14px; line-height: 1.6; color: var(--sub); }
+
+  /* ── URL table ── */
+  .url-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; max-width: 1080px; margin: 0 auto; text-align: left; }
+  .grp { margin-bottom: 32px; }
+  .grp-t {
+    font-size: 16px; font-weight: 700; margin-bottom: 12px; padding: 8px 14px;
+    background: var(--surface); border-radius: 12px; border: 1px solid var(--line);
+    display: inline-block;
+  }
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl td { padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: middle; color: var(--text); }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl td:last-child { color: var(--sub); }
+  code {
+    font-family: "JetBrains Mono", "Menlo", monospace; font-size: 13px;
+    background: var(--surface-2); color: var(--primary-dark);
+    padding: 3px 8px; border-radius: 8px;
+  }
+  .mth {
+    display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.4px;
+    padding: 3px 7px; border-radius: 6px; min-width: 34px; text-align: center;
+  }
+  .m-g { background: rgba(16,185,129,.1); color: #059669; }
+  .m-p { background: rgba(79,70,229,.08); color: var(--primary); }
+  .m-new {
+    display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
+    padding: 2px 7px; border-radius: 6px;
+    background: rgba(220,38,38,.08); color: var(--danger); margin-left: 6px; vertical-align: middle;
+  }
+  tr.row-new td { background: rgba(220,38,38,.03); }
+
+  /* ── ERD ── */
+  .erd-wrap { max-width: 1200px; margin: 0 auto; overflow-x: auto; }
+  .erd-wrap svg { display: block; margin: 0 auto; width: 100%; height: auto; }
+
+  /* ── Nav dots ── */
+  .dots {
+    position: fixed; right: 20px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 8px; z-index: 100;
+    background: rgba(255,255,255,0.8); backdrop-filter: blur(8px);
+    padding: 10px 6px; border-radius: 999px; border: 1px solid var(--line);
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--line);
+    border: none; cursor: pointer; padding: 0; transition: all 0.3s;
+  }
+  .dot:hover, .dot.on { background: var(--primary); transform: scale(1.4); }
+  .dots.on-dark { background: rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.1); }
+  .dots.on-dark .dot:not(.on) { background: rgba(255,255,255,0.3); }
+
+  @media(max-width:834px) {
+    .t-hero { font-size: 36px; } .t-lg { font-size: 28px; }
+    .feat-grid { grid-template-columns: 1fr; } .url-wrap { grid-template-columns: 1fr; }
+    .slide { padding: 48px 16px; } .dots { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="dots" id="dots"></nav>
+
+<!-- ===== 1. TITLE ===== -->
+<section class="slide slide-hero" id="s1" data-theme="dark">
+  <div class="inner">
+    <p class="badge">Team Project</p>
+    <h1 class="t-hero">BOOK FOREST</h1>
+    <p class="t-lead" style="margin-top:28px;">Spring MVC 기반 온라인 도서 쇼핑몰</p>
+    <p class="t-lead" style="margin-top:8px;font-weight:400;">Spring Security &middot; H2 Database &middot; JSP &middot; WebSocket &middot; Kakao API</p>
+    <div style="margin-top:48px;"><a href="#s2" class="btn btn-primary">Start</a></div>
+  </div>
+</section>
+
+<!-- ===== 2. NEW FEATURES ===== -->
+<section class="slide slide-light" id="s2">
+  <div class="inner">
+    <p class="badge">What's New</p>
+    <h2 class="t-lg">새롭게 추가된 기능</h2>
+    <p class="t-lead" style="margin-top:12px;">dev3.0에서 통합된 핵심 기능들</p>
+
+    <div class="feat-grid" style="margin-top:48px;">
+      <div class="feat">
+        <span class="feat-icon">&#9993;</span>
+        <div class="feat-title">Email OTP 인증</div>
+        <div class="feat-desc">Gmail SMTP로 6자리 OTP 발송. 3분 유효시간 내 인증 완료 시 가입 가능.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">&#127942;</span>
+        <div class="feat-title">회원 등급 시스템</div>
+        <div class="feat-desc">BRONZE(1%) → SILVER(2%) → GOLD(3%) → PLATINUM(5%). 누적 마일리지 기준 자동 승급.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">&#128176;</span>
+        <div class="feat-title">마일리지 적립 & 사용</div>
+        <div class="feat-desc">등급별 적립률 기반 마일리지 적립. 주문 시 보유 마일리지로 결제 차감.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">&#128230;</span>
+        <div class="feat-title">배송지 자동 저장</div>
+        <div class="feat-desc">첫 주문 후 받는사람/연락처/주소 DB 저장. 다음 주문 시 자동 입력.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">&#128272;</span>
+        <div class="feat-title">Admin / Tracking 권한 분리</div>
+        <div class="feat-desc">ROLE_ADMIN: 도서 CRUD, 매출, 회원관리. ROLE_TRAKING: 배송 전담.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">&#128218;</span>
+        <div class="feat-title">카카오 ISBN 자동조회</div>
+        <div class="feat-desc">ISBN 입력으로 카카오 API에서 도서명/저자/출판사/표지/가격 자동 입력.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">&#128275;</span>
+        <div class="feat-title">카카오 소셜 로그인</div>
+        <div class="feat-desc">카카오 OAuth2 연동 간편 로그인. 자동 회원가입 및 세션 연동.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">&#128722;</span>
+        <div class="feat-title">비회원 장바구니</div>
+        <div class="feat-desc">쿠키 기반 비회원 장바구니. 7일 유지, 로그인 없이 주문 가능.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">&#128172;</span>
+        <div class="feat-title">실시간 1:1 채팅</div>
+        <div class="feat-desc">WebSocket 기반 사용자-관리자 1:1 상담. 채팅 이력 DB 저장.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3. URL MAP ===== -->
+<section class="slide slide-white" id="s3">
+  <div class="inner">
+    <p class="badge">URL Map</p>
+    <h2 class="t-lg">URL 구조</h2>
+    <p class="t-lead" style="margin-top:12px;">전체 엔드포인트 정리</p>
+
+    <div class="url-wrap" style="margin-top:48px;">
+      <div>
+        <div class="grp">
+          <div class="grp-t">Member</div>
+          <table class="tbl">
+            <tr><td><span class="mth m-g">GET</span></td><td><code>/member/login</code></td><td>로그인</td></tr>
+            <tr><td><span class="mth m-p">POST</span></td><td><code>/member/login</code></td><td>AJAX 로그인</td></tr>
+            <tr><td><span class="mth m-g">GET</span></td><td><code>/member/register</code></td><td>회원가입</td></tr>
+            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/member/sendOtp</code></td><td>OTP 발송 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/member/verifyOtp</code></td><td>OTP 인증 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/member/kakaoStart</code></td><td>카카오 로그인 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/member/profile</code></td><td>마이페이지 <span class="m-new">NEW</span></td></tr>
+          </table>
+        </div>
+        <div class="grp">
+          <div class="grp-t">Book</div>
+          <table class="tbl">
+            <tr><td><span class="mth m-g">GET</span></td><td><code>/book/list</code></td><td>도서 목록</td></tr>
+            <tr><td><span class="mth m-g">GET</span></td><td><code>/book/list/ajax</code></td><td>무한스크롤</td></tr>
+            <tr><td><span class="mth m-g">GET</span></td><td><code>/book/view?isbn=</code></td><td>도서 상세</td></tr>
+            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/book/like</code></td><td>좋아요 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/book/rate</code></td><td>별점 <span class="m-new">NEW</span></td></tr>
+          </table>
+        </div>
+        <div class="grp">
+          <div class="grp-t">Q&A / Chat</div>
+          <table class="tbl">
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/qna/list</code></td><td>문의 목록 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/qna/write</code></td><td>문의 작성 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/chat/admin</code></td><td>채팅 관리 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/support/faq</code></td><td>FAQ <span class="m-new">NEW</span></td></tr>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="grp">
+          <div class="grp-t">Cart & Order</div>
+          <table class="tbl">
+            <tr><td><span class="mth m-g">GET</span></td><td><code>/cart/list</code></td><td>장바구니</td></tr>
+            <tr><td><span class="mth m-p">POST</span></td><td><code>/cart/insert</code></td><td>추가</td></tr>
+            <tr><td><span class="mth m-p">POST</span></td><td><code>/cart/update</code></td><td>수량 변경</td></tr>
+            <tr><td><span class="mth m-p">POST</span></td><td><code>/cart/delete</code></td><td>삭제</td></tr>
+            <tr><td><span class="mth m-g">GET</span></td><td><code>/order/checkout</code></td><td>주문/결제</td></tr>
+            <tr><td><span class="mth m-p">POST</span></td><td><code>/order/pay</code></td><td>결제 처리</td></tr>
+            <tr><td><span class="mth m-g">GET</span></td><td><code>/order/list</code></td><td>주문내역</td></tr>
+          </table>
+        </div>
+        <div class="grp">
+          <div class="grp-t">Admin <span class="t-cap">ROLE_ADMIN</span></div>
+          <table class="tbl">
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/admin/insertform</code></td><td>도서 등록 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/admin/updateform</code></td><td>도서 수정 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/admin/kakaoBookSearch</code></td><td>ISBN API <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/admin/sales</code></td><td>매출 통계 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/admin/members</code></td><td>회원 관리 <span class="m-new">NEW</span></td></tr>
+          </table>
+        </div>
+        <div class="grp">
+          <div class="grp-t">Tracking <span class="t-cap">ROLE_TRAKING</span></div>
+          <table class="tbl">
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/admin/traking</code></td><td>배송 관리 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/admin/updateTracking</code></td><td>상태 변경 <span class="m-new">NEW</span></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4. ERD ===== -->
+<section class="slide slide-light" id="s4" style="min-height:auto;padding-top:80px;padding-bottom:80px;">
+  <div class="inner" style="max-width:1200px;">
+    <p class="badge">Database</p>
+    <h2 class="t-lg">ERD</h2>
+    <p class="t-lead" style="margin-top:12px;">H2 Database 테이블 관계도</p>
+    <p class="t-cap" style="margin-top:10px;">
+      <span style="color:#b8860b;">&#9632;</span> PK &nbsp;&nbsp;
+      <span style="color:#059669;">&#9632;</span> FK &nbsp;&nbsp;
+      <span style="color:var(--primary);">&#9632;</span> 신규 컬럼
+    </p>
+    <div class="erd-wrap" style="margin-top:40px;">
+      <svg viewBox="0 0 960 720" xmlns="http://www.w3.org/2000/svg" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="12">
+        <!-- Relation lines -->
+        <line x1="200" y1="270" x2="355" y2="145" stroke="#d1d5db" stroke-width="1.2"/>
+        <text x="255" y="196" fill="#9ca3af" font-size="10" font-weight="600">1 : N</text>
+        <line x1="200" y1="340" x2="355" y2="460" stroke="#d1d5db" stroke-width="1.2"/>
+        <text x="250" y="415" fill="#9ca3af" font-size="10" font-weight="600">1 : N</text>
+        <line x1="710" y1="270" x2="555" y2="145" stroke="#d1d5db" stroke-width="1.2"/>
+        <text x="635" y="196" fill="#9ca3af" font-size="10" font-weight="600">1 : N</text>
+        <line x1="710" y1="340" x2="555" y2="460" stroke="#d1d5db" stroke-width="1.2"/>
+        <text x="640" y="415" fill="#9ca3af" font-size="10" font-weight="600">1 : N</text>
+        <line x1="830" y1="230" x2="830" y2="145" stroke="#d1d5db" stroke-width="1.2"/>
+        <line x1="830" y1="380" x2="830" y2="460" stroke="#d1d5db" stroke-width="1.2"/>
+        <line x1="100" y1="230" x2="100" y2="145" stroke="#d1d5db" stroke-width="1.2"/>
+        <line x1="200" y1="640" x2="555" y2="640" stroke="#d1d5db" stroke-width="1.2"/>
+        <text x="340" y="632" fill="#9ca3af" font-size="10" font-weight="600">1 : N (CASCADE)</text>
+
+        <!-- chat_message -->
+        <rect x="10" y="30" width="190" height="110" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <rect x="10" y="30" width="190" height="28" rx="14" fill="rgba(79,70,229,.06)"/>
+        <rect x="10" y="46" width="190" height="12" fill="#fff"/>
+        <text x="105" y="50" fill="#4f46e5" font-weight="700" font-size="13" text-anchor="middle">chat_message</text>
+        <text x="20" y="76" fill="#b8860b" font-size="11">PK message_id INT</text>
+        <text x="20" y="92" fill="#6b7280" font-size="11">room_id VARCHAR(100)</text>
+        <text x="20" y="108" fill="#6b7280" font-size="11">sender VARCHAR(100)</text>
+        <text x="20" y="124" fill="#6b7280" font-size="11">content, sent_at, is_admin</text>
+
+        <!-- member -->
+        <rect x="10" y="230" width="190" height="190" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <rect x="10" y="230" width="190" height="28" rx="14" fill="rgba(79,70,229,.06)"/>
+        <rect x="10" y="246" width="190" height="12" fill="#fff"/>
+        <text x="105" y="250" fill="#4f46e5" font-weight="700" font-size="13" text-anchor="middle">member</text>
+        <text x="20" y="276" fill="#b8860b" font-size="11">PK num INT</text>
+        <text x="20" y="292" fill="#6b7280" font-size="11">id VARCHAR(100) UNIQUE</text>
+        <text x="20" y="308" fill="#6b7280" font-size="11">pw, email, hp, nickname</text>
+        <text x="20" y="324" fill="#6b7280" font-size="11">role VARCHAR(50)</text>
+        <text x="20" y="344" fill="#4f46e5" font-size="11">default_receiver</text>
+        <text x="20" y="360" fill="#4f46e5" font-size="11">default_phone, default_address</text>
+        <text x="20" y="380" fill="#4f46e5" font-size="11">mileage, total_mileage</text>
+        <text x="20" y="396" fill="#4f46e5" font-size="11">grade VARCHAR(30)</text>
+
+        <!-- cart -->
+        <rect x="355" y="30" width="200" height="110" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <rect x="355" y="30" width="200" height="28" rx="14" fill="rgba(79,70,229,.06)"/>
+        <rect x="355" y="46" width="200" height="12" fill="#fff"/>
+        <text x="455" y="50" fill="#4f46e5" font-weight="700" font-size="13" text-anchor="middle">cart</text>
+        <text x="365" y="76" fill="#b8860b" font-size="11">PK cart_id INT</text>
+        <text x="365" y="92" fill="#059669" font-size="11">FK userid → member.id</text>
+        <text x="365" y="108" fill="#059669" font-size="11">FK isbn → book.isbn</text>
+        <text x="365" y="124" fill="#6b7280" font-size="11">amount INT</text>
+
+        <!-- book -->
+        <rect x="710" y="230" width="240" height="150" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <rect x="710" y="230" width="240" height="28" rx="14" fill="rgba(79,70,229,.06)"/>
+        <rect x="710" y="246" width="240" height="12" fill="#fff"/>
+        <text x="830" y="250" fill="#4f46e5" font-weight="700" font-size="13" text-anchor="middle">book</text>
+        <text x="720" y="276" fill="#b8860b" font-size="11">PK isbn BIGINT</text>
+        <text x="720" y="292" fill="#6b7280" font-size="11">bookname VARCHAR(500)</text>
+        <text x="720" y="308" fill="#6b7280" font-size="11">author VARCHAR(300)</text>
+        <text x="720" y="324" fill="#6b7280" font-size="11">publisher VARCHAR(300)</text>
+        <text x="720" y="340" fill="#6b7280" font-size="11">image, price, category</text>
+
+        <!-- book_like -->
+        <rect x="740" y="30" width="210" height="110" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <rect x="740" y="30" width="210" height="28" rx="14" fill="rgba(79,70,229,.06)"/>
+        <rect x="740" y="46" width="210" height="12" fill="#fff"/>
+        <text x="845" y="50" fill="#4f46e5" font-weight="700" font-size="13" text-anchor="middle">book_like</text>
+        <text x="750" y="76" fill="#b8860b" font-size="11">PK like_id INT</text>
+        <text x="750" y="92" fill="#059669" font-size="11">FK isbn → book.isbn</text>
+        <text x="750" y="108" fill="#059669" font-size="11">FK userid → member.id</text>
+        <text x="750" y="124" fill="#6b7280" font-size="11">UNIQUE (isbn, userid)</text>
+
+        <!-- orders -->
+        <rect x="355" y="440" width="200" height="200" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <rect x="355" y="440" width="200" height="28" rx="14" fill="rgba(79,70,229,.06)"/>
+        <rect x="355" y="456" width="200" height="12" fill="#fff"/>
+        <text x="455" y="460" fill="#4f46e5" font-weight="700" font-size="13" text-anchor="middle">orders</text>
+        <text x="365" y="486" fill="#b8860b" font-size="11">PK order_id INT</text>
+        <text x="365" y="502" fill="#059669" font-size="11">FK userid → member.id</text>
+        <text x="365" y="518" fill="#059669" font-size="11">FK isbn → book.isbn</text>
+        <text x="365" y="534" fill="#6b7280" font-size="11">bookname, price, amount</text>
+        <text x="365" y="550" fill="#6b7280" font-size="11">total_price, receiver</text>
+        <text x="365" y="566" fill="#6b7280" font-size="11">phone, address, order_date</text>
+        <text x="365" y="582" fill="#6b7280" font-size="11">status, traking_status</text>
+        <text x="365" y="602" fill="#4f46e5" font-size="11">used_mileage</text>
+        <text x="365" y="618" fill="#4f46e5" font-size="11">earned_mileage, final_payment</text>
+
+        <!-- book_rating -->
+        <rect x="740" y="460" width="210" height="126" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <rect x="740" y="460" width="210" height="28" rx="14" fill="rgba(79,70,229,.06)"/>
+        <rect x="740" y="476" width="210" height="12" fill="#fff"/>
+        <text x="845" y="480" fill="#4f46e5" font-weight="700" font-size="13" text-anchor="middle">book_rating</text>
+        <text x="750" y="506" fill="#b8860b" font-size="11">PK rating_id INT</text>
+        <text x="750" y="522" fill="#059669" font-size="11">FK isbn → book.isbn</text>
+        <text x="750" y="538" fill="#059669" font-size="11">FK userid → member.id</text>
+        <text x="750" y="554" fill="#6b7280" font-size="11">rating INT</text>
+        <text x="750" y="570" fill="#6b7280" font-size="11">UNIQUE (isbn, userid)</text>
+
+        <!-- qna_question -->
+        <rect x="10" y="600" width="200" height="110" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <rect x="10" y="600" width="200" height="28" rx="14" fill="rgba(79,70,229,.06)"/>
+        <rect x="10" y="616" width="200" height="12" fill="#fff"/>
+        <text x="110" y="620" fill="#4f46e5" font-weight="700" font-size="13" text-anchor="middle">qna_question</text>
+        <text x="20" y="646" fill="#b8860b" font-size="11">PK question_id INT</text>
+        <text x="20" y="662" fill="#6b7280" font-size="11">userid, subject, content</text>
+        <text x="20" y="678" fill="#6b7280" font-size="11">status, created_at</text>
+        <text x="20" y="694" fill="#6b7280" font-size="11">updated_at</text>
+
+        <!-- qna_answer -->
+        <rect x="555" y="600" width="200" height="110" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <rect x="555" y="600" width="200" height="28" rx="14" fill="rgba(79,70,229,.06)"/>
+        <rect x="555" y="616" width="200" height="12" fill="#fff"/>
+        <text x="655" y="620" fill="#4f46e5" font-weight="700" font-size="13" text-anchor="middle">qna_answer</text>
+        <text x="565" y="646" fill="#b8860b" font-size="11">PK answer_id INT</text>
+        <text x="565" y="662" fill="#059669" font-size="11">FK question_id → CASCADE</text>
+        <text x="565" y="678" fill="#6b7280" font-size="11">writer, content</text>
+        <text x="565" y="694" fill="#6b7280" font-size="11">is_admin, created_at</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 5. END ===== -->
+<section class="slide slide-hero" id="s5" data-theme="dark">
+  <div class="inner">
+    <h2 class="t-hero">Thank you.</h2>
+    <p class="t-lead" style="margin-top:32px;">BOOK FOREST</p>
+    <div style="margin-top:48px;"><a href="#s1" class="btn btn-primary">Back to Top</a></div>
+  </div>
+</section>
+
+<script>
+const ss = document.querySelectorAll('.slide');
+const dc = document.getElementById('dots');
+ss.forEach(s => {
+  const d = document.createElement('button');
+  d.className = 'dot';
+  d.onclick = () => s.scrollIntoView({ behavior: 'smooth' });
+  dc.appendChild(d);
+});
+const ds = document.querySelectorAll('.dot');
+ss.forEach(s => new IntersectionObserver(es => {
+  es.forEach(e => {
+    if (!e.isIntersecting) return;
+    const i = Array.from(ss).indexOf(e.target);
+    ds.forEach((d, j) => d.classList.toggle('on', j === i));
+    dc.classList.toggle('on-dark', e.target.dataset.theme === 'dark');
+  });
+}, { threshold: 0.5 }).observe(s));
+</script>
+</body>
+</html>
