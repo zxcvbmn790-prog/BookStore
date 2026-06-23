@@ -44,7 +44,9 @@ public class AdminDAO {
 
 	// 등록
 	public int insert(AdminVO book) {
-		String sql = "INSERT INTO book VALUES (?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO book "
+		        + "(isbn, bookname, author, publisher, image, price, category) "
+		        + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setInt(1, book.getIsbn());
