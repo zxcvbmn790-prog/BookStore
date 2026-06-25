@@ -94,4 +94,9 @@ public class OrderService {
 	public void updateTrackingStatus(int orderId, String trakingstatus) {
 		orderDAO.updateTrackingStatus(orderId, trakingstatus);
 	}
+	
+	
+	public OrderVO getOrderDetail(int orderId) {
+	    return orderDAO.getOrderDetail(orderId);
+	}
 }

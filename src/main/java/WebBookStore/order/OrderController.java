@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import WebBookStore.cart.CartService;
 import WebBookStore.cart.CartVO;
@@ -183,5 +184,18 @@ public class OrderController {
 			}
 		}
 		return null;
+	}
+	
+	@RequestMapping(value = "/trackingDetail", method = RequestMethod.GET)
+	public String trackingDetail(@RequestParam("orderId") int orderId, Model model) {
+	    
+	    // 특정 주문번호 1건에 대한 정보를 가져오는 서비스 메서드가 필요합니다.
+	    // 기존에 만약 1건 조회가 없다면 OrderDAO에 단건조회 로직을 선언해주셔야 합니다.
+	    OrderVO order = orderService.getOrderDetail(orderId); 
+	    
+	    model.addAttribute("order", order);
+	    
+	    // 레이아웃 전체 템플릿이 아닌 팝업창 전용 단독 페이지로 열기 위해 직접 리턴합니다.
+	    return "order/trackingDetail"; 
 	}
 }

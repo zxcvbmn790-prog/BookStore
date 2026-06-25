@@ -220,4 +220,53 @@ public class OrderDAO {
 
 		return Integer.parseInt(onlyNumber);
 	}
+	
+	/**
+	 * 특정 주문번호(orderId) 1건에 대한 상세 정보를 조회하는 메서드
+	 * (배송 현황 조회 팝업창에서 사용)
+	 */
+	public OrderVO getOrderDetail(int orderId) {
+	    OrderVO order = null;
+
+	    // 1. 실행할 SQL 단건 조회 쿼리 (도서 이미지까지 가져오기 위해 LEFT JOIN 포함)
+	    String sql = "SELECT o.*, b.image "
+	            + "FROM orders o "
+	            + "LEFT JOIN book b ON o.isbn = b.isbn "
+	            + "WHERE o.order_id = ?";
+
+	    // 2. DataSource를 이용해 Connection 및 PreparedStatement 생성
+	    try (Connection conn = ds.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+	        // 3. 조건절(?)에 주문번호 파라미터 바인딩
+	        ps.setInt(1, orderId);
+
+	        // 4. 쿼리 실행 및 결과셋(ResultSet) 처리
+	        try (ResultSet rs = ps.executeQuery()) {
+	            if (rs.next()) { // 단건 조회의 경우 while 대신 if를 사용합니다.
+	                order = new OrderVO();
+	                order.setOrderId(rs.getInt("order_id"));
+	                order.setUserid(rs.getString("userid"));
+	                order.setIsbn(rs.getInt("isbn"));
+	                order.setBookname(rs.getString("bookname"));
+	                order.setPrice(rs.getInt("price"));
+	                order.setAmount(rs.getInt("amount"));
+	                order.setTotalPrice(rs.getInt("total_price"));
+	                order.setReceiver(rs.getString("receiver"));
+	                order.setPhone(rs.getString("phone"));
+	                order.setAddress(rs.getString("address"));
+	                order.setOrderDate(rs.getTimestamp("order_date"));
+	                order.setStatus(rs.getString("status"));
+	                order.setTrakingstatus(rs.getString("traking_status"));
+	                order.setImage(rs.getString("image")); // 도서 이미지 정보 매핑
+	            }
+	        }
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+
+	    // 5. 조회된 주문 객체 반환 (데이터가 없으면 null 반환)
+	    return order;
+	}
 }
