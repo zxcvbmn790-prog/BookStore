@@ -228,6 +228,16 @@
 					<input type="text" name="price" id="price" value="${admin.price}">
 				</div>
 
+				<div class="field">
+					<label>할인율 (%)</label>
+					<div style="display:flex; align-items:center; gap:10px;">
+						<input type="number" name="discountRate" id="discountRate"
+							value="${admin.discountRate != null ? admin.discountRate : 0}"
+							min="0" max="99" style="width:100px;">
+						<span style="font-size:13px; color:var(--text-muted);">0 = 할인 없음</span>
+					</div>
+				</div>
+
 				<div class="btn-group" style="margin-top: 32px; gap: 12px;">
 					<a href="${pageContext.request.contextPath}/book/list" class="btn btn-back">취소</a>
 					<button type="submit" class="btn btn-buy">

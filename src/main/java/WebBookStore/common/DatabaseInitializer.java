@@ -138,6 +138,7 @@ public class DatabaseInitializer {
 				+ ")";
 
 		execute(sql, "book");
+		execute("ALTER TABLE book ADD COLUMN IF NOT EXISTS discount_rate INT DEFAULT 0", "book discount_rate column");
 	}
 
 	private void createCartTable() {

@@ -33,7 +33,21 @@
                         <div class="meta-row"><span class="meta-label">ISBN</span><span class="meta-value">${book.isbn}</span></div>
                     </div>
 
-                    <div class="price-panel"><div class="caption">판매가</div><div class="price">${book.price}<span>원</span></div></div>
+                    <div class="price-panel">
+                        <c:choose>
+                            <c:when test="${book.discountRate > 0}">
+                                <div class="caption">정가</div>
+                                <div style="text-decoration:line-through; color:#9ca3af; font-size:20px; font-weight:600; margin-bottom:6px;">
+                                    <fmt:parseNumber var="origPrice" value="${book.price}" type="number"/><fmt:formatNumber value="${origPrice}" type="number"/>원
+                                </div>
+                                <div class="caption">할인가 <span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;font-size:13px;margin-left:6px;">${book.discountRate}% OFF</span></div>
+                                <div class="price"><fmt:formatNumber value="${book.discountedPrice}" type="number"/><span>원</span></div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="caption">판매가</div><div class="price">${book.price}<span>원</span></div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
 
                     <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser ne 'admin'}">
                         <div class="feedback-tools">

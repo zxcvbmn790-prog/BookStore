@@ -124,6 +124,55 @@
 					font-weight: bold;
 				}
 
+				.book-price-original {
+					text-decoration: line-through;
+					color: #999;
+					font-size: 13px;
+					font-weight: 400;
+				}
+
+				.book-discount-badge {
+					display: inline-block;
+					background: #d9534f;
+					color: #fff;
+					font-size: 12px;
+					font-weight: 700;
+					padding: 2px 6px;
+					border-radius: 3px;
+					margin-right: 4px;
+				}
+
+				.list-price-original {
+					text-decoration: line-through;
+					color: #999;
+					font-size: 14px;
+					font-weight: 400;
+				}
+
+				.list-discount-badge {
+					display: inline-block;
+					background: #d9534f;
+					color: #fff;
+					font-size: 13px;
+					font-weight: 700;
+					padding: 2px 8px;
+					border-radius: 3px;
+					margin-right: 6px;
+				}
+
+				.sale-rate-badge {
+					position: absolute;
+					top: 10px;
+					left: 10px;
+					background: #d9534f;
+					color: #fff;
+					font-size: 14px;
+					font-weight: 800;
+					padding: 4px 10px;
+					border-radius: 6px;
+					box-shadow: 0 2px 8px rgba(217,83,79,0.3);
+				}
+
 				.section-header {
 					display: flex;
 					justify-content: space-between;
@@ -322,6 +371,25 @@
 				<%-- 1. 메인 화면 모드 (그리드형 섹션 출력) --%>
 					<c:when test="${isMain}">
 						<div style="max-width: 1200px; margin: 0 auto;">
+							<c:if test="${not empty discountBooks}">
+								<div class="section-header">
+									<h2>SALE 할인 중인 도서</h2>
+								</div>
+								<div class="book-list-container">
+									<c:forEach var="book" items="${discountBooks}">
+										<div class="book-card" style="position:relative;">
+											<span class="sale-rate-badge">${book.discountRate}%</span>
+											<a href="view?isbn=${book.isbn}"><img src="${book.image}"></a>
+											<div class="book-title">${book.bookname}</div>
+											<div class="book-price">
+												<fmt:parseNumber var="p" value="${book.price}" type="number" />
+												<div class="book-price-original"><fmt:formatNumber value="${p}" type="number" />원</div>
+												<span class="book-discount-badge">${book.discountRate}%</span><fmt:formatNumber value="${book.discountedPrice}" type="number" />원
+											</div>
+										</div>
+									</c:forEach>
+								</div>
+							</c:if>
 							<div class="section-header">
 								<h2>인공지능 추천 도서</h2><a
 									href="${pageContext.request.contextPath}/book/list?category=인공지능"
@@ -334,7 +402,15 @@
 										<div class="book-title">${book.bookname}</div>
 										<div class="book-price">
 											<fmt:parseNumber var="p" value="${book.price}" type="number" />
-											<fmt:formatNumber value="${p}" type="number" />원
+											<c:choose>
+												<c:when test="${book.discountRate > 0}">
+													<div class="book-price-original"><fmt:formatNumber value="${p}" type="number" />원</div>
+													<span class="book-discount-badge">${book.discountRate}%</span><fmt:formatNumber value="${book.discountedPrice}" type="number" />원
+												</c:when>
+												<c:otherwise>
+													<fmt:formatNumber value="${p}" type="number" />원
+												</c:otherwise>
+											</c:choose>
 										</div>
 									</div>
 								</c:forEach>
@@ -351,7 +427,15 @@
 										<div class="book-title">${book.bookname}</div>
 										<div class="book-price">
 											<fmt:parseNumber var="p" value="${book.price}" type="number" />
-											<fmt:formatNumber value="${p}" type="number" />원
+											<c:choose>
+												<c:when test="${book.discountRate > 0}">
+													<div class="book-price-original"><fmt:formatNumber value="${p}" type="number" />원</div>
+													<span class="book-discount-badge">${book.discountRate}%</span><fmt:formatNumber value="${book.discountedPrice}" type="number" />원
+												</c:when>
+												<c:otherwise>
+													<fmt:formatNumber value="${p}" type="number" />원
+												</c:otherwise>
+											</c:choose>
 										</div>
 									</div>
 								</c:forEach>
@@ -368,7 +452,15 @@
 										<div class="book-title">${book.bookname}</div>
 										<div class="book-price">
 											<fmt:parseNumber var="p" value="${book.price}" type="number" />
-											<fmt:formatNumber value="${p}" type="number" />원
+											<c:choose>
+												<c:when test="${book.discountRate > 0}">
+													<div class="book-price-original"><fmt:formatNumber value="${p}" type="number" />원</div>
+													<span class="book-discount-badge">${book.discountRate}%</span><fmt:formatNumber value="${book.discountedPrice}" type="number" />원
+												</c:when>
+												<c:otherwise>
+													<fmt:formatNumber value="${p}" type="number" />원
+												</c:otherwise>
+											</c:choose>
 										</div>
 									</div>
 								</c:forEach>
@@ -393,7 +485,15 @@
 											<div style="display:flex; gap:14px; align-items:center; margin-bottom:10px; color:#666; font-size:13px;"><span>♥ ${book.likeCount}</span><span>★ <fmt:formatNumber value="${book.averageRating}" pattern="0.0"/> (${book.ratingCount})</span></div>
 											<div class="list-item-price">
 												<fmt:parseNumber var="p" value="${book.price}" type="number" />
-												<fmt:formatNumber value="${p}" type="number" />원
+												<c:choose>
+													<c:when test="${book.discountRate > 0}">
+														<div class="list-price-original"><fmt:formatNumber value="${p}" type="number" />원</div>
+														<span class="list-discount-badge">${book.discountRate}%</span><fmt:formatNumber value="${book.discountedPrice}" type="number" />원
+													</c:when>
+													<c:otherwise>
+														<fmt:formatNumber value="${p}" type="number" />원
+													</c:otherwise>
+												</c:choose>
 											</div>
 										</div>
 
@@ -513,9 +613,21 @@
 					const loginUser = '${sessionScope.loginUser}';
 					
 					books.forEach(book => {
-						const priceFormatted = Number(book.price).toLocaleString();
+						const priceNum = Number(book.price);
+						const priceFormatted = priceNum.toLocaleString();
 						const avgRating = book.averageRating ? book.averageRating.toFixed(1) : "0.0";
-						
+						const dr = book.discountRate || 0;
+						const discountedPrice = dr > 0 ? Math.floor(priceNum - (priceNum * dr / 100)) : 0;
+
+						let priceHtml = '';
+						if (dr > 0) {
+							priceHtml = '<div class="list-price-original">' + priceFormatted + '원</div>'
+								+ '<span class="list-discount-badge">' + dr + '%</span>'
+								+ discountedPrice.toLocaleString() + '원';
+						} else {
+							priceHtml = priceFormatted + '원';
+						}
+
 						const div = document.createElement('div');
 						div.className = 'list-item';
 						div.innerHTML = `
@@ -529,7 +641,7 @@
 									<span>♥ \${book.likeCount}</span>
 									<span>★ \${avgRating} (\${book.ratingCount})</span>
 								</div>
-								<div class="list-item-price">\${priceFormatted}원</div>
+								<div class="list-item-price">\${priceHtml}</div>
 							</div>
 							<div class="list-btn-box">
 								<button type="button" class="list-btn cart-btn"

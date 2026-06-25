@@ -31,6 +31,10 @@ public class UserBookService {
 		return dao.findTopNByCategory(category, 4);
 	}
 
+	public List<BookVO> getDiscountedBooks() {
+		return dao.findDiscountedBooks();
+	}
+
 	public BookFeedbackVO getBookFeedback(long isbn, String loginUser) {
 		return dao.getBookFeedback(isbn, loginUser);
 	}

@@ -117,6 +117,36 @@ public class AdminController {
 		return "redirect:/admin/members";
 	}
 
+	@RequestMapping(value = "/books", method = RequestMethod.GET)
+	public String bookManage(@RequestParam(value = "keyword", required = false) String keyword, Model model) {
+	    org.springframework.security.core.Authentication auth =
+	            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+	    boolean isAdmin = auth != null && auth.getAuthorities().stream()
+	            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+	    if (!isAdmin) {
+	        return "redirect:/book/list";
+	    }
+
+	    List<AdminVO> bookList = adminService.searchBooks(keyword);
+	    model.addAttribute("bookList", bookList);
+	    model.addAttribute("keyword", keyword);
+	    model.addAttribute("contentPage", "/WEB-INF/views/admin/book_manage.jsp");
+	    return "layout/layout";
+	}
+
+	@RequestMapping(value = "/updateDiscount", method = RequestMethod.POST)
+	@org.springframework.web.bind.annotation.ResponseBody
+	public java.util.Map<String, Object> updateDiscount(
+	        @RequestParam("isbn") long isbn,
+	        @RequestParam("discountRate") int discountRate) {
+	    java.util.Map<String, Object> result = new java.util.HashMap<>();
+	    if (discountRate < 0) discountRate = 0;
+	    if (discountRate > 99) discountRate = 99;
+	    boolean success = adminService.updateDiscountRate(isbn, discountRate);
+	    result.put("success", success);
+	    return result;
+	}
+
 	@Autowired
 	private OrderService orderService;
 
