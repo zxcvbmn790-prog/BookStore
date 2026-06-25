@@ -31,8 +31,10 @@ public class CartDAO {
 	public List<CartVO> getCartList(String userid) {
 		List<CartVO> list = new ArrayList<>();
 
-		String sql = "SELECT c.cart_id, c.userid, c.isbn, c.amount, " + "b.bookname, b.price, b.image "
-				+ "FROM cart c JOIN book b ON c.isbn = b.isbn " + "WHERE c.userid = ? ORDER BY c.cart_id DESC";
+		String sql = "SELECT c.cart_id, c.userid, c.isbn, c.amount, "
+				+ "b.bookname, b.price, b.image, b.discount_rate "
+				+ "FROM cart c JOIN book b ON c.isbn = b.isbn "
+				+ "WHERE c.userid = ? ORDER BY c.cart_id DESC";
 
 		try (PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, userid);
@@ -46,11 +48,20 @@ public class CartDAO {
 					cart.setAmount(rs.getInt("amount"));
 
 					cart.setBookname(rs.getString("bookname"));
-					cart.setPrice(rs.getString("price"));
 					cart.setImage(rs.getString("image"));
 
 					int priceInt = parsePrice(rs.getString("price"));
-					cart.setTotalPrice(priceInt * rs.getInt("amount"));
+					int discountRate = rs.getInt("discount_rate");
+					if (discountRate > 0) {
+						int discountedPrice = priceInt - (priceInt * discountRate / 100);
+						cart.setPrice(String.valueOf(discountedPrice));
+						cart.setOriginalPrice(rs.getString("price"));
+						cart.setDiscountRate(discountRate);
+						cart.setTotalPrice(discountedPrice * rs.getInt("amount"));
+					} else {
+						cart.setPrice(rs.getString("price"));
+						cart.setTotalPrice(priceInt * rs.getInt("amount"));
+					}
 
 					list.add(cart);
 				}

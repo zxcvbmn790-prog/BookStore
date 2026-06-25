@@ -24,4 +24,6 @@ public class CartVO {
 	private String image;
 
 	private int totalPrice;
+	private int discountRate;
+	private String originalPrice;
 }

@@ -6,7 +6,13 @@
       "PowerShell(git fetch *)",
       "PowerShell(git checkout *)",
       "PowerShell(git status *)",
-      "PowerShell(git add *)"
+      "PowerShell(git add *)",
+      "PowerShell(git config *)",
+      "PowerShell(git push *)",
+      "PowerShell(git branch *)",
+      "PowerShell(git log *)",
+      "PowerShell(git diff *)",
+      "PowerShell(git merge *)"
     ]
   }
 }
