@@ -30,6 +30,7 @@ public class UserBookController {
 			model.addAttribute("economyBooks", bookService.getTopBooksByCategory("경영전략/혁신"));
 			model.addAttribute("examBooks", bookService.getTopBooksByCategory("인공지능/빅데이터"));
 			model.addAttribute("liberalBooks", bookService.getTopBooksByCategory("컴퓨터공학/전산학 개론"));
+			model.addAttribute("discountBooks", bookService.getDiscountedBooks());
 			model.addAttribute("isMain", true);
 		} else {
 			int limit = 4;

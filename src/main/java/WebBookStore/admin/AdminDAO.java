@@ -30,8 +30,15 @@ public class AdminDAO {
 			ResultSet rs = ps.executeQuery();
 			List<AdminVO> list = new ArrayList<AdminVO>();
 			while (rs.next()) {
-				list.add(new AdminVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
-						rs.getString("publisher"), rs.getString("image"), rs.getString("price")));
+				AdminVO vo = new AdminVO();
+					vo.setIsbn(rs.getLong("isbn"));
+					vo.setBookname(rs.getString("bookname"));
+					vo.setAuthor(rs.getString("author"));
+					vo.setPublisher(rs.getString("publisher"));
+					vo.setImage(rs.getString("image"));
+					vo.setPrice(rs.getString("price"));
+					try { vo.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e) {}
+					list.add(vo);
 			}
 			rs.close();
 			ps.close();
@@ -45,8 +52,8 @@ public class AdminDAO {
 	// 등록
 	public int insert(AdminVO book) {
 		String sql = "INSERT INTO book "
-		        + "(isbn, bookname, author, publisher, image, price, category) "
-		        + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+		        + "(isbn, bookname, author, publisher, image, price, category, discount_rate) "
+		        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setLong(1, book.getIsbn());
@@ -55,6 +62,8 @@ public class AdminDAO {
 			ps.setString(4, book.getPublisher());
 			ps.setString(5, book.getImage());
 			ps.setString(6, book.getPrice());
+			ps.setString(7, null);
+			ps.setInt(8, book.getDiscountRate());
 			int result = ps.executeUpdate();
 			ps.close();
 			return result;
@@ -66,7 +75,7 @@ public class AdminDAO {
 
 	// 수정
 	public int update(AdminVO book) {
-		String sql = "UPDATE book SET bookname=?, author=?, publisher=?, image=?, price=? WHERE isbn=?";
+		String sql = "UPDATE book SET bookname=?, author=?, publisher=?, image=?, price=?, discount_rate=? WHERE isbn=?";
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setString(1, book.getBookname());
@@ -74,7 +83,8 @@ public class AdminDAO {
 			ps.setString(3, book.getPublisher());
 			ps.setString(4, book.getImage());
 			ps.setString(5, book.getPrice());
-			ps.setLong(6, book.getIsbn());
+			ps.setInt(6, book.getDiscountRate());
+			ps.setLong(7, book.getIsbn());
 			int result = ps.executeUpdate();
 			ps.close();
 			return result;
@@ -114,8 +124,14 @@ public class AdminDAO {
 			ps.setLong(1, isbn);
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-				AdminVO book = new AdminVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
-						rs.getString("publisher"), rs.getString("image"), rs.getString("price"));
+				AdminVO book = new AdminVO();
+				book.setIsbn(rs.getLong("isbn"));
+				book.setBookname(rs.getString("bookname"));
+				book.setAuthor(rs.getString("author"));
+				book.setPublisher(rs.getString("publisher"));
+				book.setImage(rs.getString("image"));
+				book.setPrice(rs.getString("price"));
+				try { book.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e) {}
 				rs.close();
 				ps.close();
 				return book;
@@ -287,6 +303,53 @@ public class AdminDAO {
 	    }
 
 	    return list;
+	}
+
+	public List<AdminVO> searchBooks(String keyword) {
+		List<AdminVO> list = new ArrayList<>();
+		String sql = "SELECT * FROM book";
+		boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+		if (hasKeyword) {
+			sql += " WHERE bookname LIKE ? OR author LIKE ? OR CAST(isbn AS VARCHAR) LIKE ?";
+		}
+		sql += " ORDER BY isbn";
+
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+			if (hasKeyword) {
+				String kw = "%" + keyword.trim() + "%";
+				ps.setString(1, kw);
+				ps.setString(2, kw);
+				ps.setString(3, kw);
+			}
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					AdminVO vo = new AdminVO();
+					vo.setIsbn(rs.getLong("isbn"));
+					vo.setBookname(rs.getString("bookname"));
+					vo.setAuthor(rs.getString("author"));
+					vo.setPublisher(rs.getString("publisher"));
+					vo.setImage(rs.getString("image"));
+					vo.setPrice(rs.getString("price"));
+					try { vo.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e) {}
+					list.add(vo);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+
+	public int updateDiscountRate(long isbn, int discountRate) {
+		String sql = "UPDATE book SET discount_rate = ? WHERE isbn = ?";
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setInt(1, discountRate);
+			ps.setLong(2, isbn);
+			return ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return 0;
+		}
 	}
 
 	public int deleteMember(String username) {

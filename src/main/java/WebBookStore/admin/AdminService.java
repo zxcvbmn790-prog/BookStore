@@ -57,6 +57,14 @@ public class AdminService {
         return dao.getMemberList();
     }
 
+    public List<AdminVO> searchBooks(String keyword) {
+        return dao.searchBooks(keyword);
+    }
+
+    public boolean updateDiscountRate(long isbn, int discountRate) {
+        return dao.updateDiscountRate(isbn, discountRate) > 0;
+    }
+
     public boolean deleteMember(String username) {
         return dao.deleteMember(username) > 0;
     }
