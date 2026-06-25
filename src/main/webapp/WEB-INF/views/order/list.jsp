@@ -64,7 +64,14 @@
                                 <td>${order.amount}</td>
                                 <td class="strong">${order.totalPrice}원</td>
                                 <td>${order.status}</td>
-                                <td>${order.trakingstatus}</td>
+                                
+                                <td>
+                                    <a href="#" onclick="openTracking('${order.orderId}'); return false;" 
+                                       style="color: #008bcc; font-weight: bold; text-decoration: underline; cursor: pointer;">
+                                        ${order.trakingstatus}
+                                    </a>
+                                </td>
+                                
                                 <td>${order.orderDate}</td>
                                 <td>${order.usedMileage} P</td>
                                 <td>${order.earnedMileage} P</td>
@@ -85,3 +92,14 @@
         </c:otherwise>
     </c:choose>
 </section>
+
+<script>
+function openTracking(orderId) {
+    // 새 창의 가로, 세로 크기 및 위치 설정
+    var url = "${pageContext.request.contextPath}/order/trackingDetail?orderId=" + orderId;
+    var name = "배송 현황 조회";
+    var option = "width=850, height=350, top=100, left=200, location=no, status=no, scrollbars=no";
+    
+    window.open(url, name, option);
+}
+</script>
