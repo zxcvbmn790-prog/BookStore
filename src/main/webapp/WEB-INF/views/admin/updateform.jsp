@@ -4,172 +4,194 @@
 		<style>
 			.form-wrap {
 				width: 100%;
-				max-width: 560px;
-				padding: 52px;
-				background: var(--surface);
-				border: 1px solid var(--border);
-				border-radius: 4px;
+				max-width: 580px;
+				padding: 48px;
+				background: var(--surface, #fff);
+				border: 1px solid var(--line);
+				border-radius: 20px;
+				box-shadow: var(--shadow);
 				margin: 0 auto;
 			}
 
 			.form-tag {
-				font-size: 11px;
-				font-weight: 500;
-				letter-spacing: 1.5px;
+				font-size: 12px;
+				font-weight: 700;
+				letter-spacing: 1px;
 				text-transform: uppercase;
-				color: var(--text-sub);
-				background: var(--accent-light);
-				padding: 4px 10px;
-				border-radius: 2px;
+				color: var(--primary);
+				background: #eef2ff;
+				padding: 5px 12px;
+				border-radius: 8px;
 				display: inline-block;
-				margin-bottom: 20px;
+				margin-bottom: 16px;
 			}
 
 			.form-title {
-				font-family: 'DM Serif Display', serif;
-				font-size: 30px;
+				font-size: 26px;
+				font-weight: 800;
 				color: var(--text);
-				margin-bottom: 36px;
+				margin-bottom: 32px;
 			}
 
 			.field {
-				margin-bottom: 20px;
+				margin-bottom: 22px;
 			}
 
 			.field label {
 				display: block;
-				font-size: 11px;
-				font-weight: 500;
-				letter-spacing: 1px;
-				text-transform: uppercase;
-				color: var(--text-muted);
+				font-size: 13px;
+				font-weight: 600;
+				color: var(--sub);
 				margin-bottom: 8px;
 			}
 
 			.field input {
 				width: 100%;
 				padding: 12px 14px;
-				font-family: 'DM Sans', sans-serif;
 				font-size: 14px;
 				color: var(--text);
-				background: var(--bg);
-				border: 1px solid var(--border);
-				border-radius: 4px;
+				background: var(--surface-2, #f1f3f9);
+				border: 1px solid var(--line);
+				border-radius: 10px;
 				outline: none;
-				transition: border-color 0.2s;
+				transition: border-color 0.2s, box-shadow 0.2s;
 			}
 
 			.field input:focus {
-				border-color: var(--accent);
+				border-color: var(--primary);
+				box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 			}
 
 			.field input[readonly] {
-				background: var(--accent-light);
-				color: var(--text-muted);
+				background: var(--surface-2, #f1f3f9);
+				color: var(--sub);
 				cursor: not-allowed;
 			}
 
-			/* ── ISBN 자동 조회 관련 스타일 ── */
 			.isbn-row {
 				display: flex;
 				gap: 8px;
 				align-items: stretch;
 			}
 
-			.isbn-row input {
-				flex: 1;
-			}
+			.isbn-row input { flex: 1; }
 
 			.btn-isbn-search {
 				white-space: nowrap;
-				padding: 12px 16px;
-				font-family: 'DM Sans', sans-serif;
+				padding: 12px 18px;
 				font-size: 13px;
-				font-weight: 500;
-				color: #faf7f2;
-				background: var(--accent, #5c4a3a);
+				font-weight: 600;
+				color: #fff;
+				background: var(--primary);
 				border: none;
-				border-radius: 4px;
+				border-radius: 10px;
 				cursor: pointer;
 				transition: background 0.2s, transform 0.1s;
 			}
 
-			.btn-isbn-search:hover {
-				background: #3e3028;
-			}
+			.btn-isbn-search:hover { background: var(--primary-dark); }
+			.btn-isbn-search:active { transform: scale(0.97); }
+			.btn-isbn-search:disabled { opacity: 0.5; cursor: not-allowed; }
 
-			.btn-isbn-search:active {
-				transform: scale(0.97);
-			}
-
-			.btn-isbn-search:disabled {
-				opacity: 0.6;
-				cursor: not-allowed;
-			}
-
-			/* 조회 결과 메시지 */
 			.isbn-message {
 				margin-top: 8px;
-				font-size: 12px;
-				padding: 8px 12px;
-				border-radius: 4px;
+				font-size: 13px;
+				padding: 10px 14px;
+				border-radius: 10px;
 				display: none;
 			}
 
 			.isbn-message.success {
 				display: block;
-				color: #2d6a4f;
-				background: #d8f3dc;
-				border: 1px solid #b7e4c7;
+				color: #166534;
+				background: #dcfce7;
+				border: 1px solid #bbf7d0;
 			}
 
 			.isbn-message.error {
 				display: block;
-				color: #9b2226;
-				background: #fde8e8;
-				border: 1px solid #f5c6cb;
+				color: #991b1b;
+				background: #fef2f2;
+				border: 1px solid #fecaca;
 			}
 
 			.isbn-message.loading {
 				display: block;
-				color: var(--text-sub, #8a7e74);
-				background: var(--accent-light, #e8ddd3);
-				border: 1px solid var(--border, #e2d9cc);
+				color: var(--sub);
+				background: var(--surface-2, #f1f3f9);
+				border: 1px solid var(--line);
 			}
 
-			/* 미리보기 썸네일 */
 			.isbn-preview {
 				display: none;
-				margin-top: 12px;
-				padding: 12px;
-				background: var(--bg, #f5f0e8);
-				border: 1px solid var(--border, #e2d9cc);
-				border-radius: 4px;
+				margin-top: 14px;
+				padding: 16px;
+				background: var(--surface-2, #f1f3f9);
+				border: 1px solid var(--line);
+				border-radius: 12px;
 				text-align: center;
 			}
 
 			.isbn-preview img {
-				max-height: 140px;
-				border-radius: 3px;
-				box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+				max-height: 150px;
+				border-radius: 8px;
+				box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 			}
 
 			.isbn-preview .preview-title {
-				margin-top: 8px;
-				font-size: 13px;
-				font-weight: 500;
-				color: var(--text, #2c2520);
+				margin-top: 10px;
+				font-size: 14px;
+				font-weight: 600;
+				color: var(--text);
 			}
 
-			/* 자동 채움 애니메이션 */
 			@keyframes fieldHighlight {
-				0%   { background: #d8f3dc; }
-				100% { background: var(--bg, #f5f0e8); }
+				0%   { background: #dcfce7; }
+				100% { background: var(--surface-2, #f1f3f9); }
 			}
 
 			.field-filled input {
-				animation: fieldHighlight 1s ease-out;
+				animation: fieldHighlight 0.8s ease-out;
 			}
+
+			.form-btn-group {
+				display: flex;
+				gap: 12px;
+				margin-top: 36px;
+			}
+
+			.form-btn {
+				flex: 1;
+				padding: 14px 0;
+				border-radius: 12px;
+				font-size: 15px;
+				font-weight: 700;
+				text-align: center;
+				cursor: pointer;
+				border: none;
+				transition: background 0.2s, transform 0.1s;
+			}
+
+			.form-btn:active { transform: scale(0.98); }
+
+			.form-btn-cancel {
+				background: var(--surface-2, #f1f3f9);
+				color: var(--sub);
+				border: 1px solid var(--line);
+				text-decoration: none;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+
+			.form-btn-cancel:hover { background: #e5e7eb; }
+
+			.form-btn-submit {
+				background: var(--primary);
+				color: #fff;
+			}
+
+			.form-btn-submit:hover { background: var(--primary-dark); }
 		</style>
 
 		<div class="form-wrap">
@@ -234,13 +256,13 @@
 						<input type="number" name="discountRate" id="discountRate"
 							value="${admin.discountRate != null ? admin.discountRate : 0}"
 							min="0" max="99" style="width:100px;">
-						<span style="font-size:13px; color:var(--text-muted);">0 = 할인 없음</span>
+						<span style="font-size:13px; color:var(--sub);">0 = 할인 없음</span>
 					</div>
 				</div>
 
-				<div class="btn-group" style="margin-top: 32px; gap: 12px;">
-					<a href="${pageContext.request.contextPath}/book/list" class="btn btn-back">취소</a>
-					<button type="submit" class="btn btn-buy">
+				<div class="form-btn-group">
+					<a href="${pageContext.request.contextPath}/book/list" class="form-btn form-btn-cancel">취소</a>
+					<button type="submit" class="form-btn form-btn-submit">
 						<c:choose>
 							<c:when test="${not empty admin}">수정 내용 저장</c:when>
 							<c:otherwise>새 도서 등록하기</c:otherwise>
