@@ -4,7 +4,6 @@
 		<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 			<style>
-				/* [1] 슬라이드 배너 */
 				.banner-container {
 					max-width: 1200px;
 					position: relative;
@@ -48,7 +47,6 @@
 					left: 20px;
 				}
 
-				/* [2] 카테고리 버튼 스타일 */
 				.category-menu {
 					display: flex;
 					justify-content: center;
@@ -74,7 +72,6 @@
 					color: white;
 				}
 
-				/* [3] 메인 화면용 그리드 스타일 (왼쪽 정렬) */
 				.book-list-container {
 					display: flex;
 					flex-wrap: wrap;
@@ -195,7 +192,6 @@
 					font-size: 14px;
 				}
 
-				/* [4] 전체보기/카테고리 선택용 가로 리스트 스타일 */
 				.list-view-container {
 					max-width: 1150px;
 					margin: 0 auto;
@@ -273,7 +269,6 @@
 					transition: 0.2s;
 				}
 
-				/* 장바구니 버튼 (강조) */
 				.list-btn.cart-btn {
 					background: #fff;
 					color: #333;
@@ -284,7 +279,6 @@
 					background: #f8f8f8;
 				}
 
-				/* 바로구매 버튼 (어두운 배경) */
 				.list-btn.buy-btn {
 					background: #333;
 					color: #fff;
@@ -295,7 +289,6 @@
 					background: #000;
 				}
 
-				/* 하단 컨트롤러 영역 정렬 */
 				.control-box {
 					display: flex;
 					justify-content: center;
@@ -304,7 +297,6 @@
 					margin: 60px 0;
 				}
 
-				/* 페이지 번호 및 버튼 공통 스타일 */
 				.page-link {
 					display: inline-flex;
 					align-items: center;
@@ -326,7 +318,6 @@
 					border-color: #999;
 				}
 
-				/* 현재 선택된 페이지 강조 */
 				.page-link.active {
 					background-color: #333;
 					color: #fff;
@@ -337,6 +328,7 @@
 				
 			</style>
 
+			<c:if test="${not isSearch}">
 			<div class="banner-container">
 				<div class="banner-slide fade"><img
 						src="https://contents.kyobobook.co.kr/display/i_890_380_6974e9e91dd84287880c462e691aa1d7.jpg">
@@ -366,9 +358,17 @@
 			        </c:forEach>
 			    </div>
 			</div>
+			</c:if>
+
+			<c:if test="${isSearch}">
+				<div class="section-header search-result-header">
+					<h2>'${searchKeyword}' 검색 결과</h2>
+					<span class="more-link">총 ${fn:length(list)}권</span>
+				</div>
+			</c:if>
 
 			<c:choose>
-				<%-- 1. 메인 화면 모드 (그리드형 섹션 출력) --%>
+
 					<c:when test="${isMain}">
 						<div style="max-width: 1200px; margin: 0 auto;">
 							<c:if test="${not empty discountBooks}">
@@ -468,9 +468,14 @@
 						</div>
 					</c:when>
 
-					<%-- 2. 전체보기/카테고리 선택 모드 (가로 리스트형 출력) --%>
 						<c:otherwise>
 							<div class="list-view-container" id="bookListContainer">
+								<c:if test="${empty list}">
+									<div class="empty-box">
+										<h3>검색 결과가 없습니다.</h3>
+										<p>다른 검색어로 다시 검색해 주세요.</p>
+									</div>
+								</c:if>
 								<c:forEach var="book" items="${list}">
 									<div class="list-item">
 										<div class="list-img-box">
@@ -560,11 +565,12 @@
 				// --- 인피니트 스크롤 관련 변수 및 로직 (Vanilla JS 전환) ---
 				let currentPage = 1;
 				let isLoading = false;
-				let hasNext = true;
+				let hasNext = ${hasNext ? 'true' : 'false'};
 				const currentCategory = '${category}';
 				const isMain = ${isMain ? 'true' : 'false'};
+				const isSearch = ${isSearch ? 'true' : 'false'};
 
-				if (!isMain) {
+				if (!isMain && !isSearch) {
 					window.addEventListener('scroll', function() {
 						const scrollTop = window.scrollY || document.documentElement.scrollTop;
 						const windowHeight = window.innerHeight;

@@ -10,6 +10,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import WebBookStore.search.HangulUtil;
+
 @Repository
 public class UserBookDAO {
 
@@ -367,4 +369,72 @@ public class UserBookDAO {
 		}
 		return false;
 	}
+
+	public List<String> findAllBookNames() {
+		List<String> titles = new ArrayList<String>();
+		String sql = "SELECT bookname FROM book WHERE bookname IS NOT NULL ORDER BY bookname";
+
+		try (PreparedStatement ps = conn.prepareStatement(sql);
+				ResultSet rs = ps.executeQuery()) {
+			while (rs.next()) {
+				titles.add(rs.getString("bookname"));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return titles;
+	}
+
+	public List<BookVO> searchByBookName(String keyword) {
+		List<BookVO> list = new ArrayList<BookVO>();
+		ensureFeedbackTables();
+
+		String word = keyword == null ? "" : keyword.trim().toLowerCase();
+		if (word.isEmpty()) return list;
+
+		String sql = "SELECT b.*, "
+				+ "COALESCE((SELECT COUNT(*) FROM book_like bl WHERE bl.isbn = b.isbn), 0) AS like_count, "
+				+ "COALESCE((SELECT AVG(br.rating) FROM book_rating br WHERE br.isbn = b.isbn), 0) AS avg_rating, "
+				+ "COALESCE((SELECT COUNT(*) FROM book_rating br WHERE br.isbn = b.isbn), 0) AS rating_count "
+				+ "FROM book b ORDER BY b.bookname";
+
+		try (PreparedStatement ps = conn.prepareStatement(sql);
+				ResultSet rs = ps.executeQuery()) {
+			while (rs.next()) {
+				BookVO book = new BookVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
+						rs.getString("publisher"), rs.getString("image"), rs.getString("price"),
+						rs.getString("category"));
+				book.setLikeCount(rs.getInt("like_count"));
+				book.setAverageRating(rs.getDouble("avg_rating"));
+				book.setRatingCount(rs.getInt("rating_count"));
+
+				if (isSearchMatched(book, word)) {
+					list.add(book);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return list;
+	}
+
+	private boolean isSearchMatched(BookVO book, String word) {
+		String title = book.getBookname() == null ? "" : book.getBookname().toLowerCase();
+		String author = book.getAuthor() == null ? "" : book.getAuthor().toLowerCase();
+		String publisher = book.getPublisher() == null ? "" : book.getPublisher().toLowerCase();
+		String category = book.getCategory() == null ? "" : book.getCategory().toLowerCase();
+
+		if (title.contains(word) || author.contains(word) || publisher.contains(word) || category.contains(word)) {
+			return true;
+		}
+
+		if (HangulUtil.hasChosung(word)) {
+			String chosungTitle = HangulUtil.toChosung(title);
+			return chosungTitle.contains(word);
+		}
+
+		return false;
+	}
+
 }

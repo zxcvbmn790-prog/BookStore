@@ -51,4 +51,7 @@ public class UserBookService {
 	public boolean deleteRating(long isbn, String userid) {
 		return dao.deleteRating(isbn, userid);
 	}
+	public List<BookVO> searchByBookName(String keyword) {
+		return dao.searchByBookName(keyword);
+	}
 }

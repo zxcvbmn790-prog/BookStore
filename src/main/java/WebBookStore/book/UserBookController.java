@@ -12,12 +12,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import WebBookStore.search.BookSearchService;
+
 @Controller
 @RequestMapping("/book")
 public class UserBookController {
 
 	@Autowired
 	private UserBookService bookService;
+
+	@Autowired
+	private BookSearchService bookSearchService;
 
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public String list(@RequestParam(value = "category", defaultValue = "전체") String category,
@@ -83,6 +88,33 @@ public class UserBookController {
 		result.put("hasNext", page < totalPages);
 
 		return result;
+	}
+
+
+	@RequestMapping(value = "/search", method = RequestMethod.GET)
+	public String search(@RequestParam(value = "keyword", defaultValue = "") String keyword, Model model) {
+		String word = keyword == null ? "" : keyword.trim();
+
+		if (!word.isEmpty()) {
+			bookSearchService.recordKeyword(word);
+		}
+
+		List<BookVO> list = bookService.searchByBookName(word);
+
+		model.addAttribute("list", list);
+		model.addAttribute("category", "검색결과");
+		model.addAttribute("currentPage", 1);
+		model.addAttribute("totalPages", 1);
+		model.addAttribute("startPage", 1);
+		model.addAttribute("endPage", 1);
+		model.addAttribute("hasNext", false);
+		model.addAttribute("viewAll", true);
+		model.addAttribute("isMain", false);
+		model.addAttribute("isSearch", true);
+		model.addAttribute("searchKeyword", word);
+		model.addAttribute("contentPage", "/WEB-INF/views/book/views.jsp");
+
+		return "layout/layout";
 	}
 
 	@RequestMapping(value = "/view", method = RequestMethod.GET)
