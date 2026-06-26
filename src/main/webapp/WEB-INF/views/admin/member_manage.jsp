@@ -37,14 +37,14 @@
                         <td>${m.phone}</td>
                         <td>
                             <c:if test="${m.role != 'ROLE_ADMIN'}">
-                                <select name="role" onchange="changeRole('${m.username}', this.value)" style="padding: 4px; border-radius: 4px; border: 1px solid #ccc;">
+                                <select name="role" class="role-select" onchange="changeRole('${m.username}', this.value)">
                                     <option value="ROLE_USER" ${m.role == 'ROLE_USER' ? 'selected' : ''}>일반 회원</option>
                                     <option value="ROLE_TRAKING" ${m.role == 'ROLE_TRAKING' ? 'selected' : ''}>트래킹 회원</option>
                                     <option value="ROLE_ADMIN" ${m.role == 'ROLE_ADMIN' ? 'selected' : ''}>관리자</option>
                                 </select>
                             </c:if>
                             <c:if test="${m.role == 'ROLE_ADMIN'}">
-                                <span style="font-weight: bold; color: #dc2626;">최고 관리자</span>
+                                <span style="display:inline-block; padding:5px 12px; background:#fef2f2; color:#dc2626; border-radius:8px; font-size:13px; font-weight:700;">최고 관리자</span>
                             </c:if>
                         </td>
                         <td>

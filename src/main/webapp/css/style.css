@@ -1578,32 +1578,93 @@ body.drawer-open {
     margin-bottom: 20px;
 }
 
+.admin-member-page .table-card {
+    max-width: 1200px;
+}
+
 .member-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
 .member-table th,
 .member-table td {
-    padding: 14px 12px;
+    padding: 13px 14px;
     border-bottom: 1px solid #eef1f6;
     text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .member-table th {
     color: var(--sub);
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    background: #f8f9fc;
+}
+
+.member-table tbody tr:hover {
+    background: #f5f7ff;
+}
+
+.member-table th:nth-child(1),
+.member-table td:nth-child(1) { width: 60px; }
+.member-table th:nth-child(2),
+.member-table td:nth-child(2) { width: 130px; }
+.member-table th:nth-child(3),
+.member-table td:nth-child(3) { width: 120px; }
+.member-table th:nth-child(4),
+.member-table td:nth-child(4) { width: 220px; }
+.member-table th:nth-child(5),
+.member-table td:nth-child(5) { width: 140px; }
+.member-table th:nth-child(6),
+.member-table td:nth-child(6) { width: 160px; }
+.member-table th:nth-child(7),
+.member-table td:nth-child(7) { width: 100px; }
+
+.role-select {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    padding: 7px 32px 7px 12px;
+    border: 1.5px solid #e0e7ff;
+    border-radius: 10px;
+    background: #f0f4ff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236366f1' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center;
+    color: #3730a3;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.role-select:hover {
+    border-color: #6366f1;
+}
+
+.role-select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.15);
 }
 
 .table-delete-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 14px;
-    border-radius: 12px;
+    padding: 7px 14px;
+    border-radius: 10px;
     background: #fee2e2;
     color: #b91c1c;
+    font-size: 13px;
     font-weight: 700;
+    white-space: nowrap;
+    transition: background .15s;
+}
+
+.table-delete-btn:hover {
+    background: #fecaca;
 }
 
 @media (max-width: 900px) {
