@@ -123,6 +123,12 @@ public class MemberController {
 
 	@RequestMapping(value = "register", method = RequestMethod.POST)
 	public String register(MemberVO member, HttpSession session, RedirectAttributes ra) {
+		String checkedUsername = (String) session.getAttribute("checkedUsername");
+		if (checkedUsername == null || !checkedUsername.equals(member.getUsername())) {
+			ra.addFlashAttribute("authError", "아이디 중복 확인을 먼저 완료해주세요.");
+			return "redirect:/member/register";
+		}
+
 		Boolean verified = (Boolean) session.getAttribute("pendingEmailVerified");
 		String verifiedEmail = (String) session.getAttribute("pendingEmail");
 
@@ -253,14 +259,22 @@ public class MemberController {
 
 	@RequestMapping(value = "checkId", method = RequestMethod.GET)
 	@ResponseBody
-	public boolean checkId(String username) {
+	public boolean checkId(String username, HttpSession session) {
 		if (username == null || username.trim().isEmpty()) {
+			session.removeAttribute("checkedUsername");
 			return false;
 		}
 		try {
-			return memberService.getMember(username) == null;
+			boolean available = memberService.getMember(username.trim()) == null;
+			if (available) {
+				session.setAttribute("checkedUsername", username.trim());
+			} else {
+				session.removeAttribute("checkedUsername");
+			}
+			return available;
 		} catch (Exception e) {
 			e.printStackTrace();
+			session.removeAttribute("checkedUsername");
 			return false;
 		}
 	}
@@ -276,5 +290,6 @@ public class MemberController {
 		session.removeAttribute("pendingOtpExpiry");
 		session.removeAttribute("pendingEmail");
 		session.removeAttribute("pendingEmailVerified");
+		session.removeAttribute("checkedUsername");
 	}
 }
