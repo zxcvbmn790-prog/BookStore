@@ -17,4 +17,5 @@ public interface MemberDAO {
     int registerKakaoMember(KakaoUserInfo kakaoUserInfo);
 
     MemberVO findByUsernames(String username);
+	Object upRole(String username, String role);
 }

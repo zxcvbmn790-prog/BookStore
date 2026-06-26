@@ -7,8 +7,19 @@
 <title>배송 현황 조회</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
-    body { font-family: 'Malgun Gothic', sans-serif; background: #f9f9f9; padding: 20px; }
-    .tracking-container { max-width: 800px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    body { font-family: 'Malgun Gothic', sans-serif; background: #f9f9f9; padding: 20px;}
+    /*.tracking-container { max-height: 800px; max-width: 800px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    */
+    /* 스크롤 추가 및 최대 높이를 500px로 변경 */
+    .tracking-container { 
+        overflow-y: auto;  /* 높이가 500px을 넘을 경우 내부 스크롤 바 생성 */
+        max-width: 800px; 
+        margin: 40px auto; 
+        background: #fff; 
+        padding: 30px; 
+        border-radius: 8px; 
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+    }
     .title { font-size: 20px; font-weight: bold; margin-bottom: 30px; color: #333; }
     
     /* 스텝바 전체 컨테이너 */
