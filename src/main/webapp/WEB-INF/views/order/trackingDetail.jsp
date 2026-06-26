@@ -5,6 +5,7 @@
 <head>
 <meta charset="UTF-8">
 <title>배송 현황 조회</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
     body { font-family: 'Malgun Gothic', sans-serif; background: #f9f9f9; padding: 20px; }
     .tracking-container { max-width: 800px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
@@ -18,7 +19,7 @@
     .step-item { position: relative; z-index: 2; text-align: center; flex: 1; }
     
     /* 동그라미 아이콘 기본 스타일 (비활성화) */
-    .step-icon { width: 70px; height: 70px; border-radius: 50%; background: #fff; border: 2px solid #ccc; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto; color: #999; font-weight: bold; transition: all 0.3s ease; }
+    .step-icon { width: 70px; height: 70px; border-radius: 50%; background: #fff; border: 2px solid #ccc; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto; color: #999; font-weight: bold; font-size: 24px; transition: all 0.3s ease; }
     .step-text { font-size: 13px; color: #666; font-weight: 500; }
     .step-num { font-size: 11px; color: #999; display: block; margin-bottom: 4px; }
 
@@ -37,24 +38,24 @@
 
     <div class="step-bar">
         <div class="step-item ${status eq '접수' || status eq '배송준비중' || status eq '배송중' || status eq '배송완료' ? 'active' : ''}">
-            <div class="step-icon">📋</div>
+            <div class="step-icon"><i class="fa-solid fa-cart-arrow-down"></i></div>
             <div class="step-text"><span class="step-num">STEP 1</span>상품접수</div>
         </div>
         
         <div class="step-item ${status eq '배송준비중' || status eq '배송중' || status eq '배송완료' ? 'active' : ''}">
-            <div class="step-icon">🏭</div>
+            <div class="step-icon"><i class="fa-solid fa-cart-flatbed"></i></div>
             <div class="step-text"><span class="step-num">STEP 2</span>배송준비중</div>
         </div>
         
         <div class="step-item ${status eq '배송중' || status eq '배송완료' ? 'active' : ''}">
-            <div class="step-icon">🚚</div>
+            <div class="step-icon"><i class="fa-solid fa-rocket"></i></div>
             <div class="step-text"><span class="step-num">STEP 3</span>상품이동중</div>
         </div>
         
         
         <div class="step-item ${status eq '배송완료' ? 'active' : ''}">
-            <div class="step-icon">🎁</div>
-            <div class="step-text"><span class="step-num">STEP 6</span>배송완료</div>
+            <div class="step-icon"><i class="fa-solid fa-check"></i></div>
+            <div class="step-text"><span class="step-num">STEP 4</span>배송완료</div>
         </div>
     </div>
     
