@@ -35,7 +35,7 @@
             <div class="shipping-box">
                 <h3>배송 정보</h3>
 
-                <form action="${pageContext.request.contextPath}/order/pay" method="post" class="shipping-form">
+                <form action="${pageContext.request.contextPath}/order/pay" method="post" class="shipping-form" id="orderForm">
                     <div class="shipping-row">
                         <label for="receiver">받는 사람</label>
                         <input type="text"
@@ -59,16 +59,23 @@
                     </div>
 
                     <div class="shipping-row">
-                        <label for="address">배송 주소</label>
-                        <input type="text"
-						       id="address"
-						       name="address"
-						       class="shipping-input"
-						       value="${member.defaultAddress}"
-						       placeholder="배송 주소를 입력해주세요"
-						       required>
+                        <label for="zonecode">배송 주소</label>
+                        <div class="address-group">
+                            <!-- 우편번호 (name 없음 - 서버로 안 보냄) -->
+                            <input type="text" id="zonecode" class="shipping-input" placeholder="우편번호" readonly>
+                            <button type="button" class="action-btn outline" onclick="execDaumPostcode()">우편번호 찾기</button>
+                        </div>
+
+                        <!-- 도로명주소 (name 없음 - 서버로 안 보냄) -->
+                        <input type="text" id="roadAddress" class="shipping-input" placeholder="도로명 주소" readonly>
+
+                        <!-- 상세주소 (직접입력, name 없음) -->
+                        <input type="text" id="detailAddress" class="shipping-input" placeholder="상세주소">
+
+                        <!-- 실제로 서버에 전송되는 필드: 우편번호+도로명+상세주소를 합친 문자열 -->
+                        <input type="hidden" id="address" name="address">
                     </div>
-                    
+
                     <c:choose>
 					    <c:when test="${isMember}">
 					        <div class="shipping-row">
@@ -126,3 +133,53 @@
         </div>
     </div>
 </section>
+
+<!-- 카카오 우편번호 서비스 -->
+<script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+function execDaumPostcode() {
+    new kakao.Postcode({
+        oncomplete: function(data) {
+            var roadAddr = data.roadAddress;
+            var jibunAddr = data.jibunAddress;
+            var fullAddr = roadAddr ? roadAddr : jibunAddr;
+
+            var extraAddr = '';
+            if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+                extraAddr += data.bname;
+            }
+            if (data.buildingName !== '' && data.apartment === 'Y') {
+                extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+            }
+            if (extraAddr !== '') {
+                fullAddr += ' (' + extraAddr + ')';
+            }
+
+            document.getElementById('zonecode').value = data.zonecode;
+            document.getElementById('roadAddress').value = fullAddr;
+            document.getElementById('detailAddress').focus();
+
+            updateFullAddress();
+        }
+    }).open();
+}
+
+function updateFullAddress() {
+    var zonecode = document.getElementById('zonecode').value;
+    var roadAddress = document.getElementById('roadAddress').value;
+    var detailAddress = document.getElementById('detailAddress').value;
+
+    document.getElementById('address').value =
+        '[' + zonecode + '] ' + roadAddress + ' ' + detailAddress;
+}
+
+document.getElementById('detailAddress').addEventListener('input', updateFullAddress);
+
+// 폼 제출 전 주소 검증
+document.getElementById('orderForm').addEventListener('submit', function(e) {
+    if (!document.getElementById('address').value.trim()) {
+        alert('주소를 입력해주세요.');
+        e.preventDefault();
+    }
+});
+</script>
