@@ -73,6 +73,7 @@
 		<security:intercept-url pattern="/book/list" access="permitAll"/>
 		<security:intercept-url pattern="/book/list/ajax" access="permitAll"/>
 		<security:intercept-url pattern="/book/view" access="permitAll"/>
+		<security:intercept-url pattern="/book/ads" access="permitAll"/>
 		<security:intercept-url pattern="/cart/**" access="permitAll"/>
 		<security:intercept-url pattern="/order/**" access="permitAll"/>
 
