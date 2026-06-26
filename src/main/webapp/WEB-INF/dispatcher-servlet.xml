@@ -41,6 +41,7 @@
 			<mvc:exclude-mapping path="/book/list" />
 			<mvc:exclude-mapping path="/book/list/ajax" />
 			<mvc:exclude-mapping path="/book/view" />
+			<mvc:exclude-mapping path="/book/ads" />
 
 			<mvc:exclude-mapping path="/member/login" />
 			<mvc:exclude-mapping path="/member/register" />
