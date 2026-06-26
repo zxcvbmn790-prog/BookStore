@@ -228,4 +228,18 @@ public class MemberDAOH2 implements MemberDAO, InitializingBean {
 		
 		return member;
 	}
+
+	@Override
+	public Object upRole(String username, String role) {
+		String sql = "UPDATE member SET role=? WHERE ID=?";
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setString(1, role);
+			ps.setString(2, username);
+			return ps.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
 }
