@@ -68,4 +68,12 @@ public class AdminService {
     public boolean deleteMember(String username) {
         return dao.deleteMember(username) > 0;
     }
+
+    public boolean updateAdStatus(long isbn, boolean isAd) {
+        return dao.updateAdStatus(isbn, isAd) > 0;
+    }
+
+    public List<AdminVO> getAdBooks() {
+        return dao.getAdBooks();
+    }
 }

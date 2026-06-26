@@ -50,6 +50,34 @@
 .bm-table .col-discount { width: 140px; }
 .bm-table .col-final { width: 100px; }
 .bm-table .col-action { width: 120px; }
+.bm-table .col-ad { width: 70px; }
+
+.bm-ad-toggle {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+}
+.bm-ad-toggle input { opacity: 0; width: 0; height: 0; }
+.bm-ad-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #ccc;
+    border-radius: 22px;
+    transition: 0.2s;
+}
+.bm-ad-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px; width: 16px;
+    left: 3px; bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+.bm-ad-toggle input:checked + .bm-ad-slider { background: #008bcc; }
+.bm-ad-toggle input:checked + .bm-ad-slider:before { transform: translateX(18px); }
 
 .bm-book-name {
     font-weight: 600; white-space: nowrap; overflow: hidden;
@@ -131,6 +159,7 @@
                     <col class="col-price">
                     <col class="col-discount">
                     <col class="col-final">
+                    <col class="col-ad">
                     <col class="col-action">
                 </colgroup>
                 <thead>
@@ -142,6 +171,7 @@
                         <th>정가</th>
                         <th>할인율</th>
                         <th>판매가</th>
+                        <th>광고</th>
                         <th>관리</th>
                     </tr>
                 </thead>
@@ -192,6 +222,14 @@
                                         </c:choose>
                                     </td>
                                     <td>
+                                        <label class="bm-ad-toggle" title="${book.ad ? '광고 중' : '광고 해제'}">
+                                            <input type="checkbox" id="ad-${book.isbn}"
+                                                   ${book.ad ? 'checked' : ''}
+                                                   onchange="toggleAd(${book.isbn}, this.checked)">
+                                            <span class="bm-ad-slider"></span>
+                                        </label>
+                                    </td>
+                                    <td>
                                         <div class="bm-action-btns">
                                             <a href="${pageContext.request.contextPath}/admin/updateform?isbn=${book.isbn}" class="bm-btn bm-btn-edit">수정</a>
                                             <a href="${pageContext.request.contextPath}/admin/delete?isbn=${book.isbn}" class="bm-btn bm-btn-del"
@@ -202,7 +240,7 @@
                             </c:forEach>
                         </c:when>
                         <c:otherwise>
-                            <tr><td colspan="8" style="padding:60px; color:#999; font-size:16px;">
+                            <tr><td colspan="9" style="padding:60px; color:#999; font-size:16px;">
                                 <c:choose>
                                     <c:when test="${not empty keyword}">검색 결과가 없습니다.</c:when>
                                     <c:otherwise>등록된 도서가 없습니다.</c:otherwise>
@@ -217,6 +255,28 @@
 </section>
 
 <script>
+function toggleAd(isbn, isAd) {
+    var ctx = '${pageContext.request.contextPath}';
+    fetch(ctx + '/admin/updateAd', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'isbn=' + isbn + '&isAd=' + isAd
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (!data.success) {
+            var cb = document.getElementById('ad-' + isbn);
+            if (cb) cb.checked = !isAd;
+            alert('광고 상태 변경에 실패했습니다.');
+        }
+    })
+    .catch(function() {
+        var cb = document.getElementById('ad-' + isbn);
+        if (cb) cb.checked = !isAd;
+        alert('오류가 발생했습니다.');
+    });
+}
+
 function markChanged(isbn) {
     var btn = document.getElementById('btn-' + isbn);
     btn.classList.remove('saved');
