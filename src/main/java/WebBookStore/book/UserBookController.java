@@ -77,7 +77,7 @@ public class UserBookController {
 
 		int limit = 4; // 최초 목록(list)과 동일한 limit(4)으로 설정하여 offset 꼬임 방지
 		int offset = (page - 1) * limit;
-
+ 
 		List<BookVO> list = bookService.getBookListByPage(category, offset, limit, viewAll);
 		int totalCount = bookService.getTotalCount(category);
 		int totalPages = (int) Math.ceil((double) totalCount / limit);
