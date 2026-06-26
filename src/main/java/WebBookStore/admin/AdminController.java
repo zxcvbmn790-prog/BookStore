@@ -92,17 +92,18 @@ public class AdminController {
 	}
 
 	@RequestMapping("/members")
-	public String members(Model model) {
-	    org.springframework.security.core.Authentication auth = 
+	public String members(@RequestParam(value = "keyword", required = false) String keyword, Model model) {
+	    org.springframework.security.core.Authentication auth =
 	            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-	    
+
 	    boolean isAdmin = auth != null && auth.getAuthorities().stream()
 	            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
 		if (!isAdmin) {
 			return "redirect:/book/list";
 		}
-		model.addAttribute("memberList", adminService.getMemberList());
+		model.addAttribute("memberList", adminService.searchMembers(keyword));
+		model.addAttribute("keyword", keyword);
 		model.addAttribute("contentPage", "/WEB-INF/views/admin/member_manage.jsp");
 		return "layout/layout";
 	}
