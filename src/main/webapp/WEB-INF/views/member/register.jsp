@@ -140,7 +140,7 @@
             </div>
             
             <!-- reCAPTCHA 자동 가입 방지 -->
-			<div class="form-field">
+			<div class="form-field" id="captchaArea">
 			    <label>자동 가입 방지</label>
 			
 			    <div class="g-recaptcha"
@@ -244,6 +244,9 @@ function sendOtp() {
             $("#otpInput").val("").focus();
             $("#btnSendOtp").prop("disabled", false).text("재발송");
             $("#btnVerifyOtp").prop("disabled", false);
+
+			// 인증번호 발송이 성공했으므로 캡챠 영역 숨김
+			$("#captchaArea").hide();
 
             // 한 번 사용한 reCAPTCHA는 초기화
             if (typeof grecaptcha !== "undefined") {
