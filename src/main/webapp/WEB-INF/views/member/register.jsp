@@ -162,8 +162,13 @@
 <script type="text/javascript">
 var ctx = "${pageContext.request.contextPath}";
 var emailVerified = false;
+var idChecked = false;
 var timerInterval;
 var remaining = 0;
+
+function updateRegisterBtn() {
+    $("#btnRegister").prop("disabled", !(idChecked && emailVerified));
+}
 
 // ==================== 아이디 중복 확인 ====================
 function checkDuplicate() {
@@ -179,13 +184,20 @@ function checkDuplicate() {
         data: { username: username },
         success: function(isAvailable) {
             if (isAvailable === true) {
+                idChecked = true;
                 $("#usernameCheckMsg").css("color", "#166534").text("✓ 사용 가능한 아이디입니다.");
             } else {
+                idChecked = false;
                 $("#usernameCheckMsg").css("color", "#b91c1c").text("✕ 이미 사용 중인 아이디입니다.");
                 $("#username").val("").focus();
             }
+            updateRegisterBtn();
         },
-        error: function() { alert("중복 확인 중 오류가 발생했습니다."); }
+        error: function() {
+            idChecked = false;
+            updateRegisterBtn();
+            alert("중복 확인 중 오류가 발생했습니다.");
+        }
     });
 }
 
@@ -248,8 +260,7 @@ function verifyOtp() {
             $("#email").prop("readonly", true).css("background", "#f3f4f6");
             $("#btnSendOtp").hide();
 
-            // 회원가입 버튼 활성화
-            $("#btnRegister").prop("disabled", false);
+            updateRegisterBtn();
 
             showOtpMsg("", "");
         },
@@ -299,15 +310,23 @@ function showOtpMsg(msg, type) {
     if (type) { $("#otpMsg").addClass(type); }
 }
 
-// ==================== 이메일 변경 시 인증 초기화 ====================
+// ==================== 이메일/아이디 변경 시 인증 초기화 ====================
 $(document).ready(function() {
+    $("#username").on("input", function() {
+        if (idChecked) {
+            idChecked = false;
+            $("#usernameCheckMsg").text("");
+            updateRegisterBtn();
+        }
+    });
+
     $("#email").on("input", function() {
         if (emailVerified) {
             emailVerified = false;
             $("#verifiedBadge").removeClass("show");
-            $("#btnRegister").prop("disabled", true);
             $("#email").prop("readonly", false).css("background", "");
             $("#btnSendOtp").show().text("인증번호 발송");
+            updateRegisterBtn();
         }
     });
 
@@ -322,6 +341,11 @@ $(document).ready(function() {
 
     // 폼 전송 시 인증 여부 재확인
     $("#registerForm").on("submit", function(e) {
+        if (!idChecked) {
+            e.preventDefault();
+            alert("아이디 중복 확인을 먼저 완료해주세요.");
+            return;
+        }
         if (!emailVerified) {
             e.preventDefault();
             alert("이메일 인증을 먼저 완료해주세요.");
