@@ -21,4 +21,5 @@ public class AdminVO {
     private String image;     // 도서 이미지 경로
     private String price;	  // 가격
     private int discountRate; // 할인율 (0~99)
+    private boolean isAd;     // 광고 여부
 }
