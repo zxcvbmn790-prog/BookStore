@@ -331,8 +331,44 @@ public class AdminDAO {
 					vo.setImage(rs.getString("image"));
 					vo.setPrice(rs.getString("price"));
 					try { vo.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e) {}
+					try { vo.setAd(rs.getBoolean("is_ad")); } catch (Exception e) {}
 					list.add(vo);
 				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+
+	public int updateAdStatus(long isbn, boolean isAd) {
+		String sql = "UPDATE book SET is_ad = ? WHERE isbn = ?";
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setBoolean(1, isAd);
+			ps.setLong(2, isbn);
+			return ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+
+	public List<AdminVO> getAdBooks() {
+		List<AdminVO> list = new ArrayList<>();
+		String sql = "SELECT isbn, bookname, author, publisher, image, price, discount_rate FROM book WHERE is_ad = TRUE ORDER BY isbn";
+		try (PreparedStatement ps = conn.prepareStatement(sql);
+			 ResultSet rs = ps.executeQuery()) {
+			while (rs.next()) {
+				AdminVO vo = new AdminVO();
+				vo.setIsbn(rs.getLong("isbn"));
+				vo.setBookname(rs.getString("bookname"));
+				vo.setAuthor(rs.getString("author"));
+				vo.setPublisher(rs.getString("publisher"));
+				vo.setImage(rs.getString("image"));
+				vo.setPrice(rs.getString("price"));
+				try { vo.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e) {}
+				vo.setAd(true);
+				list.add(vo);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
