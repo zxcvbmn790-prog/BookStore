@@ -37,6 +37,7 @@ public class AdminDAO {
 					vo.setPublisher(rs.getString("publisher"));
 					vo.setImage(rs.getString("image"));
 					vo.setPrice(rs.getString("price"));
+					rs.getString("category");
 					try { vo.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e) {}
 					list.add(vo);
 			}
@@ -62,7 +63,7 @@ public class AdminDAO {
 			ps.setString(4, book.getPublisher());
 			ps.setString(5, book.getImage());
 			ps.setString(6, book.getPrice());
-			ps.setString(7, null);
+			ps.setString(7, book.getCategory());
 			ps.setInt(8, book.getDiscountRate());
 			int result = ps.executeUpdate();
 			ps.close();
@@ -75,7 +76,7 @@ public class AdminDAO {
 
 	// 수정
 	public int update(AdminVO book) {
-		String sql = "UPDATE book SET bookname=?, author=?, publisher=?, image=?, price=?, discount_rate=? WHERE isbn=?";
+		String sql = "UPDATE book SET bookname=?, author=?, publisher=?, image=?, price=?, category=?, discount_rate=? WHERE isbn=?";
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setString(1, book.getBookname());
@@ -83,8 +84,9 @@ public class AdminDAO {
 			ps.setString(3, book.getPublisher());
 			ps.setString(4, book.getImage());
 			ps.setString(5, book.getPrice());
-			ps.setInt(6, book.getDiscountRate());
-			ps.setLong(7, book.getIsbn());
+			ps.setString(6, book.getCategory());
+			ps.setInt(7, book.getDiscountRate());
+			ps.setLong(8, book.getIsbn());
 			int result = ps.executeUpdate();
 			ps.close();
 			return result;
@@ -131,6 +133,7 @@ public class AdminDAO {
 				book.setPublisher(rs.getString("publisher"));
 				book.setImage(rs.getString("image"));
 				book.setPrice(rs.getString("price"));
+				book.setCategory(rs.getString("category"));
 				try { book.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e) {}
 				rs.close();
 				ps.close();
