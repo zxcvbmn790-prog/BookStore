@@ -30,8 +30,18 @@ public class AdminController {
 	}
 
 	@RequestMapping("/insert")
-	public String insert(AdminVO admin) {
-		adminService.insertBook(admin);
+	public String insert(AdminVO admin, RedirectAttributes ra) {
+		try {
+			int result = adminService.insertBook(admin);
+			if (result > 0) {
+				ra.addFlashAttribute("message", "도서가 성공적으로 등록되었습니다.");
+			} else {
+				ra.addFlashAttribute("message", "도서 등록에 실패했습니다. (DB 저장 실패)");
+			}
+		} catch (Exception e) {
+			ra.addFlashAttribute("message", "도서 등록 중 오류가 발생했습니다: " + e.getMessage());
+			e.printStackTrace();
+		}
 		return "redirect:/book/list"; // 등록 후 전체 도서 목록으로 이동
 	}
 
@@ -115,47 +125,6 @@ public class AdminController {
 			ra.addFlashAttribute("message", "회원 삭제에 실패했습니다.");
 		}
 		return "redirect:/admin/members";
-	}
-
-	@RequestMapping(value = "/books", method = RequestMethod.GET)
-	public String bookManage(@RequestParam(value = "keyword", required = false) String keyword, Model model) {
-	    org.springframework.security.core.Authentication auth =
-	            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-	    boolean isAdmin = auth != null && auth.getAuthorities().stream()
-	            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-	    if (!isAdmin) {
-	        return "redirect:/book/list";
-	    }
-
-	    List<AdminVO> bookList = adminService.searchBooks(keyword);
-	    model.addAttribute("bookList", bookList);
-	    model.addAttribute("keyword", keyword);
-	    model.addAttribute("contentPage", "/WEB-INF/views/admin/book_manage.jsp");
-	    return "layout/layout";
-	}
-
-	@RequestMapping(value = "/updateDiscount", method = RequestMethod.POST)
-	@org.springframework.web.bind.annotation.ResponseBody
-	public java.util.Map<String, Object> updateDiscount(
-	        @RequestParam("isbn") long isbn,
-	        @RequestParam("discountRate") int discountRate) {
-	    java.util.Map<String, Object> result = new java.util.HashMap<>();
-	    if (discountRate < 0) discountRate = 0;
-	    if (discountRate > 99) discountRate = 99;
-	    boolean success = adminService.updateDiscountRate(isbn, discountRate);
-	    result.put("success", success);
-	    return result;
-	}
-
-	@RequestMapping(value = "/updateAd", method = RequestMethod.POST)
-	@org.springframework.web.bind.annotation.ResponseBody
-	public java.util.Map<String, Object> updateAd(
-	        @RequestParam("isbn") long isbn,
-	        @RequestParam("isAd") boolean isAd) {
-	    java.util.Map<String, Object> result = new java.util.HashMap<>();
-	    boolean success = adminService.updateAdStatus(isbn, isAd);
-	    result.put("success", success);
-	    return result;
 	}
 
 	@Autowired
