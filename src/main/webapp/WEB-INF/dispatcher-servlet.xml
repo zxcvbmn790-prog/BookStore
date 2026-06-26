@@ -3,13 +3,14 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:mvc="http://www.springframework.org/schema/mvc"
-	xmlns:security="http://www.springframework.org/schema/security" 
+	xmlns:security="http://www.springframework.org/schema/security"
 	xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
 						http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
 						http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context-4.3.xsd
-						http://www.springframework.org/schema/security https://www.springframework.org/schema/security/spring-security.xsd"> 
+						http://www.springframework.org/schema/security https://www.springframework.org/schema/security/spring-security.xsd">
 
 	<context:component-scan base-package="WebBookStore" />
+	<context:property-placeholder location="classpath:mail.properties" />
 
 	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix" value="/WEB-INF/views/" />
@@ -38,14 +39,23 @@
 			<mvc:mapping path="/**" />
 			<mvc:exclude-mapping path="/" />
 			<mvc:exclude-mapping path="/book/list" />
+			<mvc:exclude-mapping path="/book/list/ajax" />
+			<mvc:exclude-mapping path="/book/view" />
+			<mvc:exclude-mapping path="/book/ads" />
+
 			<mvc:exclude-mapping path="/member/login" />
 			<mvc:exclude-mapping path="/member/register" />
 			<mvc:exclude-mapping path="/member/logout" />
-			
+
+			<mvc:exclude-mapping path="/cart/**" />
+			<mvc:exclude-mapping path="/order/**" />
+
 			<mvc:exclude-mapping path="/member/kakaoStart" />
 			<mvc:exclude-mapping path="/member/kakaoLogin" />
 			<mvc:exclude-mapping path="/member/checkId" />
-			
+			<mvc:exclude-mapping path="/member/sendOtp" />
+			<mvc:exclude-mapping path="/member/verifyOtp" />
+
 			<mvc:exclude-mapping path="/img/**" />
 			<mvc:exclude-mapping path="/css/**" />
 			<mvc:exclude-mapping path="/js/**" />
@@ -60,19 +70,29 @@
 
 	<security:http auto-config="true" use-expressions="true">
 		<security:csrf disabled="true"/>
-		
+
 		<security:intercept-url pattern="/book/list" access="permitAll"/>
+		<security:intercept-url pattern="/book/list/ajax" access="permitAll"/>
+		<security:intercept-url pattern="/book/view" access="permitAll"/>
+		<security:intercept-url pattern="/book/ads" access="permitAll"/>
+		<security:intercept-url pattern="/cart/**" access="permitAll"/>
+		<security:intercept-url pattern="/order/**" access="permitAll"/>
+
 		<security:intercept-url pattern="/member/login" access="permitAll"/>
 		<security:intercept-url pattern="/member/register" access="permitAll"/>
 		<security:intercept-url pattern="/member/checkId" access="permitAll" />
-		
+
 		<security:intercept-url pattern="/member/kakaoStart" access="permitAll" />
 		<security:intercept-url pattern="/member/kakaoLogin" access="permitAll" />
-		
-		<security:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')"/>
-		<security:intercept-url pattern="/**" access="isAuthenticated()"/>
-		
-		<security:form-login 
+		<security:intercept-url pattern="/member/sendOtp" access="permitAll" />
+		<security:intercept-url pattern="/member/verifyOtp" access="permitAll" />
+
+		<security:intercept-url pattern="/admin/traking" access="hasAnyAuthority('ROLE_ADMIN', 'ROLE_TRAKING')"/>
+		<security:intercept-url pattern="/admin/updateTracking" access="hasAnyAuthority('ROLE_ADMIN', 'ROLE_TRAKING')"/>
+		<security:intercept-url pattern="/admin/**" access="hasAuthority('ROLE_ADMIN')"/>
+<!-- 		<security:intercept-url pattern="/**" access="isAuthenticated()"/> -->
+
+		<security:form-login
 			login-page="/member/login"
 			login-processing-url="/loginProc"
 			default-target-url="/main"
@@ -80,9 +100,9 @@
 			username-parameter="username"
 			password-parameter="password"/>
 
-		<security:logout 
+		<security:logout
 			logout-url="/member/logout"
-			logout-success-url="/login"
+			logout-success-url="/book/list"
 			invalidate-session="true"/>
 
 		<security:session-management>
@@ -95,7 +115,23 @@
 			<security:password-encoder ref="passwordEncoder"/>
 		</security:authentication-provider>
 	</security:authentication-manager>
-    
+
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="${mail.smtp.host}"/>
+		<property name="port" value="${mail.smtp.port}"/>
+		<property name="username" value="${mail.smtp.username}"/>
+		<property name="password" value="${mail.smtp.password}"/>
+		<property name="javaMailProperties">
+			<props>
+				<prop key="mail.smtp.auth">true</prop>
+				<prop key="mail.smtp.starttls.enable">true</prop>
+				<prop key="mail.smtp.starttls.required">true</prop>
+				<prop key="mail.smtp.connectiontimeout">5000</prop>
+				<prop key="mail.smtp.timeout">5000</prop>
+			</props>
+		</property>
+	</bean>
+
 	<bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
 
 </beans>

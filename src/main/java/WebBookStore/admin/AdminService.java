@@ -31,12 +31,12 @@ public class AdminService {
     }
 
     // 삭제
-    public int deleteBook(int isbn) {
+    public int deleteBook(long isbn) {
         return dao.delete(isbn);
     }
 
     // 세부 조회
-    public AdminVO getBookById(int isbn) {
+    public AdminVO getBookById(long isbn) {
         return dao.findById(isbn);
     }
 
@@ -57,7 +57,23 @@ public class AdminService {
         return dao.getMemberList();
     }
 
+    public List<AdminVO> searchBooks(String keyword) {
+        return dao.searchBooks(keyword);
+    }
+
+    public boolean updateDiscountRate(long isbn, int discountRate) {
+        return dao.updateDiscountRate(isbn, discountRate) > 0;
+    }
+
     public boolean deleteMember(String username) {
         return dao.deleteMember(username) > 0;
+    }
+
+    public boolean updateAdStatus(long isbn, boolean isAd) {
+        return dao.updateAdStatus(isbn, isAd) > 0;
+    }
+
+    public List<AdminVO> getAdBooks() {
+        return dao.getAdBooks();
     }
 }
