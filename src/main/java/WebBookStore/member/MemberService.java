@@ -89,6 +89,10 @@ public class MemberService implements UserDetailsService {
 		return dao.updatePassword(username, encryptedNewPassword) > 0;
 	}
 
+	public boolean checkPassword(String rawPassword, String encodedPassword) {
+		return pwe.matches(rawPassword, encodedPassword);
+	}
+
 	public boolean deleteMember(String username) {
 		return dao.deleteMember(username) > 0;
 	}
