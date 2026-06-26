@@ -28,6 +28,7 @@ public class DatabaseInitializer {
 		createBookTable();
 		createCartTable();
 		createOrdersTable();
+		insertDummyOrders();
 		createBookLikeTable();
 		createBookRatingTable();
 		createChatMessageTable();
@@ -248,6 +249,115 @@ public class DatabaseInitializer {
 				+ ")";
 
 		execute(sql, "qna_answer");
+	}
+
+	private void insertDummyOrders() {
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement countPs = conn.prepareStatement("SELECT COUNT(*) FROM orders");
+			 java.sql.ResultSet rs = countPs.executeQuery()) {
+			if (rs.next() && rs.getInt(1) > 0) {
+				System.out.println("[DatabaseInitializer] 주문 더미 데이터 이미 존재 - 건너뜀");
+				return;
+			}
+		} catch (Exception e) {
+			System.out.println("[DatabaseInitializer] 주문 수 확인 오류: " + e.getMessage());
+			return;
+		}
+
+		System.out.println("[DatabaseInitializer] 판매통계 더미 데이터 생성 시작");
+
+		long[]   isbns     = {1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L};
+		String[] booknames = {
+			"박태웅의 AI 강의 2026", "이게 되네? 제미나이 완전 미친 활용법 81제",
+			"하루 30분, 나는 제미나이로 돈을 번다", "옵시디언 프로페셔널 노트",
+			"혼자 공부하는 바이브 코딩 with 클로드 코드", "오픈클로 with GPT",
+			"클로드 코드를 활용한 바이브 코딩 완벽 입문", "요즘 바이브 코딩 안티그래비티 완벽 가이드",
+			"AI 최전선", "한 권으로 끝내는 AI 활용"
+		};
+		int[]    prices    = {20700, 21600, 17100, 22500, 27000, 19800, 23400, 25200, 16020, 18000};
+		String[] users     = {"user", "user1", "user2", "user3", "user4"};
+		String[] receivers = {"김민준", "이서연", "박지호", "최수아", "정예준"};
+		String[] phones    = {"010-1234-5678", "010-2345-6789", "010-3456-7890", "010-4567-8901", "010-5678-9012"};
+		String[] addresses = {
+			"서울시 강남구 테헤란로 123", "서울시 마포구 홍대입구로 45",
+			"부산시 해운대구 해운대로 78", "경기도 성남시 분당구 판교로 56",
+			"서울시 서초구 강남대로 200"
+		};
+
+		java.util.Random rand = new java.util.Random(2024L);
+		int total = 0;
+
+		// 최근 7일: 하루 3~5건
+		for (int day = 0; day >= -6; day--) {
+			int cnt = 3 + rand.nextInt(3);
+			for (int i = 0; i < cnt; i++)
+				total += insertOneOrder(isbns, booknames, prices, users, receivers, phones, addresses, day, rand);
+		}
+
+		// 2~8주 전: 주당 8~12건
+		for (int week = 1; week <= 7; week++) {
+			int cnt = 8 + rand.nextInt(5);
+			for (int i = 0; i < cnt; i++) {
+				int off = -(7 + week * 7 - rand.nextInt(6));
+				total += insertOneOrder(isbns, booknames, prices, users, receivers, phones, addresses, off, rand);
+			}
+		}
+
+		// 3~12개월 전: 월당 20~35건
+		for (int month = 2; month <= 11; month++) {
+			int cnt = 20 + rand.nextInt(16);
+			for (int i = 0; i < cnt; i++) {
+				int off = -(57 + month * 30 - rand.nextInt(29));
+				total += insertOneOrder(isbns, booknames, prices, users, receivers, phones, addresses, off, rand);
+			}
+		}
+
+		// 1~4년 전: 연당 60~90건
+		for (int year = 1; year <= 4; year++) {
+			int cnt = 60 + rand.nextInt(31);
+			for (int i = 0; i < cnt; i++) {
+				int off = -(365 * year + rand.nextInt(364));
+				total += insertOneOrder(isbns, booknames, prices, users, receivers, phones, addresses, off, rand);
+			}
+		}
+
+		System.out.println("[DatabaseInitializer] 판매통계 더미 데이터 생성 완료: " + total + "건");
+	}
+
+	private int insertOneOrder(long[] isbns, String[] booknames, int[] prices,
+			String[] users, String[] receivers, String[] phones, String[] addresses,
+			int dayOffset, java.util.Random rand) {
+		String sql = "INSERT INTO orders "
+				+ "(userid, isbn, bookname, price, amount, total_price, receiver, phone, address, "
+				+ " order_date, status, traking_status, earned_mileage, final_payment) "
+				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DATEADD(DAY, ?, CURRENT_TIMESTAMP), "
+				+ "'배송완료', '배송완료', ?, ?)";
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
+			int bi = rand.nextInt(isbns.length);
+			int ui = rand.nextInt(users.length);
+			int amount = 1 + rand.nextInt(3);
+			int price  = prices[bi];
+			int total  = price * amount;
+			int earned = (int)(total * 0.05);
+
+			ps.setString(1,  users[ui]);
+			ps.setLong(2,    isbns[bi]);
+			ps.setString(3,  booknames[bi]);
+			ps.setInt(4,     price);
+			ps.setInt(5,     amount);
+			ps.setInt(6,     total);
+			ps.setString(7,  receivers[ui]);
+			ps.setString(8,  phones[ui]);
+			ps.setString(9,  addresses[ui]);
+			ps.setInt(10,    dayOffset);
+			ps.setInt(11,    earned);
+			ps.setInt(12,    total);
+			ps.executeUpdate();
+			return 1;
+		} catch (Exception e) {
+			return 0;
+		}
 	}
 
 	private void execute(String sql, String tableName) {
