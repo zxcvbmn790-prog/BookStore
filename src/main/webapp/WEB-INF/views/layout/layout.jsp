@@ -20,6 +20,12 @@
 				<jsp:include page="/WEB-INF/views/common/header.jsp" />
 			</header>
 
+			<c:if test="${showSidebar}">
+				<aside class="ad-sidebar" style="display:none">
+					<jsp:include page="/WEB-INF/views/common/ad_sidebar.jsp" />
+				</aside>
+			</c:if>
+
 			<main class="site-main">
 				<c:choose>
 					<c:when test="${not empty contentPage}">

@@ -437,4 +437,22 @@ public class UserBookDAO {
 		return false;
 	}
 
+	public List<BookVO> findAdBooks() {
+		List<BookVO> list = new ArrayList<>();
+		String sql = "SELECT * FROM book WHERE is_ad = TRUE ORDER BY isbn";
+		try (PreparedStatement ps = conn.prepareStatement(sql);
+			 ResultSet rs = ps.executeQuery()) {
+			while (rs.next()) {
+				BookVO book = new BookVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
+						rs.getString("publisher"), rs.getString("image"), rs.getString("price"),
+						rs.getString("category"));
+				try { book.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e2) {}
+				list.add(book);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+
 }

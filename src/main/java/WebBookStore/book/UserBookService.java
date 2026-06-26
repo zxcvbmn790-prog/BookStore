@@ -54,4 +54,8 @@ public class UserBookService {
 	public List<BookVO> searchByBookName(String keyword) {
 		return dao.searchByBookName(keyword);
 	}
+
+	public List<BookVO> getAdBooks() {
+		return dao.findAdBooks();
+	}
 }
