@@ -57,6 +57,10 @@ public class AdminService {
         return dao.getMemberList();
     }
 
+    public java.util.List<WebBookStore.member.MemberVO> searchMembers(String keyword) {
+        return dao.searchMembers(keyword);
+    }
+
     public List<AdminVO> searchBooks(String keyword) {
         return dao.searchBooks(keyword);
     }

@@ -10,6 +10,14 @@
         </div>
     </div>
 
+    <form method="get" action="${pageContext.request.contextPath}/admin/members" class="bm-search-bar" style="margin-bottom:20px;">
+        <input type="text" name="keyword" value="${keyword}" placeholder="아이디 / 닉네임 / 이메일 검색" class="bm-search-input">
+        <button type="submit" class="bm-search-btn">검색</button>
+        <c:if test="${not empty keyword}">
+            <a href="${pageContext.request.contextPath}/admin/members" class="bm-search-reset">전체보기</a>
+        </c:if>
+    </form>
+
     <c:if test="${not empty message}">
         <div class="auth-alert" style="background:#ecfdf3; color:#166534; border-color:#bbf7d0; margin-bottom:20px;">${message}</div>
     </c:if>

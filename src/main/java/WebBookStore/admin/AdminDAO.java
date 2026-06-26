@@ -308,6 +308,49 @@ public class AdminDAO {
 	    return list;
 	}
 
+	public List<MemberVO> searchMembers(String keyword) {
+		List<MemberVO> list = new ArrayList<>();
+		boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+		String sql = "SELECT num, id, pw, email, hp, nickname, role, "
+				+ "default_receiver, default_phone, default_address, "
+				+ "mileage, total_mileage, grade FROM member";
+		if (hasKeyword) {
+			sql += " WHERE id LIKE ? OR nickname LIKE ? OR email LIKE ?";
+		}
+		sql += " ORDER BY num DESC";
+
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+			if (hasKeyword) {
+				String kw = "%" + keyword.trim() + "%";
+				ps.setString(1, kw);
+				ps.setString(2, kw);
+				ps.setString(3, kw);
+			}
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					MemberVO member = new MemberVO();
+					member.setId(rs.getInt("num"));
+					member.setUsername(rs.getString("id"));
+					member.setPassword(rs.getString("pw"));
+					member.setEmail(rs.getString("email"));
+					member.setPhone(rs.getString("hp"));
+					member.setNickname(rs.getString("nickname"));
+					member.setRole(rs.getString("role"));
+					member.setDefaultReceiver(rs.getString("default_receiver"));
+					member.setDefaultPhone(rs.getString("default_phone"));
+					member.setDefaultAddress(rs.getString("default_address"));
+					member.setMileage(rs.getInt("mileage"));
+					member.setTotalMileage(rs.getInt("total_mileage"));
+					member.setGrade(rs.getString("grade"));
+					list.add(member);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+
 	public List<AdminVO> searchBooks(String keyword) {
 		List<AdminVO> list = new ArrayList<>();
 		String sql = "SELECT * FROM book";
