@@ -62,6 +62,7 @@ public class UserBookController {
 		model.addAttribute("category", category);
 		model.addAttribute("currentPage", page);
 		model.addAttribute("viewAll", viewAll);
+		model.addAttribute("showSidebar", true);
 		model.addAttribute("contentPage", "/WEB-INF/views/book/views.jsp");
 
 		return "layout/layout";
@@ -122,8 +123,15 @@ public class UserBookController {
 		String loginUser = (String) session.getAttribute("loginUser");
 		model.addAttribute("book", bookService.getBook(isbn));
 		model.addAttribute("feedback", bookService.getBookFeedback(isbn, loginUser));
+		model.addAttribute("showSidebar", true);
 		model.addAttribute("contentPage", "/WEB-INF/views/book/view.jsp");
 		return "layout/layout";
+	}
+
+	@RequestMapping(value = "/ads", method = RequestMethod.GET)
+	@org.springframework.web.bind.annotation.ResponseBody
+	public List<BookVO> getAdBooks() {
+		return bookService.getAdBooks();
 	}
 
 	@RequestMapping(value = "/like", method = RequestMethod.POST)
