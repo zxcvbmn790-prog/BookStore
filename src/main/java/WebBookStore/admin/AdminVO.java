@@ -20,6 +20,8 @@ public class AdminVO {
     private String publisher; // 출판사
     private String image;     // 도서 이미지 경로
     private String price;	  // 가격
+    private String category;  // 카테고리
     private int discountRate; // 할인율 (0~99)
     private boolean isAd;     // 광고 여부
+
 }
