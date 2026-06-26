@@ -3,9 +3,7 @@
     <div class="ad-sidebar-title">
         <i class="fas fa-bullhorn"></i>&nbsp; 추천 광고 도서
     </div>
-    <div id="adBookList">
-        <div class="ad-loading">불러오는 중...</div>
-    </div>
+    <div id="adBookList"></div>
 </div>
 
 <script>
@@ -14,12 +12,7 @@
     fetch(ctx + '/book/ads')
         .then(function(res) { return res.json(); })
         .then(function(books) {
-            var container = document.getElementById('adBookList');
-            if (!books || books.length === 0) {
-                var sidebar = container.closest('.ad-sidebar');
-                if (sidebar) sidebar.style.display = 'none';
-                return;
-            }
+            if (!books || books.length === 0) return;
             var html = '';
             books.forEach(function(book) {
                 var price = parseInt(book.price) || 0;
@@ -29,24 +22,17 @@
                     ? '<span class="ad-discount-badge">' + dr + '%</span>' + finalPrice.toLocaleString() + '원'
                     : price.toLocaleString() + '원';
                 html += '<a href="' + ctx + '/book/view?isbn=' + book.isbn + '" class="ad-book-card">';
-                if (book.image) {
-                    html += '<img src="' + book.image + '" alt="" class="ad-book-img">';
-                } else {
-                    html += '<div class="ad-book-img ad-book-img-placeholder"></div>';
-                }
-                html += '<div class="ad-book-info">';
-                html += '<div class="ad-book-title">' + book.bookname + '</div>';
-                html += '<div class="ad-book-price">' + priceHtml + '</div>';
-                html += '</div></a>';
+                html += book.image
+                    ? '<img src="' + book.image + '" alt="" class="ad-book-img">'
+                    : '<div class="ad-book-img ad-book-img-placeholder"></div>';
+                html += '<div class="ad-book-info">'
+                    + '<div class="ad-book-title">' + book.bookname + '</div>'
+                    + '<div class="ad-book-price">' + priceHtml + '</div>'
+                    + '</div></a>';
             });
-            container.innerHTML = html;
-        })
-        .catch(function() {
-            var container = document.getElementById('adBookList');
-            if (container) {
-                var sidebar = container.closest('.ad-sidebar');
-                if (sidebar) sidebar.style.display = 'none';
-            }
+            document.getElementById('adBookList').innerHTML = html;
+            var sidebar = document.querySelector('.ad-sidebar');
+            if (sidebar) sidebar.style.display = 'block';
         });
 })();
 </script>
