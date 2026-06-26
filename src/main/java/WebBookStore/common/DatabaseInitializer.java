@@ -275,7 +275,7 @@ public class DatabaseInitializer {
 			"AI 최전선", "한 권으로 끝내는 AI 활용"
 		};
 		int[]    prices    = {20700, 21600, 17100, 22500, 27000, 19800, 23400, 25200, 16020, 18000};
-		String[] users     = {"user", "user1", "user2", "user3", "user4"};
+		String[] users     = {"dummy_user1", "dummy_user2", "dummy_user3", "dummy_user4", "dummy_user5"};
 		String[] receivers = {"김민준", "이서연", "박지호", "최수아", "정예준"};
 		String[] phones    = {"010-1234-5678", "010-2345-6789", "010-3456-7890", "010-4567-8901", "010-5678-9012"};
 		String[] addresses = {
