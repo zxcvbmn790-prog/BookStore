@@ -142,6 +142,6 @@
 <script>
 function openTracking(orderId) {
     var url = "${pageContext.request.contextPath}/order/trackingDetail?orderId=" + orderId;
-    window.open(url, "배송현황", "width=850,height=350,top=100,left=200,location=no,status=no,scrollbars=no");
+    window.open(url, "배송현황", "width=850,height=500,top=100,left=200,location=no,status=no,scrollbars=no");
 }
 </script>

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import WebBookStore.member.MemberService;
 import WebBookStore.order.OrderService;
 import WebBookStore.order.OrderVO;
 
@@ -169,8 +170,8 @@ public class AdminController {
 
 		String userid = principal.getName();
 
-		if (!"tracking".equals(userid) && !"admin".equals(userid)) {
-			return "redirect:/member/login";
+		if (!"ROLE_TRAKING".equals(userid) && !"ROLE_ADMIN".equals(userid)) {
+			//return "redirect:/member/login";
 		}
 
 		List<OrderVO> deliveryList = orderService.getAllOrderList();
@@ -192,4 +193,32 @@ public class AdminController {
 		}
 		return "redirect:/admin/traking";
 	}
+	
+	
+	// 고객관리 변경
+	@Autowired
+	private MemberService memberService;
+	
+	@RequestMapping(value = "/member/updateRole", method = RequestMethod.GET)
+    public String updateRole(
+            @RequestParam("username") String username,
+            @RequestParam("role") String role,
+            RedirectAttributes redirectAttributes) {
+        
+        try {
+            // 1. 비즈니스 로직 수행 (DB의 회원 권한 업데이트)
+            // memberService.updateMemberRole(username, role);
+            
+            // 2. 성공 메시지 설정 (JSP의 ${message} 부분에 표시됨)
+            redirectAttributes.addFlashAttribute("message", username + " 회원의 권한이 성공적으로 변경되었습니다.");
+            memberService.upRole(username, role);
+            
+        } catch (Exception e) {
+            // 에러 발생 시 처리
+            redirectAttributes.addFlashAttribute("message", "권한 변경 중 오류가 발생했습니다.");
+        }
+        
+        // 3. 권한 변경 후 지정하신 admin/members 페이지로 리다이렉트(갱신)
+        return "redirect:/admin/members";
+    }
 }
