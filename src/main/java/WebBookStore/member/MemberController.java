@@ -47,29 +47,35 @@ public class MemberController {
 		return "layout/layout";
 	}
 
+	
 	@RequestMapping(value = "login", method = RequestMethod.POST)
 	public ResponseEntity<?> login(@RequestBody MemberVO member, HttpServletRequest request, HttpSession loginsession) {
-		try {
-			Authentication authentication = authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(member.getUsername(), member.getPassword())
-			);
+	    try {
+	        Authentication authentication = authenticationManager.authenticate(
+	                new UsernamePasswordAuthenticationToken(member.getUsername(), member.getPassword())
+	        );
 
-			SecurityContextHolder.getContext().setAuthentication(authentication);
+	        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-			HttpSession session = request.getSession(true);
-			session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-			session.setAttribute("loginUser", authentication.getName());
-			MemberVO dbMember = memberService.getMember(authentication.getName());
-			session.setAttribute("loginNickname", dbMember != null ? dbMember.getNickname() : authentication.getName());
-
-			return ResponseEntity.ok(
-					Map.of("result", "success", "message", "로그인 성공", "username", authentication.getName())
-			);
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(
-					Map.of("result", "fail", "message", "로그인 실패: " + e.getMessage())
-			);
-		}
+	        HttpSession session = request.getSession();
+	        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+	        
+	        // 🌟 DB에서 최신 회원 정보를 먼저 가져옵니다.
+	        MemberVO dbMember = memberService.getMember(authentication.getName());
+	        
+	        // 🌟 DB에서 가져온 데이터(dbMember)로 세션을 채워야 권한(Role)이 정확히 반영됩니다!
+	        session.setAttribute("loginUser", dbMember != null ? dbMember.getUsername() : authentication.getName());
+	        session.setAttribute("loginNickname", dbMember != null ? dbMember.getNickname() : authentication.getName());
+	        session.setAttribute("loginRole", dbMember != null ? dbMember.getRole() : "ROLE_USER"); 
+	        
+	        return ResponseEntity.ok(
+	                Map.of("result", "success", "message", "로그인 성공", "username", authentication.getName())
+	        );
+	    } catch (Exception e) {
+	        return ResponseEntity.badRequest().body(
+	                Map.of("result", "fail", "message", "로그인 실패: " + e.getMessage())
+	        );
+	    }
 	}
 
 	// ==================== 카카오 로그인 ====================
@@ -90,27 +96,28 @@ public class MemberController {
 			return "redirect:/member/login";
 		}
 		try {
-			String accessToken = kakaoLoginService.getAccessToken(code);
-			KakaoUserInfo kakaoUserInfo = kakaoLoginService.getUserInfo(accessToken);
-			MemberVO member = memberService.getOrRegisterKakaoMember(kakaoUserInfo);
+	        String accessToken = kakaoLoginService.getAccessToken(code);
+	        KakaoUserInfo kakaoUserInfo = kakaoLoginService.getUserInfo(accessToken);
+	        MemberVO member = memberService.getOrRegisterKakaoMember(kakaoUserInfo);
 
-			session.setAttribute("loginUser", member.getUsername());
-			session.setAttribute("loginNickname", member.getNickname());
-			session.setAttribute("loginType", "KAKAO");
+	        session.setAttribute("loginUser", member.getUsername());
+	        session.setAttribute("loginNickname", member.getNickname());
+	        session.setAttribute("loginRole", member.getRole()); // 🌟 카카오 로그인 시에도 Role 저장 추가
+	        session.setAttribute("loginType", "KAKAO");
 
-			org.springframework.security.core.userdetails.UserDetails userDetails =
-					memberService.loadUserByUsername(member.getUsername());
-			Authentication authentication = new UsernamePasswordAuthenticationToken(
-					userDetails, null, userDetails.getAuthorities());
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-			session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+	        org.springframework.security.core.userdetails.UserDetails userDetails =
+	                memberService.loadUserByUsername(member.getUsername());
+	        Authentication authentication = new UsernamePasswordAuthenticationToken(
+	                userDetails, null, userDetails.getAuthorities());
+	        SecurityContextHolder.getContext().setAuthentication(authentication);
+	        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 
-			return "redirect:/book/list";
-		} catch (Exception e) {
-			e.printStackTrace();
-			ra.addFlashAttribute("authError", "카카오 로그인 처리 중 오류가 발생했습니다.");
-			return "redirect:/member/login";
-		}
+	        return "redirect:/book/list";
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        ra.addFlashAttribute("authError", "카카오 로그인 처리 중 오류가 발생했습니다.");
+	        return "redirect:/member/login";
+	    }
 	}
 
 	// ==================== 회원가입 ====================
