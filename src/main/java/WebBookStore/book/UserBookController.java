@@ -75,7 +75,7 @@ public class UserBookController {
 			@RequestParam(value = "page", defaultValue = "1") int page,
 			@RequestParam(value = "viewAll", defaultValue = "false") boolean viewAll) {
 
-		int limit = 10; // 인피니트 스크롤시에는 한 번에 10개씩 로딩
+		int limit = 4; // 최초 목록(list)과 동일한 limit(4)으로 설정하여 offset 꼬임 방지
 		int offset = (page - 1) * limit;
 
 		List<BookVO> list = bookService.getBookListByPage(category, offset, limit, viewAll);
