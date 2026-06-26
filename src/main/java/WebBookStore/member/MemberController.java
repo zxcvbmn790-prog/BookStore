@@ -298,12 +298,38 @@ public class MemberController {
 	    return "redirect:/member/profile";
 	}
 
+	@RequestMapping(value = "delete", method = RequestMethod.GET)
+	public String deleteForm(HttpSession session, Model model, RedirectAttributes ra) {
+		String loginUser = (String) session.getAttribute("loginUser");
+		if (loginUser == null || "admin".equals(loginUser)) {
+			ra.addFlashAttribute("authError", "로그인 후 이용해주세요.");
+			return "redirect:/member/login";
+		}
+		model.addAttribute("contentPage", "/WEB-INF/views/member/delete.jsp");
+		return "layout/layout";
+	}
+
 	@RequestMapping(value = "delete", method = RequestMethod.POST)
 	public String deleteMember(String password, HttpSession session, RedirectAttributes ra) {
 		String loginUser = (String) session.getAttribute("loginUser");
 		if (loginUser == null || "admin".equals(loginUser)) {
 			return "redirect:/member/login";
 		}
+
+		// 카카오 사용자는 비밀번호 검증 없이 탈퇴
+		boolean isKakao = "KAKAO".equals(session.getAttribute("loginType"));
+		if (!isKakao) {
+			if (password == null || password.trim().isEmpty()) {
+				ra.addFlashAttribute("deleteError", "비밀번호를 입력해주세요.");
+				return "redirect:/member/delete";
+			}
+			MemberVO member = memberService.getMember(loginUser);
+			if (member == null || !memberService.checkPassword(password, member.getPassword())) {
+				ra.addFlashAttribute("deleteError", "비밀번호가 올바르지 않습니다.");
+				return "redirect:/member/delete";
+			}
+		}
+
 		memberService.deleteMember(loginUser);
 		session.invalidate();
 		ra.addFlashAttribute("authMessage", "회원 탈퇴가 완료되었습니다.");
