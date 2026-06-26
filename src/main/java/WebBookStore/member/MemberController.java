@@ -204,6 +204,58 @@ public class MemberController {
 		return ResponseEntity.ok(Map.of("result", "success", "message", "이메일 인증이 완료되었습니다."));
 	}
 
+	// ==================== 비밀번호 변경 ====================
+
+	@RequestMapping(value = "password", method = RequestMethod.GET)
+	public String password(HttpSession session, Model model, RedirectAttributes ra) {
+		String loginUser = (String) session.getAttribute("loginUser");
+		if (loginUser == null) {
+			return "redirect:/member/login";
+		}
+		if ("KAKAO".equals(session.getAttribute("loginType"))) {
+			ra.addFlashAttribute("profileError", "카카오 로그인 사용자는 비밀번호를 변경할 수 없습니다.");
+			return "redirect:/member/profile";
+		}
+		model.addAttribute("member", memberService.getMember(loginUser));
+		model.addAttribute("contentPage", "/WEB-INF/views/member/password.jsp");
+		return "layout/layout";
+	}
+
+	@RequestMapping(value = "password/update", method = RequestMethod.POST)
+	public String updatePassword(
+			@RequestParam String currentPassword,
+			@RequestParam String newPassword,
+			@RequestParam String confirmPassword,
+			HttpSession session, RedirectAttributes ra) {
+		String loginUser = (String) session.getAttribute("loginUser");
+		if (loginUser == null) {
+			return "redirect:/member/login";
+		}
+
+		Boolean verified = (Boolean) session.getAttribute("pendingEmailVerified");
+		String verifiedEmail = (String) session.getAttribute("pendingEmail");
+		MemberVO member = memberService.getMember(loginUser);
+
+		if (verified == null || !verified
+				|| verifiedEmail == null || !verifiedEmail.equals(member.getEmail())) {
+			ra.addFlashAttribute("passwordError", "이메일 인증을 먼저 완료해주세요.");
+			return "redirect:/member/password";
+		}
+		if (!newPassword.equals(confirmPassword)) {
+			ra.addFlashAttribute("passwordError", "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+			return "redirect:/member/password";
+		}
+		if (!memberService.updatePassword(loginUser, currentPassword, newPassword)) {
+			ra.addFlashAttribute("passwordError", "현재 비밀번호가 올바르지 않습니다.");
+			return "redirect:/member/password";
+		}
+
+		clearPendingSession(session);
+		session.invalidate();
+		ra.addFlashAttribute("authMessage", "비밀번호가 변경되었습니다. 다시 로그인해주세요.");
+		return "redirect:/member/login";
+	}
+
 	// ==================== 프로필 / 탈퇴 / 로그아웃 ====================
 
 	@RequestMapping(value = "profile", method = RequestMethod.GET)

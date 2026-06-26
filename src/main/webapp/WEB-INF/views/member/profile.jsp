@@ -59,7 +59,9 @@
 	</form>
 
         <div class="account-link-grid">
-            <a href="${pageContext.request.contextPath}/member/password" class="account-link-card">비밀번호 수정</a>
+            <c:if test="${sessionScope.loginType ne 'KAKAO'}">
+                <a href="${pageContext.request.contextPath}/member/password" class="account-link-card">비밀번호 수정</a>
+            </c:if>
             <a href="${pageContext.request.contextPath}/member/delete" class="account-link-card danger">회원 탈퇴</a>
         </div>
     </div>

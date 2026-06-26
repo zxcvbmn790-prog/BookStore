@@ -310,7 +310,9 @@
 
         <div class="profile-drawer-menu">
             <a href="${pageContext.request.contextPath}/member/profile">정보 수정</a>
-            <a href="${pageContext.request.contextPath}/member/password">비밀번호 수정</a>
+            <c:if test="${sessionScope.loginType ne 'KAKAO'}">
+                <a href="${pageContext.request.contextPath}/member/password">비밀번호 수정</a>
+            </c:if>
             <a href="${pageContext.request.contextPath}/order/list">주문내역</a>
             <a href="${pageContext.request.contextPath}/cart/list">장바구니</a>
             <a href="${pageContext.request.contextPath}/member/delete">회원 탈퇴</a>
