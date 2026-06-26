@@ -54,6 +54,7 @@
 </div>
 
 <%-- 중략 (Search Wrap 및 JavaScript 영역은 기존과 동일하므로 유지하시면 됩니다) --%>
+<c:if test="${not (contentPage eq '/WEB-INF/views/member/login.jsp' or contentPage eq '/WEB-INF/views/member/register.jsp')}">
 <div class="header-search-wrap">
 	<form id="headerSearchForm" class="header-search-form"
 		autocomplete="off">
@@ -304,6 +305,7 @@
     clearBtn.classList.toggle('show', input.value.trim().length > 0);
 })();
 </script>
+</c:if>
 <%-- 🌟 사이드 프로필 드로어 조건 변경: 로그인 상태이고 최고 관리자가 아닐 때 노출 --%>
 <c:if
 	test="${not empty sessionScope.loginUser and sessionScope.loginRole ne 'ROLE_ADMIN'}">
