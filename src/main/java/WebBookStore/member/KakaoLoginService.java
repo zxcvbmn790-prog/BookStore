@@ -16,7 +16,7 @@ import org.springframework.web.client.RestTemplate;
 public class KakaoLoginService {
 
 	private static final String KAKAO_REST_API_KEY = "3350a3be4ca50a8f574c59bcbf9ec96d";
-	private static final String KAKAO_REDIRECT_URI = "http://localhost:8080/member/kakaoLogin";
+	private static final String KAKAO_REDIRECT_URI = "https://garment-bonded-citation.ngrok-free.dev/member/kakaoLogin";
 	private static final String KAKAO_TOKEN_URL = "https://kauth.kakao.com/oauth/token";
 	private static final String KAKAO_USER_INFO_URL = "https://kapi.kakao.com/v2/user/me";
 

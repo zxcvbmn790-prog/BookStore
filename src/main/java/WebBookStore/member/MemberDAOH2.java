@@ -7,21 +7,36 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class MemberDAOH2 implements MemberDAO {
+public class MemberDAOH2 implements MemberDAO, InitializingBean {
 
+	private static final String MEMBER_COLUMNS = "num, id, pw, email, hp, nickname, role, "
+	        + "default_receiver, default_phone, default_address, "
+	        + "mileage, total_mileage, grade";
+	
 	@Autowired
-	Connection conn;
+	private DataSource ds;
 
 	private static final String KAKAO_ID_PREFIX = "kakao_";
 
 	@Override
+	public void afterPropertiesSet() throws Exception {
+		// ⚠️ 테이블 생성 로직은 DatabaseInitializer에서 통합 관리하므로 여기서는 로그만 남깁니다.
+		System.out.println("[MemberDAOH2] Bean initialized");
+	}
+
+	@Override
 	public MemberVO login(String username, String password) {
-		String sql = "SELECT num, id, pw, email, hp, nickname FROM member WHERE id = ? AND pw = ?";
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+		// String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member WHERE id = ? AND pw = ?";
+		String sql = "SELECT " + MEMBER_COLUMNS + " FROM member WHERE id = ? AND pw = ?";
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, username);
 			ps.setString(2, password);
 			try (ResultSet rs = ps.executeQuery()) {
@@ -37,8 +52,9 @@ public class MemberDAOH2 implements MemberDAO {
 
 	@Override
 	public int register(MemberVO mv) {
-		String sql = "INSERT INTO member (id, pw, hp, email, nickname) VALUES (?, ?, ?, ?, ?)";
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+		String sql = "INSERT INTO member (id, pw, hp, email, nickname, role) VALUES (?, ?, ?, ?, ?, 'ROLE_USER')";
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, mv.getUsername());
 			ps.setString(2, mv.getPassword());
 			ps.setString(3, mv.getPhone());
@@ -53,8 +69,10 @@ public class MemberDAOH2 implements MemberDAO {
 
 	@Override
 	public MemberVO findByUsername(String username) {
-		String sql = "SELECT num, id, pw, email, hp, nickname FROM member WHERE id = ?";
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+		// String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member WHERE id = ?";
+		String sql = "SELECT " + MEMBER_COLUMNS + " FROM member WHERE id = ?";
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, username);
 			try (ResultSet rs = ps.executeQuery()) {
 				if (rs.next()) {
@@ -69,12 +87,20 @@ public class MemberDAOH2 implements MemberDAO {
 
 	@Override
 	public int updateProfile(MemberVO member) {
-		String sql = "UPDATE member SET nickname = ?, email = ?, hp = ? WHERE id = ?";
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+		// String sql = "UPDATE member SET nickname = ?, email = ?, hp = ? WHERE id = ?";
+		String sql = "UPDATE member "
+		        + "SET nickname = ?, email = ?, hp = ?, "
+		        + "default_receiver = ?, default_phone = ?, default_address = ? "
+		        + "WHERE id = ?";
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, member.getNickname());
 			ps.setString(2, member.getEmail());
 			ps.setString(3, member.getPhone());
-			ps.setString(4, member.getUsername());
+			ps.setString(4, member.getDefaultReceiver());
+			ps.setString(5, member.getDefaultPhone());
+			ps.setString(6, member.getDefaultAddress());
+			ps.setString(7, member.getUsername());
 			return ps.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -82,11 +108,11 @@ public class MemberDAOH2 implements MemberDAO {
 		return 0;
 	}
 
-	// ⚠️ [수정됨] 인터페이스 변경에 맞춰 파라미터를 2개로 줄이고 쿼리문을 수정했습니다.
 	@Override
 	public int updatePassword(String username, String newPassword) {
 		String sql = "UPDATE member SET pw = ? WHERE id = ?";
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, newPassword);
 			ps.setString(2, username);
 			return ps.executeUpdate();
@@ -107,16 +133,19 @@ public class MemberDAOH2 implements MemberDAO {
 				"DELETE FROM member WHERE id = ?"
 		};
 		int result = 0;
-		for (String sql : sqls) {
-			try (PreparedStatement ps = conn.prepareStatement(sql)) {
-				ps.setString(1, username);
-				if (sql.contains("sender = ?")) {
-					ps.setString(2, username);
+		try (Connection conn = ds.getConnection()) {
+			for (String sql : sqls) {
+				try (PreparedStatement ps = conn.prepareStatement(sql)) {
+					ps.setString(1, username);
+					if (sql.contains("sender = ?")) {
+						ps.setString(2, username);
+					}
+					result = ps.executeUpdate();
+				} catch (Exception e) {
 				}
-				result = ps.executeUpdate();
-			} catch (Exception e) {
-				// 테이블이 아직 없을 수 있으므로 다음 단계로 계속 진행
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return result;
 	}
@@ -124,8 +153,11 @@ public class MemberDAOH2 implements MemberDAO {
 	@Override
 	public List<MemberVO> findAllMembers() {
 		List<MemberVO> list = new ArrayList<>();
-		String sql = "SELECT num, id, pw, email, hp, nickname FROM member ORDER BY num DESC";
-		try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+		// String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member ORDER BY num DESC";
+		String sql = "SELECT " + MEMBER_COLUMNS + " FROM member ORDER BY num DESC";
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql); 
+			 ResultSet rs = ps.executeQuery()) {
 			while (rs.next()) {
 				list.add(mapRow(rs)); 
 			}
@@ -135,7 +167,6 @@ public class MemberDAOH2 implements MemberDAO {
 		return list;
 	}
 
-	// feature_kakaoLogin 브랜치: 카카오 관련 메서드 추가
 	@Override
 	public MemberVO findByKakaoId(String kakaoId) {
 		return findByUsername(KAKAO_ID_PREFIX + kakaoId);
@@ -143,8 +174,9 @@ public class MemberDAOH2 implements MemberDAO {
 
 	@Override
 	public int registerKakaoMember(KakaoUserInfo kakaoUserInfo) {
-		String sql = "MERGE INTO member (id, pw, hp, email, nickname) KEY(id) VALUES (?, ?, ?, ?, ?)";
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+		String sql = "MERGE INTO member (id, pw, hp, email, nickname, role) KEY(id) VALUES (?, ?, ?, ?, ?, 'ROLE_USER')";
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, KAKAO_ID_PREFIX + kakaoUserInfo.getKakaoId());
 			ps.setString(2, "KAKAO_LOGIN_USER");
 			ps.setString(3, "");
@@ -156,25 +188,25 @@ public class MemberDAOH2 implements MemberDAO {
 		}
 		return 0;
 	}
-	
-	// dev 브랜치: 다수 유저 검색 (또는 오타로 생성된) 메서드 추가
+
 	@Override
 	public MemberVO findByUsernames(String username) {
-		String sql = "SELECT num, id, pw, email, hp, nickname FROM member WHERE id = ?";
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+		// String sql = "SELECT num, id, pw, email, hp, nickname, role FROM member WHERE id = ?";
+		String sql = "SELECT " + MEMBER_COLUMNS + " FROM member WHERE id = ?";
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setString(1, username);
 			try (ResultSet rs = ps.executeQuery()) {
 				if (rs.next()) {
-					return mapRow(rs); 
+					return mapRow(rs);
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return null; 
+		return null;
 	}
 
-	// dev 브랜치 채택: 안전한 Setter 방식의 mapRow 유지 (중복 생성된 메서드는 삭제함)
 	private MemberVO mapRow(ResultSet rs) throws SQLException {
 		MemberVO member = new MemberVO();
 		
@@ -184,6 +216,15 @@ public class MemberDAOH2 implements MemberDAO {
 		member.setEmail(rs.getString("email"));
 		member.setPhone(rs.getString("hp"));        
 		member.setNickname(rs.getString("nickname"));
+		member.setRole(rs.getString("role")); // ⚠️ DB에서 꺼낸 권한 저장
+		
+		member.setDefaultReceiver(rs.getString("default_receiver"));
+		member.setDefaultPhone(rs.getString("default_phone"));
+		member.setDefaultAddress(rs.getString("default_address"));
+
+		member.setMileage(rs.getInt("mileage"));
+		member.setTotalMileage(rs.getInt("total_mileage"));
+		member.setGrade(rs.getString("grade"));
 		
 		return member;
 	}

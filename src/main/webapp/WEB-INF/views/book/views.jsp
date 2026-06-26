@@ -4,7 +4,6 @@
 		<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 			<style>
-				/* [1] 슬라이드 배너 */
 				.banner-container {
 					max-width: 1200px;
 					position: relative;
@@ -48,7 +47,6 @@
 					left: 20px;
 				}
 
-				/* [2] 카테고리 버튼 스타일 */
 				.category-menu {
 					display: flex;
 					justify-content: center;
@@ -74,7 +72,6 @@
 					color: white;
 				}
 
-				/* [3] 메인 화면용 그리드 스타일 (왼쪽 정렬) */
 				.book-list-container {
 					display: flex;
 					flex-wrap: wrap;
@@ -124,6 +121,55 @@
 					font-weight: bold;
 				}
 
+				.book-price-original {
+					text-decoration: line-through;
+					color: #999;
+					font-size: 13px;
+					font-weight: 400;
+				}
+
+				.book-discount-badge {
+					display: inline-block;
+					background: #d9534f;
+					color: #fff;
+					font-size: 12px;
+					font-weight: 700;
+					padding: 2px 6px;
+					border-radius: 3px;
+					margin-right: 4px;
+				}
+
+				.list-price-original {
+					text-decoration: line-through;
+					color: #999;
+					font-size: 14px;
+					font-weight: 400;
+				}
+
+				.list-discount-badge {
+					display: inline-block;
+					background: #d9534f;
+					color: #fff;
+					font-size: 13px;
+					font-weight: 700;
+					padding: 2px 8px;
+					border-radius: 3px;
+					margin-right: 6px;
+				}
+
+				.sale-rate-badge {
+					position: absolute;
+					top: 10px;
+					left: 10px;
+					background: #d9534f;
+					color: #fff;
+					font-size: 14px;
+					font-weight: 800;
+					padding: 4px 10px;
+					border-radius: 6px;
+					box-shadow: 0 2px 8px rgba(217,83,79,0.3);
+				}
+
 				.section-header {
 					display: flex;
 					justify-content: space-between;
@@ -146,7 +192,6 @@
 					font-size: 14px;
 				}
 
-				/* [4] 전체보기/카테고리 선택용 가로 리스트 스타일 */
 				.list-view-container {
 					max-width: 1150px;
 					margin: 0 auto;
@@ -224,7 +269,6 @@
 					transition: 0.2s;
 				}
 
-				/* 장바구니 버튼 (강조) */
 				.list-btn.cart-btn {
 					background: #fff;
 					color: #333;
@@ -235,7 +279,6 @@
 					background: #f8f8f8;
 				}
 
-				/* 바로구매 버튼 (어두운 배경) */
 				.list-btn.buy-btn {
 					background: #333;
 					color: #fff;
@@ -246,7 +289,6 @@
 					background: #000;
 				}
 
-				/* 하단 컨트롤러 영역 정렬 */
 				.control-box {
 					display: flex;
 					justify-content: center;
@@ -255,7 +297,6 @@
 					margin: 60px 0;
 				}
 
-				/* 페이지 번호 및 버튼 공통 스타일 */
 				.page-link {
 					display: inline-flex;
 					align-items: center;
@@ -277,7 +318,6 @@
 					border-color: #999;
 				}
 
-				/* 현재 선택된 페이지 강조 */
 				.page-link.active {
 					background-color: #333;
 					color: #fff;
@@ -288,6 +328,7 @@
 				
 			</style>
 
+			<c:if test="${not isSearch}">
 			<div class="banner-container">
 				<div class="banner-slide fade"><img
 						src="https://contents.kyobobook.co.kr/display/i_890_380_6974e9e91dd84287880c462e691aa1d7.jpg">
@@ -317,11 +358,38 @@
 			        </c:forEach>
 			    </div>
 			</div>
+			</c:if>
+
+			<c:if test="${isSearch}">
+				<div class="section-header search-result-header">
+					<h2>'${searchKeyword}' 검색 결과</h2>
+					<span class="more-link">총 ${fn:length(list)}권</span>
+				</div>
+			</c:if>
 
 			<c:choose>
-				<%-- 1. 메인 화면 모드 (그리드형 섹션 출력) --%>
+
 					<c:when test="${isMain}">
 						<div style="max-width: 1200px; margin: 0 auto;">
+							<c:if test="${not empty discountBooks}">
+								<div class="section-header">
+									<h2>SALE 할인 중인 도서</h2>
+								</div>
+								<div class="book-list-container">
+									<c:forEach var="book" items="${discountBooks}">
+										<div class="book-card" style="position:relative;">
+											<span class="sale-rate-badge">${book.discountRate}%</span>
+											<a href="view?isbn=${book.isbn}"><img src="${book.image}"></a>
+											<div class="book-title">${book.bookname}</div>
+											<div class="book-price">
+												<fmt:parseNumber var="p" value="${book.price}" type="number" />
+												<div class="book-price-original"><fmt:formatNumber value="${p}" type="number" />원</div>
+												<span class="book-discount-badge">${book.discountRate}%</span><fmt:formatNumber value="${book.discountedPrice}" type="number" />원
+											</div>
+										</div>
+									</c:forEach>
+								</div>
+							</c:if>
 							<div class="section-header">
 								<h2>인공지능 추천 도서</h2><a
 									href="${pageContext.request.contextPath}/book/list?category=인공지능"
@@ -334,7 +402,15 @@
 										<div class="book-title">${book.bookname}</div>
 										<div class="book-price">
 											<fmt:parseNumber var="p" value="${book.price}" type="number" />
-											<fmt:formatNumber value="${p}" type="number" />원
+											<c:choose>
+												<c:when test="${book.discountRate > 0}">
+													<div class="book-price-original"><fmt:formatNumber value="${p}" type="number" />원</div>
+													<span class="book-discount-badge">${book.discountRate}%</span><fmt:formatNumber value="${book.discountedPrice}" type="number" />원
+												</c:when>
+												<c:otherwise>
+													<fmt:formatNumber value="${p}" type="number" />원
+												</c:otherwise>
+											</c:choose>
 										</div>
 									</div>
 								</c:forEach>
@@ -351,7 +427,15 @@
 										<div class="book-title">${book.bookname}</div>
 										<div class="book-price">
 											<fmt:parseNumber var="p" value="${book.price}" type="number" />
-											<fmt:formatNumber value="${p}" type="number" />원
+											<c:choose>
+												<c:when test="${book.discountRate > 0}">
+													<div class="book-price-original"><fmt:formatNumber value="${p}" type="number" />원</div>
+													<span class="book-discount-badge">${book.discountRate}%</span><fmt:formatNumber value="${book.discountedPrice}" type="number" />원
+												</c:when>
+												<c:otherwise>
+													<fmt:formatNumber value="${p}" type="number" />원
+												</c:otherwise>
+											</c:choose>
 										</div>
 									</div>
 								</c:forEach>
@@ -368,7 +452,15 @@
 										<div class="book-title">${book.bookname}</div>
 										<div class="book-price">
 											<fmt:parseNumber var="p" value="${book.price}" type="number" />
-											<fmt:formatNumber value="${p}" type="number" />원
+											<c:choose>
+												<c:when test="${book.discountRate > 0}">
+													<div class="book-price-original"><fmt:formatNumber value="${p}" type="number" />원</div>
+													<span class="book-discount-badge">${book.discountRate}%</span><fmt:formatNumber value="${book.discountedPrice}" type="number" />원
+												</c:when>
+												<c:otherwise>
+													<fmt:formatNumber value="${p}" type="number" />원
+												</c:otherwise>
+											</c:choose>
 										</div>
 									</div>
 								</c:forEach>
@@ -376,9 +468,14 @@
 						</div>
 					</c:when>
 
-					<%-- 2. 전체보기/카테고리 선택 모드 (가로 리스트형 출력) --%>
 						<c:otherwise>
-							<div class="list-view-container">
+							<div class="list-view-container" id="bookListContainer">
+								<c:if test="${empty list}">
+									<div class="empty-box">
+										<h3>검색 결과가 없습니다.</h3>
+										<p>다른 검색어로 다시 검색해 주세요.</p>
+									</div>
+								</c:if>
 								<c:forEach var="book" items="${list}">
 									<div class="list-item">
 										<div class="list-img-box">
@@ -393,7 +490,15 @@
 											<div style="display:flex; gap:14px; align-items:center; margin-bottom:10px; color:#666; font-size:13px;"><span>♥ ${book.likeCount}</span><span>★ <fmt:formatNumber value="${book.averageRating}" pattern="0.0"/> (${book.ratingCount})</span></div>
 											<div class="list-item-price">
 												<fmt:parseNumber var="p" value="${book.price}" type="number" />
-												<fmt:formatNumber value="${p}" type="number" />원
+												<c:choose>
+													<c:when test="${book.discountRate > 0}">
+														<div class="list-price-original"><fmt:formatNumber value="${p}" type="number" />원</div>
+														<span class="list-discount-badge">${book.discountRate}%</span><fmt:formatNumber value="${book.discountedPrice}" type="number" />원
+													</c:when>
+													<c:otherwise>
+														<fmt:formatNumber value="${p}" type="number" />원
+													</c:otherwise>
+												</c:choose>
 											</div>
 										</div>
 
@@ -406,16 +511,9 @@
 									</div>
 								</c:forEach>
 							</div>
-							<div class="control-box">
-								<c:if test="${startPage > 1}">
-									<a href="${pageContext.request.contextPath}/book/list?category=${category}&page=${startPage - 1}" class="page-link">&lt; 이전</a>
-								</c:if>
-								<c:forEach var="i" begin="${startPage}" end="${endPage}">
-									<a href="${pageContext.request.contextPath}/book/list?category=${category}&page=${i}" class="page-link ${currentPage == i ? 'active' : ''}">${i}</a>
-								</c:forEach>
-								<c:if test="${endPage < totalPages}">
-									<a href="${pageContext.request.contextPath}/book/list?category=${category}&page=${endPage + 1}" class="page-link">다음 &gt;</a>
-								</c:if>
+							<%-- 인피니트 스크롤 로딩 표시자 --%>
+							<div id="scrollLoader" style="text-align:center; padding: 20px; display:none;">
+								<p>도서를 더 불러오는 중입니다...</p>
 							</div>
 						</c:otherwise>
 			</c:choose>
@@ -424,30 +522,140 @@
 				let slideIndex = 0;
 				function showSlides() {
 					let slides = document.getElementsByClassName("banner-slide");
+					if (slides.length === 0) return;
 					for (let i = 0; i < slides.length; i++) slides[i].style.display = "none";
 					slideIndex++;
 					if (slideIndex > slides.length) slideIndex = 1;
-					if (slides.length > 0) slides[slideIndex - 1].style.display = "block";
+					slides[slideIndex - 1].style.display = "block";
 					setTimeout(showSlides, 4500);
 				}
 				function plusSlides(n) {slideIndex += (n - 1); showSlides();}
 				showSlides();
-				function addCartAsync(isbn, loginUser) {
-					if (!loginUser || loginUser === "") {
-						alert("로그인이 필요한 서비스입니다.");
-						location.href = "${pageContext.request.contextPath}/member/login";
-						return;
-					}
 
+				function addCartAsync(isbn, loginUser) {
 					fetch('${pageContext.request.contextPath}/cart/insert', {
 						method: 'POST',
 						headers: {'Content-Type': 'application/x-www-form-urlencoded'},
 						body: new URLSearchParams({'isbn': isbn, 'amount': '1', 'userid': loginUser})
 					})
-						.then(() => {
-							alert("장바구니에 담았습니다.");
-							// 페이지 이동 안 함
+					.then(() => {
+						alert("장바구니에 담았습니다.");
+					})
+					.catch(err => alert("오류가 발생했습니다."));
+				}
+
+				function directBuy(isbn) {
+					var loginUser = '${sessionScope.loginUser}';
+					if (!loginUser) {
+						alert("로그인이 필요합니다.");
+						location.href = '${pageContext.request.contextPath}/member/login';
+						return;
+					}
+					fetch('${pageContext.request.contextPath}/cart/insert', {
+						method: 'POST',
+						headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+						body: new URLSearchParams({'isbn': isbn, 'amount': '1', 'userid': loginUser})
+					})
+					.then(function() {
+						location.href = '${pageContext.request.contextPath}/order/checkout';
+					})
+					.catch(function() { alert("오류가 발생했습니다."); });
+				}
+
+				// --- 인피니트 스크롤 관련 변수 및 로직 (Vanilla JS 전환) ---
+				let currentPage = 1;
+				let isLoading = false;
+				let hasNext = ${hasNext ? 'true' : 'false'};
+				const currentCategory = '${category}';
+				const isMain = ${isMain ? 'true' : 'false'};
+				const isSearch = ${isSearch ? 'true' : 'false'};
+
+				if (!isMain && !isSearch) {
+					window.addEventListener('scroll', function() {
+						const scrollTop = window.scrollY || document.documentElement.scrollTop;
+						const windowHeight = window.innerHeight;
+						const documentHeight = document.documentElement.scrollHeight;
+
+						if (scrollTop + windowHeight >= documentHeight - 200) {
+							if (!isLoading && hasNext) {
+								console.log("Loading more books (Vanilla JS)...");
+								loadMoreBooks();
+							}
+						}
+					});
+				}
+
+				function loadMoreBooks() {
+					isLoading = true;
+					const loader = document.getElementById("scrollLoader");
+					if (loader) loader.style.display = "block";
+					currentPage++;
+
+					const url = '${pageContext.request.contextPath}/book/list/ajax?category=' + encodeURIComponent(currentCategory) + '&page=' + currentPage;
+
+					fetch(url)
+						.then(res => res.json())
+						.then(response => {
+							console.log("Ajax success (Vanilla JS):", response);
+							if (response.list && response.list.length > 0) {
+								appendBooks(response.list);
+								hasNext = response.hasNext;
+							} else {
+								hasNext = false;
+							}
+							isLoading = false;
+							if (loader) loader.style.display = "none";
 						})
-						.catch(err => alert("오류가 발생했습니다."));
+						.catch(error => {
+							isLoading = false;
+							if (loader) loader.style.display = "none";
+							console.error("데이터 로딩 중 오류 발생:", error);
+						});
+				}
+
+				function appendBooks(books) {
+					const container = document.getElementById("bookListContainer");
+					if (!container) return;
+					const loginUser = '${sessionScope.loginUser}';
+					
+					books.forEach(book => {
+						const priceNum = Number(book.price);
+						const priceFormatted = priceNum.toLocaleString();
+						const avgRating = book.averageRating ? book.averageRating.toFixed(1) : "0.0";
+						const dr = book.discountRate || 0;
+						const discountedPrice = dr > 0 ? Math.floor(priceNum - (priceNum * dr / 100)) : 0;
+
+						let priceHtml = '';
+						if (dr > 0) {
+							priceHtml = '<div class="list-price-original">' + priceFormatted + '원</div>'
+								+ '<span class="list-discount-badge">' + dr + '%</span>'
+								+ discountedPrice.toLocaleString() + '원';
+						} else {
+							priceHtml = priceFormatted + '원';
+						}
+
+						const div = document.createElement('div');
+						div.className = 'list-item';
+						div.innerHTML = `
+							<div class="list-img-box">
+								<a href="view?isbn=\${book.isbn}"><img src="\${book.image}"></a>
+							</div>
+							<div class="list-info-box">
+								<a href="view?isbn=\${book.isbn}" class="list-item-title">\${book.bookname}</a>
+								<div class="list-meta">\${book.author} | \${book.publisher} | \${book.category}</div>
+								<div style="display:flex; gap:14px; align-items:center; margin-bottom:10px; color:#666; font-size:13px;">
+									<span>♥ \${book.likeCount}</span>
+									<span>★ \${avgRating} (\${book.ratingCount})</span>
+								</div>
+								<div class="list-item-price">\${priceHtml}</div>
+							</div>
+							<div class="list-btn-box">
+								<button type="button" class="list-btn cart-btn"
+									onclick="addCartAsync('\${book.isbn}', '\${loginUser}')">장바구니</button>
+								<button class="list-btn buy-btn" onclick="directBuy('\${book.isbn}')">바로구매</button>
+							</div>
+						`;
+						container.appendChild(div);
+					});
 				}
 			</script>

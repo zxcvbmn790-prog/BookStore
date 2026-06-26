@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class OrderVO {
 	private int orderId;
 	private String userid;
-	private int isbn;
+	private long isbn;
 	private String bookname;
 	private int price;
 	private int amount;
@@ -21,6 +21,12 @@ public class OrderVO {
 	private String phone;
 	private String address;
 	private Timestamp orderDate;
+	private String trakingstatus;
 	private String status;
 	private String image;
+
+	// 상윤 - 마일리지 기능을 위한 컬럼 추가
+	private int usedMileage;
+	private int earnedMileage;
+	private int finalPayment;
 }
