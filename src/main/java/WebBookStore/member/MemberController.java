@@ -38,6 +38,9 @@ public class MemberController {
 
 	@Autowired
 	private EmailService emailService;
+	
+	@Autowired
+	private RecaptchaService recaptchaService;
 
 	// ==================== 로그인 ====================
 
@@ -147,29 +150,45 @@ public class MemberController {
 
 	@RequestMapping(value = "sendOtp", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> sendOtp(@RequestParam("email") String email, HttpSession session) {
-		if (email == null || email.trim().isEmpty()) {
-			return ResponseEntity.badRequest().body(Map.of("result", "fail", "message", "이메일을 입력해주세요."));
-		}
+	public ResponseEntity<?> sendOtp(
+	        @RequestParam("email") String email,
+	        @RequestParam(value = "g-recaptcha-response", required = false) String captchaToken,
+	        HttpServletRequest request,
+	        HttpSession session) {
 
-		String otp = generateOtp();
-		long expiry = System.currentTimeMillis() + OTP_VALIDITY_MS;
+	    if (email == null || email.trim().isEmpty()) {
+	        return ResponseEntity.badRequest().body(
+	                Map.of("result", "fail", "message", "이메일을 입력해주세요.")
+	        );
+	    }
 
-		session.setAttribute("pendingOtp", otp);
-		session.setAttribute("pendingOtpExpiry", expiry);
-		session.setAttribute("pendingEmail", email.trim());
-		session.setAttribute("pendingEmailVerified", false);
+	    // reCAPTCHA 서버 검증
+	    boolean captchaOk = recaptchaService.verify(captchaToken, request);
 
-		try {
-			emailService.sendOtpEmail(email.trim(), null, otp);
-			return ResponseEntity.ok(
-					Map.of("result", "success", "message", "인증번호가 발송되었습니다.", "remainingSec", 180)
-			);
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(
-					Map.of("result", "fail", "message", e.getMessage())
-			);
-		}
+	    if (!captchaOk) {
+	        return ResponseEntity.badRequest().body(
+	                Map.of("result", "fail", "message", "로봇이 아닙니다 인증에 실패했습니다.")
+	        );
+	    }
+
+	    String otp = generateOtp();
+	    long expiry = System.currentTimeMillis() + OTP_VALIDITY_MS;
+
+	    session.setAttribute("pendingOtp", otp);
+	    session.setAttribute("pendingOtpExpiry", expiry);
+	    session.setAttribute("pendingEmail", email.trim());
+	    session.setAttribute("pendingEmailVerified", false);
+
+	    try {
+	        emailService.sendOtpEmail(email.trim(), null, otp);
+	        return ResponseEntity.ok(
+	                Map.of("result", "success", "message", "인증번호가 발송되었습니다.", "remainingSec", 180)
+	        );
+	    } catch (Exception e) {
+	        return ResponseEntity.badRequest().body(
+	                Map.of("result", "fail", "message", e.getMessage())
+	        );
+	    }
 	}
 
 	@RequestMapping(value = "verifyOtp", method = RequestMethod.POST)
