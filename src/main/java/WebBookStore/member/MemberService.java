@@ -137,4 +137,9 @@ public class MemberService implements UserDetailsService {
 	    }
 	    return "BRONZE";
 	}
+
+	public Object upRole(String username, String role) {
+		return dao.upRole(username, role);
+		
+	}
 }
