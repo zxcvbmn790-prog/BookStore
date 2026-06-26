@@ -385,6 +385,7 @@ textarea {
 
 /* ===== ad sidebar (fixed, left) ===== */
 .ad-sidebar {
+    display: none;
     position: fixed;
     left: 16px;
     top: 170px;
