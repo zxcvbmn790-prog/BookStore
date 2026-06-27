@@ -56,7 +56,8 @@
                                 <input type="hidden" name="isbn" value="${book.isbn}">
                                 <button type="submit" class="heart-btn ${feedback.liked ? 'liked' : ''}" title="좋아요">${feedback.liked ? '♥' : '♡'}</button>
                             </form>
-                            <form action="${pageContext.request.contextPath}/book/rate" method="post" class="rating-wrap" style="margin:0;">
+                            <form action="${pageContext.request.contextPath}/book/rate" method="post" class="rating-wrap" style="margin:0;"
+                                  onsubmit="if(!this.querySelector('input[name=rating]:checked')){alert('별점을 선택해주세요.');return false;}">
                                 <input type="hidden" name="isbn" value="${book.isbn}">
                                 <div class="star-picker">
                                     <input type="radio" id="star5" name="rating" value="5" ${feedback.myRating == 5 ? 'checked' : ''}><label for="star5">★</label>
