@@ -169,17 +169,6 @@ public class AdminController {
 		return result;
 	}
 
-	@RequestMapping(value = "/updateAd", method = RequestMethod.POST)
-	@org.springframework.web.bind.annotation.ResponseBody
-	public java.util.Map<String, Object> updateAd(
-	        @RequestParam("isbn") long isbn,
-	        @RequestParam("isAd") boolean isAd) {
-	    java.util.Map<String, Object> result = new java.util.HashMap<>();
-	    boolean success = adminService.updateAdStatus(isbn, isAd);
-	    result.put("success", success);
-	    return result;
-	}
-
 	@Autowired
 	private OrderService orderService;
 
