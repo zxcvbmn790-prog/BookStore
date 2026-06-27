@@ -15,7 +15,7 @@ public class UserBookService {
 		return dao.findAll(searchType, keyword);
 	}
 
-	public BookVO getBook(long isbn) {
+	public BookVO getBook(int isbn) {
 		return dao.findByIsbn(isbn);
 	}
 
@@ -31,31 +31,20 @@ public class UserBookService {
 		return dao.findTopNByCategory(category, 4);
 	}
 
-	public List<BookVO> getDiscountedBooks() {
-		return dao.findDiscountedBooks();
-	}
-
-	public BookFeedbackVO getBookFeedback(long isbn, String loginUser) {
+	public BookFeedbackVO getBookFeedback(int isbn, String loginUser) {
 		return dao.getBookFeedback(isbn, loginUser);
 	}
 
-	public boolean toggleLike(long isbn, String userid) {
+	public boolean toggleLike(int isbn, String userid) {
 		return dao.toggleLike(isbn, userid);
 	}
 
-	public boolean saveRating(long isbn, String userid, int rating) {
+	public boolean saveRating(int isbn, String userid, int rating) {
 		return dao.saveRating(isbn, userid, rating);
 	}
 
 
-	public boolean deleteRating(long isbn, String userid) {
+	public boolean deleteRating(int isbn, String userid) {
 		return dao.deleteRating(isbn, userid);
-	}
-	public List<BookVO> searchByBookName(String keyword) {
-		return dao.searchByBookName(keyword);
-	}
-
-	public List<BookVO> getAdBooks() {
-		return dao.findAdBooks();
 	}
 }

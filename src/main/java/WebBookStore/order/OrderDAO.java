@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.sql.DataSource;
 
@@ -20,41 +21,30 @@ public class OrderDAO {
 	private DataSource ds;
 
 	public int placeOrder(String userid, List<CartVO> cartList,
-	        String receiver, String phone, String address,
-	        int usedMileage, int earnedMileage, int finalPayment,
-	        String newGrade, boolean isMemberOrder) {
+			String receiver, String phone, String address) {
 
 		String insertSql = "INSERT INTO orders "
-		        + "(userid, isbn, bookname, price, amount, total_price, "
-		        + "receiver, phone, address, order_date, status, traking_status, "
-		        + "used_mileage, earned_mileage, final_payment) "
-		        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, '접수', ?, ?, ?)";
+				+ "(userid, isbn, bookname, price, amount, total_price, receiver, phone, address, order_date, status) "
+				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)";
 
 		String deleteCartSql = "DELETE FROM cart WHERE userid = ?";
 
-		String updateMemberSql = "UPDATE member "
-		        + "SET default_receiver = ?, default_phone = ?, default_address = ?, "
-		        + "mileage = mileage - ? + ?, "
-		        + "total_mileage = total_mileage + ?, "
-		        + "grade = ? "
-		        + "WHERE id = ?";
-
 		int orderCount = 0;
+		int totalAmount = 0;
 
 		try (Connection conn = ds.getConnection()) {
 			conn.setAutoCommit(false);
 
 			try (
-				    PreparedStatement insertPs = conn.prepareStatement(insertSql);
-				    PreparedStatement deletePs = conn.prepareStatement(deleteCartSql);
-				    PreparedStatement updateMemberPs = conn.prepareStatement(updateMemberSql)
-				) {
+				PreparedStatement insertPs = conn.prepareStatement(insertSql);
+				PreparedStatement deletePs = conn.prepareStatement(deleteCartSql)
+			) {
 				for (CartVO cart : cartList) {
 					int price = parsePrice(cart.getPrice());
 					int totalPrice = price * cart.getAmount();
 
 					insertPs.setString(1, userid);
-					insertPs.setLong(2, cart.getIsbn());
+					insertPs.setInt(2, cart.getIsbn());
 					insertPs.setString(3, cart.getBookname());
 					insertPs.setInt(4, price);
 					insertPs.setInt(5, cart.getAmount());
@@ -63,30 +53,75 @@ public class OrderDAO {
 					insertPs.setString(8, phone);
 					insertPs.setString(9, address);
 					insertPs.setString(10, "결제완료");
-					insertPs.setInt(11, usedMileage);
-					insertPs.setInt(12, earnedMileage);
-					insertPs.setInt(13, finalPayment);
 
 					insertPs.addBatch();
 					orderCount++;
+					totalAmount += cart.getAmount();
 				}
 
 				insertPs.executeBatch();
+				
+				// 누적 스탬프 계산 및 랜덤 마일리지 지급
+				int currentStamp = 0;
+
+				String selectStampSql = "SELECT stamp_count FROM stamp WHERE userid = ?";
+				try (PreparedStatement stampSelectPs = conn.prepareStatement(selectStampSql)) {
+				    stampSelectPs.setString(1, userid);
+
+				    try (ResultSet rs = stampSelectPs.executeQuery()) {
+				        if (rs.next()) {
+				            currentStamp = rs.getInt("stamp_count");
+				        }
+				    }
+				}
+
+				int newStampTotal = currentStamp + totalAmount;
+				int rewardCount = newStampTotal / 10;
+				int remainStamp = newStampTotal % 10;
+
+				// 10권마다 랜덤 마일리지 지급
+				if (rewardCount > 0) {
+				    int totalRewardMileage = 0;
+				    Random random = new Random();
+
+				    for (int i = 0; i < rewardCount; i++) {
+				        int chance = random.nextInt(100) + 1;
+
+				        if (chance <= 40) {
+				            totalRewardMileage += 100;
+				        } else if (chance <= 70) {
+				            totalRewardMileage += 300;
+				        } else if (chance <= 90) {
+				            totalRewardMileage += 500;
+				        } else if (chance <= 98) {
+				            totalRewardMileage += 1000;
+				        } else {
+				            totalRewardMileage += 3000;
+				        }
+				    }
+
+				    String mileageSql =
+				    	    "UPDATE member SET mileage = mileage + ?, total_mileage = total_mileage + ? WHERE id = ?";
+				    try (PreparedStatement mileagePs = conn.prepareStatement(mileageSql)) {
+				    	mileagePs.setInt(1, totalRewardMileage);
+				    	mileagePs.setInt(2, totalRewardMileage);
+				    	mileagePs.setString(3, userid);
+				        mileagePs.executeUpdate();
+				    }
+				}
+
+				// 남은 스탬프 저장
+				String updateStampSql =
+				        "MERGE INTO stamp (userid, stamp_count, updated_at) KEY(userid) VALUES (?, ?, CURRENT_TIMESTAMP)";
+
+				try (PreparedStatement stampUpdatePs = conn.prepareStatement(updateStampSql)) {
+				    stampUpdatePs.setString(1, userid);
+				    stampUpdatePs.setInt(2, remainStamp);
+				    stampUpdatePs.executeUpdate();
+				}
 
 				deletePs.setString(1, userid);
 				deletePs.executeUpdate();
-
-				if (isMemberOrder) {
-				    updateMemberPs.setString(1, receiver);
-				    updateMemberPs.setString(2, phone);
-				    updateMemberPs.setString(3, address);
-				    updateMemberPs.setInt(4, usedMileage);
-				    updateMemberPs.setInt(5, earnedMileage);
-				    updateMemberPs.setInt(6, earnedMileage);
-				    updateMemberPs.setString(7, newGrade);
-				    updateMemberPs.setString(8, userid);
-				    updateMemberPs.executeUpdate();
-				}
 
 				conn.commit();
 				return orderCount;
@@ -124,7 +159,7 @@ public class OrderDAO {
 					OrderVO order = new OrderVO();
 					order.setOrderId(rs.getInt("order_id"));
 					order.setUserid(rs.getString("userid"));
-					order.setIsbn(rs.getLong("isbn"));
+					order.setIsbn(rs.getInt("isbn"));
 					order.setBookname(rs.getString("bookname"));
 					order.setPrice(rs.getInt("price"));
 					order.setAmount(rs.getInt("amount"));
@@ -134,12 +169,7 @@ public class OrderDAO {
 					order.setAddress(rs.getString("address"));
 					order.setOrderDate(rs.getTimestamp("order_date"));
 					order.setStatus(rs.getString("status"));
-					order.setTrakingstatus(rs.getString("traking_status"));
-					order.setImage(rs.getString("image"));
-
-					order.setUsedMileage(rs.getInt("used_mileage"));
-					order.setEarnedMileage(rs.getInt("earned_mileage"));
-					order.setFinalPayment(rs.getInt("final_payment"));
+					order.setImage(rs.getString("image"));   // 추가
 
 					list.add(order);
 				}
@@ -151,60 +181,26 @@ public class OrderDAO {
 
 		return list;
 	}
+	
+	public int getStampCount(String userid) {
+	    String sql = "SELECT stamp_count FROM stamp WHERE userid = ?";
 
-	public List<OrderVO> getOrderAllList() {
-		List<OrderVO> list = new ArrayList<>();
+	    try (Connection conn = ds.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
 
-		String sql = "SELECT o.*, b.image "
-				+ "FROM orders o "
-				+ "LEFT JOIN book b ON o.isbn = b.isbn "
-				+ "ORDER BY o.order_id DESC";
+	        ps.setString(1, userid);
 
-		try (Connection conn = ds.getConnection();
-			 PreparedStatement ps = conn.prepareStatement(sql)) {
+	        try (ResultSet rs = ps.executeQuery()) {
+	            if (rs.next()) {
+	                return rs.getInt("stamp_count");
+	            }
+	        }
 
-			try (ResultSet rs = ps.executeQuery()) {
-				while (rs.next()) {
-					OrderVO order = new OrderVO();
-					order.setOrderId(rs.getInt("order_id"));
-					order.setUserid(rs.getString("userid"));
-					order.setIsbn(rs.getLong("isbn"));
-					order.setBookname(rs.getString("bookname"));
-					order.setPrice(rs.getInt("price"));
-					order.setAmount(rs.getInt("amount"));
-					order.setTotalPrice(rs.getInt("total_price"));
-					order.setReceiver(rs.getString("receiver"));
-					order.setPhone(rs.getString("phone"));
-					order.setAddress(rs.getString("address"));
-					order.setOrderDate(rs.getTimestamp("order_date"));
-					order.setStatus(rs.getString("status"));
-					order.setTrakingstatus(rs.getString("traking_status"));
-					order.setImage(rs.getString("image"));
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
 
-					list.add(order);
-				}
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return list;
-	}
-
-	public void updateTrackingStatus(int orderId, String trakingstatus) {
-		String sql = "UPDATE orders SET traking_status = ? WHERE order_id = ?";
-
-		try (Connection conn = ds.getConnection();
-			 PreparedStatement ps = conn.prepareStatement(sql)) {
-
-			ps.setString(1, trakingstatus);
-			ps.setInt(2, orderId);
-			ps.executeUpdate();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	    return 0;
 	}
 
 	private int parsePrice(String price) {
@@ -219,54 +215,5 @@ public class OrderDAO {
 		}
 
 		return Integer.parseInt(onlyNumber);
-	}
-	
-	/**
-	 * 특정 주문번호(orderId) 1건에 대한 상세 정보를 조회하는 메서드
-	 * (배송 현황 조회 팝업창에서 사용)
-	 */
-	public OrderVO getOrderDetail(int orderId) {
-	    OrderVO order = null;
-
-	    // 1. 실행할 SQL 단건 조회 쿼리 (도서 이미지까지 가져오기 위해 LEFT JOIN 포함)
-	    String sql = "SELECT o.*, b.image "
-	            + "FROM orders o "
-	            + "LEFT JOIN book b ON o.isbn = b.isbn "
-	            + "WHERE o.order_id = ?";
-
-	    // 2. DataSource를 이용해 Connection 및 PreparedStatement 생성
-	    try (Connection conn = ds.getConnection();
-	         PreparedStatement ps = conn.prepareStatement(sql)) {
-
-	        // 3. 조건절(?)에 주문번호 파라미터 바인딩
-	        ps.setInt(1, orderId);
-
-	        // 4. 쿼리 실행 및 결과셋(ResultSet) 처리
-	        try (ResultSet rs = ps.executeQuery()) {
-	            if (rs.next()) { // 단건 조회의 경우 while 대신 if를 사용합니다.
-	                order = new OrderVO();
-	                order.setOrderId(rs.getInt("order_id"));
-	                order.setUserid(rs.getString("userid"));
-	                order.setIsbn(rs.getInt("isbn"));
-	                order.setBookname(rs.getString("bookname"));
-	                order.setPrice(rs.getInt("price"));
-	                order.setAmount(rs.getInt("amount"));
-	                order.setTotalPrice(rs.getInt("total_price"));
-	                order.setReceiver(rs.getString("receiver"));
-	                order.setPhone(rs.getString("phone"));
-	                order.setAddress(rs.getString("address"));
-	                order.setOrderDate(rs.getTimestamp("order_date"));
-	                order.setStatus(rs.getString("status"));
-	                order.setTrakingstatus(rs.getString("traking_status"));
-	                order.setImage(rs.getString("image")); // 도서 이미지 정보 매핑
-	            }
-	        }
-
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-
-	    // 5. 조회된 주문 객체 반환 (데이터가 없으면 null 반환)
-	    return order;
 	}
 }

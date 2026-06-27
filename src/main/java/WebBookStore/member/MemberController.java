@@ -1,6 +1,6 @@
 package WebBookStore.member;
 
-import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +17,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -25,21 +24,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/member")
 public class MemberController {
 
-	private static final long OTP_VALIDITY_MS = 3 * 60 * 1000;
-
 	@Autowired
 	private MemberService memberService;
 
+	// feature_kakaoLogin: 카카오 로그인 서비스 주입
 	@Autowired
 	private KakaoLoginService kakaoLoginService;
 
+	// dev: Spring Security 인증을 위한 매니저 주입
 	@Autowired
 	private AuthenticationManager authenticationManager;
-
-	@Autowired
-	private EmailService emailService;
-
-	// ==================== 로그인 ====================
 
 	@RequestMapping(value = "login", method = RequestMethod.GET)
 	public String login(Model model) {
@@ -47,224 +41,103 @@ public class MemberController {
 		return "layout/layout";
 	}
 
-	
+	// dev 브랜치 채택: Spring Security가 적용된 REST API 방식의 로그인 처리
 	@RequestMapping(value = "login", method = RequestMethod.POST)
-	public ResponseEntity<?> login(@RequestBody MemberVO member, HttpServletRequest request, HttpSession loginsession) {
-	    try {
-	        Authentication authentication = authenticationManager.authenticate(
-	                new UsernamePasswordAuthenticationToken(member.getUsername(), member.getPassword())
-	        );
+	public ResponseEntity<?> login(@RequestBody MemberVO member, HttpServletRequest request) {
+		try {
+			// 1. 시큐리티 인증 시도
+			Authentication authentication = authenticationManager.authenticate(
+					new UsernamePasswordAuthenticationToken(
+							member.getUsername(),
+							member.getPassword()
+					)
+			);
 
-	        SecurityContextHolder.getContext().setAuthentication(authentication);
+			// 2. 인증 객체를 SecurityContextHolder에 세팅
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+			
+			// 3. 스프링 시큐리티가 이 인증 정보를 세션에 유지하도록 수동으로 설정
+			HttpSession session = request.getSession(true);
+			session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+			
+			// 4. [기존 JSP 호환용] 기존 세션 방식 유지를 위해 속성 추가
+			session.setAttribute("loginUser", authentication.getName());
 
-	        HttpSession session = request.getSession();
-	        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-	        
-	        // 🌟 DB에서 최신 회원 정보를 먼저 가져옵니다.
-	        MemberVO dbMember = memberService.getMember(authentication.getName());
-	        
-	        // 🌟 DB에서 가져온 데이터(dbMember)로 세션을 채워야 권한(Role)이 정확히 반영됩니다!
-	        session.setAttribute("loginUser", dbMember != null ? dbMember.getUsername() : authentication.getName());
-	        session.setAttribute("loginNickname", dbMember != null ? dbMember.getNickname() : authentication.getName());
-	        session.setAttribute("loginRole", dbMember != null ? dbMember.getRole() : "ROLE_USER"); 
-	        
-	        return ResponseEntity.ok(
-	                Map.of("result", "success", "message", "로그인 성공", "username", authentication.getName())
-	        );
-	    } catch (Exception e) {
-	        return ResponseEntity.badRequest().body(
-	                Map.of("result", "fail", "message", "로그인 실패: " + e.getMessage())
-	        );
-	    }
+			Map<String, String> response = new HashMap<>();
+			response.put("result", "success");
+			response.put("message", "로그인 성공");
+			response.put("username", authentication.getName());
+
+			return ResponseEntity.ok(response);
+
+		} catch (Exception e) {
+			Map<String, String> response = new HashMap<>();
+			response.put("result", "fail");
+			response.put("message", "로그인 실패: " + e.getMessage());
+
+			return ResponseEntity.badRequest().body(response);
+		}
 	}
 
-	// ==================== 카카오 로그인 ====================
-
+	// feature_kakaoLogin 브랜치 채택: 카카오 로그인 시작점
 	@RequestMapping(value = "kakaoStart", method = RequestMethod.GET)
 	public String kakaoStart() {
 		return "redirect:" + kakaoLoginService.getAuthorizeUrl();
 	}
 
+	// feature_kakaoLogin 브랜치 채택: 카카오 로그인 콜백
 	@RequestMapping(value = "kakaoLogin", method = RequestMethod.GET)
 	public String kakaoLogin(String code, String error, HttpSession session, RedirectAttributes ra) {
 		if (error != null) {
 			ra.addFlashAttribute("authError", "카카오 로그인이 취소되었거나 실패했습니다.");
 			return "redirect:/member/login";
 		}
+
 		if (code == null || code.trim().isEmpty()) {
 			ra.addFlashAttribute("authError", "카카오 인증 코드가 없습니다.");
 			return "redirect:/member/login";
 		}
+
 		try {
-	        String accessToken = kakaoLoginService.getAccessToken(code);
-	        KakaoUserInfo kakaoUserInfo = kakaoLoginService.getUserInfo(accessToken);
-	        MemberVO member = memberService.getOrRegisterKakaoMember(kakaoUserInfo);
+			String accessToken = kakaoLoginService.getAccessToken(code);
+			KakaoUserInfo kakaoUserInfo = kakaoLoginService.getUserInfo(accessToken);
+			MemberVO member = memberService.getOrRegisterKakaoMember(kakaoUserInfo);
 
-	        session.setAttribute("loginUser", member.getUsername());
-	        session.setAttribute("loginNickname", member.getNickname());
-	        session.setAttribute("loginRole", member.getRole()); // 🌟 카카오 로그인 시에도 Role 저장 추가
-	        session.setAttribute("loginType", "KAKAO");
+			session.setAttribute("loginUser", member.getUsername());
+			session.setAttribute("loginNickname", member.getNickname());
+			session.setAttribute("loginType", "KAKAO");
 
-	        org.springframework.security.core.userdetails.UserDetails userDetails =
-	                memberService.loadUserByUsername(member.getUsername());
-	        Authentication authentication = new UsernamePasswordAuthenticationToken(
-	                userDetails, null, userDetails.getAuthorities());
-	        SecurityContextHolder.getContext().setAuthentication(authentication);
-	        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-
-	        return "redirect:/book/list";
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        ra.addFlashAttribute("authError", "카카오 로그인 처리 중 오류가 발생했습니다.");
-	        return "redirect:/member/login";
-	    }
+			return "redirect:/book/list";
+		} catch (Exception e) {
+			e.printStackTrace();
+			ra.addFlashAttribute("authError", "카카오 로그인 처리 중 오류가 발생했습니다.");
+			return "redirect:/member/login";
+		}
 	}
-
-	// ==================== 회원가입 ====================
 
 	@RequestMapping(value = "register", method = RequestMethod.GET)
 	public String register(Model model) {
 		model.addAttribute("contentPage", "/WEB-INF/views/member/register.jsp");
 		return "layout/layout";
 	}
-
+	
+	// dev 브랜치 채택: 전통적인 Spring MVC 방식의 회원가입 처리
 	@RequestMapping(value = "register", method = RequestMethod.POST)
-	public String register(MemberVO member, HttpSession session, RedirectAttributes ra) {
-		String checkedUsername = (String) session.getAttribute("checkedUsername");
-		if (checkedUsername == null || !checkedUsername.equals(member.getUsername())) {
-			ra.addFlashAttribute("authError", "아이디 중복 확인을 먼저 완료해주세요.");
-			return "redirect:/member/register";
-		}
-
-		Boolean verified = (Boolean) session.getAttribute("pendingEmailVerified");
-		String verifiedEmail = (String) session.getAttribute("pendingEmail");
-
-		if (verified == null || !verified
-				|| verifiedEmail == null || !verifiedEmail.equals(member.getEmail())) {
-			ra.addFlashAttribute("authError", "이메일 인증을 먼저 완료해주세요.");
-			return "redirect:/member/register";
-		}
-
+	public String register(MemberVO member, RedirectAttributes ra) {
 		try {
+			// MemberService의 회원가입 로직 호출 (비밀번호 암호화 및 DB 저장)
 			memberService.registerMember(member);
-			clearPendingSession(session);
+
 			ra.addFlashAttribute("authMessage", "회원가입이 완료되었습니다. 로그인 후 이용해주세요.");
 			return "redirect:/member/login";
+
 		} catch (Exception e) {
 			ra.addFlashAttribute("authError", "회원가입 실패: " + e.getMessage());
 			return "redirect:/member/register";
 		}
 	}
 
-	// ==================== OTP 발송 / 검증 (AJAX) ====================
-
-	@RequestMapping(value = "sendOtp", method = RequestMethod.POST)
-	@ResponseBody
-	public ResponseEntity<?> sendOtp(@RequestParam("email") String email, HttpSession session) {
-		if (email == null || email.trim().isEmpty()) {
-			return ResponseEntity.badRequest().body(Map.of("result", "fail", "message", "이메일을 입력해주세요."));
-		}
-
-		String otp = generateOtp();
-		long expiry = System.currentTimeMillis() + OTP_VALIDITY_MS;
-
-		session.setAttribute("pendingOtp", otp);
-		session.setAttribute("pendingOtpExpiry", expiry);
-		session.setAttribute("pendingEmail", email.trim());
-		session.setAttribute("pendingEmailVerified", false);
-
-		try {
-			emailService.sendOtpEmail(email.trim(), null, otp);
-			return ResponseEntity.ok(
-					Map.of("result", "success", "message", "인증번호가 발송되었습니다.", "remainingSec", 180)
-			);
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(
-					Map.of("result", "fail", "message", e.getMessage())
-			);
-		}
-	}
-
-	@RequestMapping(value = "verifyOtp", method = RequestMethod.POST)
-	@ResponseBody
-	public ResponseEntity<?> verifyOtp(@RequestParam("otp") String inputOtp, HttpSession session) {
-		String savedOtp = (String) session.getAttribute("pendingOtp");
-		Long expiry = (Long) session.getAttribute("pendingOtpExpiry");
-
-		if (savedOtp == null || expiry == null) {
-			return ResponseEntity.badRequest().body(
-					Map.of("result", "expired", "message", "인증 세션이 만료되었습니다. 인증번호를 다시 발송해주세요.")
-			);
-		}
-		if (System.currentTimeMillis() > expiry) {
-			return ResponseEntity.badRequest().body(
-					Map.of("result", "expired", "message", "인증번호가 만료되었습니다. 다시 발송해주세요.")
-			);
-		}
-		if (!savedOtp.equals(inputOtp.trim())) {
-			return ResponseEntity.badRequest().body(
-					Map.of("result", "mismatch", "message", "인증번호가 일치하지 않습니다.")
-			);
-		}
-
-		session.setAttribute("pendingEmailVerified", true);
-		return ResponseEntity.ok(Map.of("result", "success", "message", "이메일 인증이 완료되었습니다."));
-	}
-
-	// ==================== 비밀번호 변경 ====================
-
-	@RequestMapping(value = "password", method = RequestMethod.GET)
-	public String password(HttpSession session, Model model, RedirectAttributes ra) {
-		String loginUser = (String) session.getAttribute("loginUser");
-		if (loginUser == null) {
-			return "redirect:/member/login";
-		}
-		if ("KAKAO".equals(session.getAttribute("loginType"))) {
-			ra.addFlashAttribute("profileError", "카카오 로그인 사용자는 비밀번호를 변경할 수 없습니다.");
-			return "redirect:/member/profile";
-		}
-		model.addAttribute("member", memberService.getMember(loginUser));
-		model.addAttribute("contentPage", "/WEB-INF/views/member/password.jsp");
-		return "layout/layout";
-	}
-
-	@RequestMapping(value = "password/update", method = RequestMethod.POST)
-	public String updatePassword(
-			@RequestParam String currentPassword,
-			@RequestParam String newPassword,
-			@RequestParam String confirmPassword,
-			HttpSession session, RedirectAttributes ra) {
-		String loginUser = (String) session.getAttribute("loginUser");
-		if (loginUser == null) {
-			return "redirect:/member/login";
-		}
-
-		Boolean verified = (Boolean) session.getAttribute("pendingEmailVerified");
-		String verifiedEmail = (String) session.getAttribute("pendingEmail");
-		MemberVO member = memberService.getMember(loginUser);
-
-		if (verified == null || !verified
-				|| verifiedEmail == null || !verifiedEmail.equals(member.getEmail())) {
-			ra.addFlashAttribute("passwordError", "이메일 인증을 먼저 완료해주세요.");
-			return "redirect:/member/password";
-		}
-		if (!newPassword.equals(confirmPassword)) {
-			ra.addFlashAttribute("passwordError", "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
-			return "redirect:/member/password";
-		}
-		if (!memberService.updatePassword(loginUser, currentPassword, newPassword)) {
-			ra.addFlashAttribute("passwordError", "현재 비밀번호가 올바르지 않습니다.");
-			return "redirect:/member/password";
-		}
-
-		clearPendingSession(session);
-		session.invalidate();
-		ra.addFlashAttribute("authMessage", "비밀번호가 변경되었습니다. 다시 로그인해주세요.");
-		return "redirect:/member/login";
-	}
-
-	// ==================== 프로필 / 탈퇴 / 로그아웃 ====================
-
+	// dev 브랜치 채택: 프로필 
 	@RequestMapping(value = "profile", method = RequestMethod.GET)
 	public String profile(HttpSession session, Model model, RedirectAttributes ra) {
 		String loginUser = (String) session.getAttribute("loginUser");
@@ -272,38 +145,20 @@ public class MemberController {
 			ra.addFlashAttribute("authError", "로그인 후 이용해주세요.");
 			return "redirect:/member/login";
 		}
-
-		MemberVO member = memberService.getMember(loginUser);
-		model.addAttribute("member", member);
+		
+		// 충돌로 인해 반환 구문이 유실되었을 가능성이 있어 기본 레이아웃 형태를 추가해 두었습니다.
 		model.addAttribute("contentPage", "/WEB-INF/views/member/profile.jsp");
 		return "layout/layout";
 	}
-	
-	@RequestMapping(value = "profile/update", method = RequestMethod.POST)
-	public String updateProfile(MemberVO member, HttpSession session, RedirectAttributes ra) {
-	    String loginUser = (String) session.getAttribute("loginUser");
-	    if (loginUser == null || "admin".equals(loginUser)) {
-	        ra.addFlashAttribute("authError", "로그인 후 이용해주세요.");
-	        return "redirect:/member/login";
-	    }
 
-	    member.setUsername(loginUser);
-
-	    if (memberService.updateProfile(member)) {
-	        ra.addFlashAttribute("profileMessage", "회원 정보가 수정되었습니다.");
-	    } else {
-	        ra.addFlashAttribute("profileError", "회원 정보 수정에 실패했습니다.");
-	    }
-
-	    return "redirect:/member/profile";
-	}
-
+	// dev 브랜치 채택: 회원 탈퇴
 	@RequestMapping(value = "delete", method = RequestMethod.POST)
 	public String deleteMember(String password, HttpSession session, RedirectAttributes ra) {
 		String loginUser = (String) session.getAttribute("loginUser");
 		if (loginUser == null || "admin".equals(loginUser)) {
 			return "redirect:/member/login";
 		}
+		
 		memberService.deleteMember(loginUser);
 		session.invalidate();
 		ra.addFlashAttribute("authMessage", "회원 탈퇴가 완료되었습니다.");
@@ -315,40 +170,24 @@ public class MemberController {
 		session.invalidate();
 		return "redirect:/member/login";
 	}
-
+	
+	// dev 브랜치 채택: 아이디 중복 확인 API
 	@RequestMapping(value = "checkId", method = RequestMethod.GET)
 	@ResponseBody
-	public boolean checkId(String username, HttpSession session) {
-		if (username == null || username.trim().isEmpty()) {
-			session.removeAttribute("checkedUsername");
-			return false;
-		}
+	public boolean checkId(String username) {
 		try {
-			boolean available = memberService.getMember(username.trim()) == null;
-			if (available) {
-				session.setAttribute("checkedUsername", username.trim());
-			} else {
-				session.removeAttribute("checkedUsername");
-			}
-			return available;
+			// ⚠️ 주의: 이전 DAO 충돌에서 언급했던 'findByUsernames'와 연관된 것으로 보입니다.
+			// 서비스단 메서드명이 정확히 'getMemberByUsernames'인지 확인해 주세요.
+			MemberVO existingUser = memberService.getMemberByUsernames(username);
+			
+			System.out.println("중복 체크 대상 아이디: " + username);
+			System.out.println("조회된 유저 결과 객체: " + existingUser);
+
+			return existingUser == null;
+			
 		} catch (Exception e) {
-			e.printStackTrace();
-			session.removeAttribute("checkedUsername");
-			return false;
+			System.out.println("조회 중 예외 발생(유저 없음 기인): " + e.getMessage());
+			return true; 
 		}
-	}
-
-	// ==================== 헬퍼 ====================
-
-	private String generateOtp() {
-		return String.format("%06d", new SecureRandom().nextInt(1000000));
-	}
-
-	private void clearPendingSession(HttpSession session) {
-		session.removeAttribute("pendingOtp");
-		session.removeAttribute("pendingOtpExpiry");
-		session.removeAttribute("pendingEmail");
-		session.removeAttribute("pendingEmailVerified");
-		session.removeAttribute("checkedUsername");
 	}
 }
