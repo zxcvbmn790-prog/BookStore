@@ -18,4 +18,6 @@ public interface MemberDAO {
 
     MemberVO findByUsernames(String username);
 	Object upRole(String username, String role);
+	
+	MemberVO findByEmail(String email);
 }

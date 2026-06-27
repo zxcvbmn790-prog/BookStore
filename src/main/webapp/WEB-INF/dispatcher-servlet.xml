@@ -61,6 +61,11 @@
 			<mvc:exclude-mapping path="/img/**" />
 			<mvc:exclude-mapping path="/css/**" />
 			<mvc:exclude-mapping path="/js/**" />
+			
+			<mvc:exclude-mapping path="/member/findId" />
+			<mvc:exclude-mapping path="/member/findId/**" />
+			<mvc:exclude-mapping path="/member/findPassword" />
+			<mvc:exclude-mapping path="/member/findPassword/**" />
 			<bean class="WebBookStore.common.Interceptor" />
 		</mvc:interceptor>
 	</mvc:interceptors>
@@ -94,6 +99,11 @@
 		<security:intercept-url pattern="/admin/traking" access="hasAnyAuthority('ROLE_ADMIN', 'ROLE_TRAKING')"/>
 		<security:intercept-url pattern="/admin/updateTracking" access="hasAnyAuthority('ROLE_ADMIN', 'ROLE_TRAKING')"/>
 		<security:intercept-url pattern="/admin/**" access="hasAuthority('ROLE_ADMIN')"/>
+		
+		<security:intercept-url pattern="/member/findId" access="permitAll" />
+		<security:intercept-url pattern="/member/findId/**" access="permitAll" />
+		<security:intercept-url pattern="/member/findPassword" access="permitAll" />
+		<security:intercept-url pattern="/member/findPassword/**" access="permitAll" />
 <!-- 		<security:intercept-url pattern="/**" access="isAuthenticated()"/> -->
 
 		<security:form-login
