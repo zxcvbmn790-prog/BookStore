@@ -23,5 +23,4 @@ public class AdminVO {
     private String category;  // 카테고리
     private int discountRate; // 할인율 (0~99)
     private boolean isAd;     // 광고 여부
-
 }

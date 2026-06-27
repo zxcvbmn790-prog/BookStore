@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <style>
     .btn-inline {
@@ -137,6 +138,19 @@
                 </div>
                 <span id="verifiedBadge" class="verified-badge"><i class="fas fa-check-circle"></i> 이메일 인증 완료</span>
             </div>
+            
+            <!-- reCAPTCHA 자동 가입 방지 -->
+			<div class="form-field" id="captchaArea">
+			    <label>자동 가입 방지</label>
+			
+			    <div class="g-recaptcha"
+			         data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI">
+			    </div>
+			
+			    <small style="display:block; margin-top:6px; color:#6b7280;">
+			        인증번호 발송 전에 로봇이 아님을 확인해주세요.
+			    </small>
+			</div>
 
             <!-- OTP 입력 영역 -->
             <div id="otpSection" class="otp-section">
@@ -202,11 +216,25 @@ function checkDuplicate() {
 }
 
 // ==================== OTP 발송 ====================
+// ==================== OTP 발송 ====================
 function sendOtp() {
     var email = $("#email").val().trim();
+
     if (!email) {
         alert("이메일을 입력해주세요.");
         $("#email").focus();
+        return;
+    }
+
+    // reCAPTCHA 토큰 가져오기
+    var captchaToken = "";
+
+    if (typeof grecaptcha !== "undefined") {
+        captchaToken = grecaptcha.getResponse();
+    }
+
+    if (!captchaToken) {
+        alert("로봇이 아닙니다 인증을 먼저 완료해주세요.");
         return;
     }
 
@@ -215,20 +243,38 @@ function sendOtp() {
     $.ajax({
         url: ctx + "/member/sendOtp",
         type: "POST",
-        data: { email: email },
+        data: {
+            email: email,
+            "g-recaptcha-response": captchaToken
+        },
         success: function(res) {
             showOtpMsg(res.message, "success");
             remaining = res.remainingSec || 180;
             startTimer();
+
             $("#otpSection").addClass("show");
             $("#otpInput").val("").focus();
             $("#btnSendOtp").prop("disabled", false).text("재발송");
             $("#btnVerifyOtp").prop("disabled", false);
+
+			// 인증번호 발송이 성공했으므로 캡챠 영역 숨김
+			$("#captchaArea").hide();
+
+            // 한 번 사용한 reCAPTCHA는 초기화
+            if (typeof grecaptcha !== "undefined") {
+                grecaptcha.reset();
+            }
         },
         error: function(xhr) {
             var res = xhr.responseJSON;
             alert(res ? res.message : "이메일 발송에 실패했습니다.");
+
             $("#btnSendOtp").prop("disabled", false).text("인증번호 발송");
+
+            // 실패해도 다시 체크하게 초기화
+            if (typeof grecaptcha !== "undefined") {
+                grecaptcha.reset();
+            }
         }
     });
 }
