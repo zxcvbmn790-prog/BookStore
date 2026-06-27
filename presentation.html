@@ -86,9 +86,28 @@
     transition: transform 0.2s;
   }
   .feat:hover { transform: translateY(-3px); }
+  .feat.feat-new { border-color: rgba(79,70,229,0.3); background: linear-gradient(135deg, #fff 80%, rgba(79,70,229,0.04)); }
   .feat-icon { font-size: 28px; margin-bottom: 14px; display: block; }
   .feat-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
   .feat-desc { font-size: 14px; line-height: 1.6; color: var(--sub); }
+  .feat-ver {
+    display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px;
+    border-radius: 6px; background: rgba(79,70,229,0.1); color: var(--primary);
+    margin-bottom: 10px;
+  }
+  .feat-ver.v33 { background: rgba(16,185,129,0.1); color: #059669; }
+
+  /* ── Version timeline ── */
+  .timeline { display: flex; gap: 0; max-width: 900px; margin: 48px auto 0; }
+  .tl-step {
+    flex: 1; text-align: center; position: relative; padding: 20px 12px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 18px;
+    margin: 0 8px;
+  }
+  .tl-step .tl-ver { font-size: 20px; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+  .tl-step .tl-items { font-size: 13px; color: var(--sub); line-height: 1.9; text-align: left; padding-left: 4px; }
+  .tl-step.active { border-color: var(--primary); background: rgba(79,70,229,0.04); }
+  .tl-step.active .tl-ver { color: #059669; }
 
   /* ── URL table ── */
   .url-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; max-width: 1080px; margin: 0 auto; text-align: left; }
@@ -118,7 +137,13 @@
     padding: 2px 7px; border-radius: 6px;
     background: rgba(220,38,38,.08); color: var(--danger); margin-left: 6px; vertical-align: middle;
   }
+  .m-v33 {
+    display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
+    padding: 2px 7px; border-radius: 6px;
+    background: rgba(16,185,129,.1); color: #059669; margin-left: 6px; vertical-align: middle;
+  }
   tr.row-new td { background: rgba(220,38,38,.03); }
+  tr.row-v33 td { background: rgba(16,185,129,.03); }
 
   /* ── ERD ── */
   .erd-wrap { max-width: 1200px; margin: 0 auto; overflow-x: auto; }
@@ -142,6 +167,7 @@
   @media(max-width:834px) {
     .t-hero { font-size: 36px; } .t-lg { font-size: 28px; }
     .feat-grid { grid-template-columns: 1fr; } .url-wrap { grid-template-columns: 1fr; }
+    .timeline { flex-direction: column; }
     .slide { padding: 48px 16px; } .dots { display: none; }
   }
 </style>
@@ -153,77 +179,183 @@
 <!-- ===== 1. TITLE ===== -->
 <section class="slide slide-hero" id="s1" data-theme="dark">
   <div class="inner">
-    <p class="badge">Team Project</p>
+    <p class="badge">Team Project · dev3.3</p>
     <h1 class="t-hero">BOOK FOREST</h1>
     <p class="t-lead" style="margin-top:28px;">Spring MVC 기반 온라인 도서 쇼핑몰</p>
-    <p class="t-lead" style="margin-top:8px;font-weight:400;">Spring Security &middot; H2 Database &middot; JSP &middot; WebSocket &middot; Kakao API</p>
+    <p class="t-lead" style="margin-top:8px;font-weight:400;">Spring Security &middot; H2 Database &middot; JSP &middot; WebSocket &middot; Kakao API &middot; Google reCAPTCHA</p>
     <div style="margin-top:48px;"><a href="#s2" class="btn btn-primary">Start</a></div>
   </div>
 </section>
 
-<!-- ===== 2. NEW FEATURES ===== -->
+<!-- ===== 2. VERSION HISTORY ===== -->
 <section class="slide slide-light" id="s2">
   <div class="inner">
-    <p class="badge">What's New</p>
-    <h2 class="t-lg">새롭게 추가된 기능</h2>
-    <p class="t-lead" style="margin-top:12px;">dev3.0에서 통합된 핵심 기능들</p>
+    <p class="badge">버전 히스토리</p>
+    <h2 class="t-lg">dev3.0 → dev3.3</h2>
+    <p class="t-lead" style="margin-top:12px;">단계별 기능 통합 과정</p>
 
-    <div class="feat-grid" style="margin-top:48px;">
-      <div class="feat">
-        <span class="feat-icon">&#9993;</span>
-        <div class="feat-title">Email OTP 인증</div>
-        <div class="feat-desc">Gmail SMTP로 6자리 OTP 발송. 3분 유효시간 내 인증 완료 시 가입 가능.</div>
+    <div class="timeline">
+      <div class="tl-step">
+        <div class="tl-ver">dev3.0</div>
+        <div class="tl-items">
+          ✉ Email OTP 인증<br>
+          🏅 회원 등급 시스템<br>
+          💰 마일리지 적립·사용<br>
+          📦 배송지 자동 저장<br>
+          🔐 Admin / Tracking 권한<br>
+          📚 카카오 ISBN 조회<br>
+          🔑 카카오 소셜 로그인<br>
+          🛒 비회원 장바구니<br>
+          💬 실시간 1:1 채팅
+        </div>
       </div>
-      <div class="feat">
-        <span class="feat-icon">&#127942;</span>
-        <div class="feat-title">회원 등급 시스템</div>
-        <div class="feat-desc">BRONZE(1%) → SILVER(2%) → GOLD(3%) → PLATINUM(5%). 누적 마일리지 기준 자동 승급.</div>
+      <div class="tl-step">
+        <div class="tl-ver">dev3.1</div>
+        <div class="tl-items">
+          🏷 도서 할인율 시스템<br>
+          🔍 도서 검색 기능<br>
+          ❤ 좋아요 / 별점<br>
+          📢 광고 도서 사이드바<br>
+          📊 관리자 매출 통계<br>
+          👥 회원 관리 기능
+        </div>
       </div>
-      <div class="feat">
-        <span class="feat-icon">&#128176;</span>
-        <div class="feat-title">마일리지 적립 & 사용</div>
-        <div class="feat-desc">등급별 적립률 기반 마일리지 적립. 주문 시 보유 마일리지로 결제 차감.</div>
+      <div class="tl-step">
+        <div class="tl-ver">dev3.2</div>
+        <div class="tl-items">
+          ⭐ 별점 미선택 방지<br>
+          🔒 회원 탈퇴 비밀번호 인증<br>
+          🎛 관리자 회원 검색<br>
+          🔨 Lombok JDK24 빌드 수정
+        </div>
       </div>
-      <div class="feat">
-        <span class="feat-icon">&#128230;</span>
-        <div class="feat-title">배송지 자동 저장</div>
-        <div class="feat-desc">첫 주문 후 받는사람/연락처/주소 DB 저장. 다음 주문 시 자동 입력.</div>
-      </div>
-      <div class="feat">
-        <span class="feat-icon">&#128272;</span>
-        <div class="feat-title">Admin / Tracking 권한 분리</div>
-        <div class="feat-desc">ROLE_ADMIN: 도서 CRUD, 매출, 회원관리. ROLE_TRAKING: 배송 전담.</div>
-      </div>
-      <div class="feat">
-        <span class="feat-icon">&#128218;</span>
-        <div class="feat-title">카카오 ISBN 자동조회</div>
-        <div class="feat-desc">ISBN 입력으로 카카오 API에서 도서명/저자/출판사/표지/가격 자동 입력.</div>
-      </div>
-      <div class="feat">
-        <span class="feat-icon">&#128275;</span>
-        <div class="feat-title">카카오 소셜 로그인</div>
-        <div class="feat-desc">카카오 OAuth2 연동 간편 로그인. 자동 회원가입 및 세션 연동.</div>
-      </div>
-      <div class="feat">
-        <span class="feat-icon">&#128722;</span>
-        <div class="feat-title">비회원 장바구니</div>
-        <div class="feat-desc">쿠키 기반 비회원 장바구니. 7일 유지, 로그인 없이 주문 가능.</div>
-      </div>
-      <div class="feat">
-        <span class="feat-icon">&#128172;</span>
-        <div class="feat-title">실시간 1:1 채팅</div>
-        <div class="feat-desc">WebSocket 기반 사용자-관리자 1:1 상담. 채팅 이력 DB 저장.</div>
+      <div class="tl-step active">
+        <div class="tl-ver">dev3.3</div>
+        <div class="tl-items">
+          🤖 reCAPTCHA 자동가입 방지<br>
+          ✅ 아이디 중복 확인 강제화<br>
+          🔗 feature/register-id-check<br>
+          🔗 feature-reCAPTCHA 통합
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== 3. URL MAP ===== -->
+<!-- ===== 3. ALL FEATURES ===== -->
 <section class="slide slide-white" id="s3">
+  <div class="inner">
+    <p class="badge">Features</p>
+    <h2 class="t-lg">전체 기능 목록</h2>
+    <p class="t-lead" style="margin-top:12px;">dev3.3 기준 통합 기능</p>
+
+    <div class="feat-grid" style="margin-top:48px;">
+      <div class="feat">
+        <span class="feat-ver">dev3.0</span>
+        <span class="feat-icon">&#9993;</span>
+        <div class="feat-title">Email OTP 인증</div>
+        <div class="feat-desc">Gmail SMTP로 6자리 OTP 발송. 3분 유효시간 내 인증 완료 시 가입 가능.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-ver">dev3.0</span>
+        <span class="feat-icon">&#127942;</span>
+        <div class="feat-title">회원 등급 시스템</div>
+        <div class="feat-desc">BRONZE(1%) → SILVER(2%) → GOLD(3%) → PLATINUM(5%). 누적 마일리지 기준 자동 승급.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-ver">dev3.0</span>
+        <span class="feat-icon">&#128176;</span>
+        <div class="feat-title">마일리지 적립 & 사용</div>
+        <div class="feat-desc">등급별 적립률 기반 마일리지 적립. 주문 시 보유 마일리지로 결제 차감.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-ver">dev3.0</span>
+        <span class="feat-icon">&#128230;</span>
+        <div class="feat-title">배송지 자동 저장</div>
+        <div class="feat-desc">첫 주문 후 받는사람/연락처/주소 DB 저장. 다음 주문 시 자동 입력.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-ver">dev3.0</span>
+        <span class="feat-icon">&#128272;</span>
+        <div class="feat-title">Admin / Tracking 권한 분리</div>
+        <div class="feat-desc">ROLE_ADMIN: 도서 CRUD, 매출, 회원관리. ROLE_TRAKING: 배송 전담.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-ver">dev3.0</span>
+        <span class="feat-icon">&#128218;</span>
+        <div class="feat-title">카카오 ISBN 자동조회</div>
+        <div class="feat-desc">ISBN 입력으로 카카오 API에서 도서명/저자/출판사/표지/가격 자동 입력.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-ver">dev3.0</span>
+        <span class="feat-icon">&#128275;</span>
+        <div class="feat-title">카카오 소셜 로그인</div>
+        <div class="feat-desc">카카오 OAuth2 연동 간편 로그인. 자동 회원가입 및 세션 연동.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-ver">dev3.0</span>
+        <span class="feat-icon">&#128722;</span>
+        <div class="feat-title">비회원 장바구니</div>
+        <div class="feat-desc">쿠키 기반 비회원 장바구니. 7일 유지, 로그인 없이 주문 가능.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-ver">dev3.0</span>
+        <span class="feat-icon">&#128172;</span>
+        <div class="feat-title">실시간 1:1 채팅</div>
+        <div class="feat-desc">WebSocket 기반 사용자-관리자 1:1 상담. 채팅 이력 DB 저장.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-ver">dev3.1</span>
+        <span class="feat-icon">&#127991;</span>
+        <div class="feat-title">도서 할인율 시스템</div>
+        <div class="feat-desc">관리자가 도서별 할인율(0~99%) 설정. 정가/할인가 자동 계산 및 뱃지 표시.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-ver">dev3.1</span>
+        <span class="feat-icon">&#128241;</span>
+        <div class="feat-title">광고 도서 사이드바</div>
+        <div class="feat-desc">관리자가 광고 도서 지정. 도서 목록 우측 사이드바에 광고 도서 노출.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-ver">dev3.1</span>
+        <span class="feat-icon">&#128202;</span>
+        <div class="feat-title">관리자 매출 통계</div>
+        <div class="feat-desc">일/주/월/연도별 매출 차트, 인기 도서 TOP5, 오늘 매출 실시간 집계.</div>
+      </div>
+      <div class="feat feat-new">
+        <span class="feat-ver">dev3.2</span>
+        <span class="feat-icon">&#11088;</span>
+        <div class="feat-title">별점 유효성 검사</div>
+        <div class="feat-desc">별점 미선택 상태로 저장 버튼 클릭 시 클라이언트에서 차단. 400 에러 방지.</div>
+      </div>
+      <div class="feat feat-new">
+        <span class="feat-ver">dev3.2</span>
+        <span class="feat-icon">&#128274;</span>
+        <div class="feat-title">회원 탈퇴 비밀번호 인증</div>
+        <div class="feat-desc">탈퇴 전 비밀번호 재확인. 카카오 간편가입 계정은 비밀번호 검증 예외 처리.</div>
+      </div>
+      <div class="feat feat-new">
+        <span class="feat-ver v33">dev3.3</span>
+        <span class="feat-icon">&#129302;</span>
+        <div class="feat-title">reCAPTCHA 자동 가입 방지</div>
+        <div class="feat-desc">Google reCAPTCHA v2 연동. OTP 발송 전 캡차 인증 필수. 서버에서 토큰 이중 검증.</div>
+      </div>
+      <div class="feat feat-new">
+        <span class="feat-ver v33">dev3.3</span>
+        <span class="feat-icon">&#10003;</span>
+        <div class="feat-title">아이디 중복 확인 강제화</div>
+        <div class="feat-desc">회원가입 시 중복 확인 미완료 상태에서 가입 버튼 비활성화. 중복 ID 가입 원천 차단.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4. URL MAP ===== -->
+<section class="slide slide-light" id="s4">
   <div class="inner">
     <p class="badge">URL Map</p>
     <h2 class="t-lg">URL 구조</h2>
-    <p class="t-lead" style="margin-top:12px;">전체 엔드포인트 정리</p>
+    <p class="t-lead" style="margin-top:12px;">dev3.3 기준 전체 엔드포인트</p>
 
     <div class="url-wrap" style="margin-top:48px;">
       <div>
@@ -233,10 +365,12 @@
             <tr><td><span class="mth m-g">GET</span></td><td><code>/member/login</code></td><td>로그인</td></tr>
             <tr><td><span class="mth m-p">POST</span></td><td><code>/member/login</code></td><td>AJAX 로그인</td></tr>
             <tr><td><span class="mth m-g">GET</span></td><td><code>/member/register</code></td><td>회원가입</td></tr>
-            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/member/sendOtp</code></td><td>OTP 발송 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/member/checkId</code></td><td>아이디 중복확인 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/member/sendOtp</code></td><td>OTP 발송 + 캡차검증 <span class="m-new">NEW</span></td></tr>
             <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/member/verifyOtp</code></td><td>OTP 인증 <span class="m-new">NEW</span></td></tr>
             <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/member/kakaoStart</code></td><td>카카오 로그인 <span class="m-new">NEW</span></td></tr>
             <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/member/profile</code></td><td>마이페이지 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/member/withdraw</code></td><td>회원 탈퇴 <span class="m-new">NEW</span></td></tr>
           </table>
         </div>
         <div class="grp">
@@ -245,17 +379,17 @@
             <tr><td><span class="mth m-g">GET</span></td><td><code>/book/list</code></td><td>도서 목록</td></tr>
             <tr><td><span class="mth m-g">GET</span></td><td><code>/book/list/ajax</code></td><td>무한스크롤</td></tr>
             <tr><td><span class="mth m-g">GET</span></td><td><code>/book/view?isbn=</code></td><td>도서 상세</td></tr>
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/book/search</code></td><td>도서 검색 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/book/ads</code></td><td>광고 도서 목록 <span class="m-new">NEW</span></td></tr>
             <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/book/like</code></td><td>좋아요 <span class="m-new">NEW</span></td></tr>
-            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/book/rate</code></td><td>별점 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/book/rate</code></td><td>별점 저장 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/book/rate/cancel</code></td><td>별점 취소 <span class="m-new">NEW</span></td></tr>
           </table>
         </div>
         <div class="grp">
-          <div class="grp-t">Q&A / Chat</div>
+          <div class="grp-t">Search</div>
           <table class="tbl">
-            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/qna/list</code></td><td>문의 목록 <span class="m-new">NEW</span></td></tr>
-            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/qna/write</code></td><td>문의 작성 <span class="m-new">NEW</span></td></tr>
-            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/chat/admin</code></td><td>채팅 관리 <span class="m-new">NEW</span></td></tr>
-            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/support/faq</code></td><td>FAQ <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/search/popular</code></td><td>인기 검색어 <span class="m-new">NEW</span></td></tr>
           </table>
         </div>
       </div>
@@ -280,6 +414,8 @@
             <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/admin/kakaoBookSearch</code></td><td>ISBN API <span class="m-new">NEW</span></td></tr>
             <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/admin/sales</code></td><td>매출 통계 <span class="m-new">NEW</span></td></tr>
             <tr class="row-new"><td><span class="mth m-g">GET</span></td><td><code>/admin/members</code></td><td>회원 관리 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/admin/updateDiscount</code></td><td>할인율 설정 <span class="m-new">NEW</span></td></tr>
+            <tr class="row-new"><td><span class="mth m-p">POST</span></td><td><code>/admin/updateAd</code></td><td>광고 설정 <span class="m-new">NEW</span></td></tr>
           </table>
         </div>
         <div class="grp">
@@ -294,8 +430,8 @@
   </div>
 </section>
 
-<!-- ===== 4. ERD ===== -->
-<section class="slide slide-light" id="s4" style="min-height:auto;padding-top:80px;padding-bottom:80px;">
+<!-- ===== 5. ERD ===== -->
+<section class="slide slide-white" id="s5" style="min-height:auto;padding-top:80px;padding-bottom:80px;">
   <div class="inner" style="max-width:1200px;">
     <p class="badge">Database</p>
     <h2 class="t-lg">ERD</h2>
@@ -303,10 +439,10 @@
     <p class="t-cap" style="margin-top:10px;">
       <span style="color:#b8860b;">&#9632;</span> PK &nbsp;&nbsp;
       <span style="color:#059669;">&#9632;</span> FK &nbsp;&nbsp;
-      <span style="color:var(--primary);">&#9632;</span> 신규 컬럼
+      <span style="color:var(--primary);">&#9632;</span> dev3.1+ 추가 컬럼
     </p>
     <div class="erd-wrap" style="margin-top:40px;">
-      <svg viewBox="0 0 960 720" xmlns="http://www.w3.org/2000/svg" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="12">
+      <svg viewBox="0 0 960 740" xmlns="http://www.w3.org/2000/svg" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="12">
         <!-- Relation lines -->
         <line x1="200" y1="270" x2="355" y2="145" stroke="#d1d5db" stroke-width="1.2"/>
         <text x="255" y="196" fill="#9ca3af" font-size="10" font-weight="600">1 : N</text>
@@ -317,7 +453,7 @@
         <line x1="710" y1="340" x2="555" y2="460" stroke="#d1d5db" stroke-width="1.2"/>
         <text x="640" y="415" fill="#9ca3af" font-size="10" font-weight="600">1 : N</text>
         <line x1="830" y1="230" x2="830" y2="145" stroke="#d1d5db" stroke-width="1.2"/>
-        <line x1="830" y1="380" x2="830" y2="460" stroke="#d1d5db" stroke-width="1.2"/>
+        <line x1="830" y1="398" x2="830" y2="460" stroke="#d1d5db" stroke-width="1.2"/>
         <line x1="100" y1="230" x2="100" y2="145" stroke="#d1d5db" stroke-width="1.2"/>
         <line x1="200" y1="640" x2="555" y2="640" stroke="#d1d5db" stroke-width="1.2"/>
         <text x="340" y="632" fill="#9ca3af" font-size="10" font-weight="600">1 : N (CASCADE)</text>
@@ -333,7 +469,7 @@
         <text x="20" y="124" fill="#6b7280" font-size="11">content, sent_at, is_admin</text>
 
         <!-- member -->
-        <rect x="10" y="230" width="190" height="190" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <rect x="10" y="230" width="190" height="210" rx="14" fill="#fff" stroke="#e5e7eb"/>
         <rect x="10" y="230" width="190" height="28" rx="14" fill="rgba(79,70,229,.06)"/>
         <rect x="10" y="246" width="190" height="12" fill="#fff"/>
         <text x="105" y="250" fill="#4f46e5" font-weight="700" font-size="13" text-anchor="middle">member</text>
@@ -343,8 +479,9 @@
         <text x="20" y="324" fill="#6b7280" font-size="11">role VARCHAR(50)</text>
         <text x="20" y="344" fill="#4f46e5" font-size="11">default_receiver</text>
         <text x="20" y="360" fill="#4f46e5" font-size="11">default_phone, default_address</text>
-        <text x="20" y="380" fill="#4f46e5" font-size="11">mileage, total_mileage</text>
-        <text x="20" y="396" fill="#4f46e5" font-size="11">grade VARCHAR(30)</text>
+        <text x="20" y="376" fill="#4f46e5" font-size="11">mileage, total_mileage</text>
+        <text x="20" y="392" fill="#4f46e5" font-size="11">grade VARCHAR(30)</text>
+        <text x="20" y="408" fill="#4f46e5" font-size="11">kakao_id VARCHAR(100)</text>
 
         <!-- cart -->
         <rect x="355" y="30" width="200" height="110" rx="14" fill="#fff" stroke="#e5e7eb"/>
@@ -357,7 +494,7 @@
         <text x="365" y="124" fill="#6b7280" font-size="11">amount INT</text>
 
         <!-- book -->
-        <rect x="710" y="230" width="240" height="150" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <rect x="710" y="230" width="240" height="168" rx="14" fill="#fff" stroke="#e5e7eb"/>
         <rect x="710" y="230" width="240" height="28" rx="14" fill="rgba(79,70,229,.06)"/>
         <rect x="710" y="246" width="240" height="12" fill="#fff"/>
         <text x="830" y="250" fill="#4f46e5" font-weight="700" font-size="13" text-anchor="middle">book</text>
@@ -366,6 +503,8 @@
         <text x="720" y="308" fill="#6b7280" font-size="11">author VARCHAR(300)</text>
         <text x="720" y="324" fill="#6b7280" font-size="11">publisher VARCHAR(300)</text>
         <text x="720" y="340" fill="#6b7280" font-size="11">image, price, category</text>
+        <text x="720" y="358" fill="#4f46e5" font-size="11">discount_rate INT</text>
+        <text x="720" y="374" fill="#4f46e5" font-size="11">is_ad BOOLEAN</text>
 
         <!-- book_like -->
         <rect x="740" y="30" width="210" height="110" rx="14" fill="#fff" stroke="#e5e7eb"/>
@@ -427,11 +566,15 @@
   </div>
 </section>
 
-<!-- ===== 5. END ===== -->
-<section class="slide slide-hero" id="s5" data-theme="dark">
+<!-- ===== 6. END ===== -->
+<section class="slide slide-hero" id="s6" data-theme="dark">
   <div class="inner">
+    <p class="badge">dev3.3 Final</p>
     <h2 class="t-hero">Thank you.</h2>
     <p class="t-lead" style="margin-top:32px;">BOOK FOREST</p>
+    <p class="t-lead" style="margin-top:8px;font-weight:400;font-size:15px;">
+      Spring MVC &middot; Spring Security &middot; H2 &middot; WebSocket &middot; Kakao API &middot; reCAPTCHA
+    </p>
     <div style="margin-top:48px;"><a href="#s1" class="btn btn-primary">Back to Top</a></div>
   </div>
 </section>
