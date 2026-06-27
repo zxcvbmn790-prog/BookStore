@@ -4,16 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import WebBookStore.member.MemberService;
-import WebBookStore.order.OrderService;
-import WebBookStore.order.OrderVO;
-
-import java.security.Principal;
-import java.util.List;
 import javax.servlet.http.HttpSession;
 
 @Controller
@@ -37,7 +30,7 @@ public class AdminController {
 	}
 
 	@RequestMapping("/updateform")
-	public String updateform(@RequestParam("isbn") long isbn, Model model) {
+	public String updateform(@RequestParam("isbn") int isbn, Model model) {
 		model.addAttribute("admin", adminService.getBookById(isbn));
 		model.addAttribute("contentPage", "/WEB-INF/views/admin/updateform.jsp");
 		return "layout/layout";
@@ -54,21 +47,16 @@ public class AdminController {
 	}
 
 	@RequestMapping("/delete")
-	public String delete(@RequestParam("isbn") long isbn) {
+	public String delete(@RequestParam("isbn") int isbn) { // id 대신 isbn으로 명시
 		adminService.deleteBook(isbn);
 		return "redirect:/book/list";
 	}
 	
 	@RequestMapping("/sales")
-	public String sales(@RequestParam(value = "period", defaultValue = "day") String period, Model model) {
-	    // Spring Security를 이용한 권한 체크
-	    org.springframework.security.core.Authentication auth = 
-	            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-	    
-	    boolean isAdmin = auth != null && auth.getAuthorities().stream()
-	            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+	public String sales(@RequestParam(value = "period", defaultValue = "day") String period, HttpSession session, Model model) {
+	    String loginUser = (String) session.getAttribute("loginUser");
 
-	    if (!isAdmin) {
+	    if (!"admin".equals(loginUser)) {
 	        return "redirect:/book/list";
 	    }
 
@@ -82,14 +70,9 @@ public class AdminController {
 	}
 
 	@RequestMapping("/members")
-	public String members(Model model) {
-	    org.springframework.security.core.Authentication auth = 
-	            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-	    
-	    boolean isAdmin = auth != null && auth.getAuthorities().stream()
-	            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-		if (!isAdmin) {
+	public String members(HttpSession session, Model model) {
+		String loginUser = (String) session.getAttribute("loginUser");
+		if (!"admin".equals(loginUser)) {
 			return "redirect:/book/list";
 		}
 		model.addAttribute("memberList", adminService.getMemberList());
@@ -98,14 +81,9 @@ public class AdminController {
 	}
 
 	@RequestMapping("/member/delete")
-	public String deleteMember(@RequestParam("username") String username, RedirectAttributes ra) {
-	    org.springframework.security.core.Authentication auth =
-	            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-
-	    boolean isAdmin = auth != null && auth.getAuthorities().stream()
-	            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-		if (!isAdmin) {
+	public String deleteMember(@RequestParam("username") String username, HttpSession session, RedirectAttributes ra) {
+		String loginUser = (String) session.getAttribute("loginUser");
+		if (!"admin".equals(loginUser)) {
 			return "redirect:/book/list";
 		}
 		if ("admin".equals(username)) {
@@ -117,108 +95,4 @@ public class AdminController {
 		}
 		return "redirect:/admin/members";
 	}
-
-	@RequestMapping(value = "/books", method = RequestMethod.GET)
-	public String bookManage(@RequestParam(value = "keyword", required = false) String keyword, Model model) {
-	    org.springframework.security.core.Authentication auth =
-	            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-	    boolean isAdmin = auth != null && auth.getAuthorities().stream()
-	            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-	    if (!isAdmin) {
-	        return "redirect:/book/list";
-	    }
-
-	    List<AdminVO> bookList = adminService.searchBooks(keyword);
-	    model.addAttribute("bookList", bookList);
-	    model.addAttribute("keyword", keyword);
-	    model.addAttribute("contentPage", "/WEB-INF/views/admin/book_manage.jsp");
-	    return "layout/layout";
-	}
-
-	@RequestMapping(value = "/updateDiscount", method = RequestMethod.POST)
-	@org.springframework.web.bind.annotation.ResponseBody
-	public java.util.Map<String, Object> updateDiscount(
-	        @RequestParam("isbn") long isbn,
-	        @RequestParam("discountRate") int discountRate) {
-	    java.util.Map<String, Object> result = new java.util.HashMap<>();
-	    if (discountRate < 0) discountRate = 0;
-	    if (discountRate > 99) discountRate = 99;
-	    boolean success = adminService.updateDiscountRate(isbn, discountRate);
-	    result.put("success", success);
-	    return result;
-	}
-
-	@RequestMapping(value = "/updateAd", method = RequestMethod.POST)
-	@org.springframework.web.bind.annotation.ResponseBody
-	public java.util.Map<String, Object> updateAd(
-	        @RequestParam("isbn") long isbn,
-	        @RequestParam("isAd") boolean isAd) {
-	    java.util.Map<String, Object> result = new java.util.HashMap<>();
-	    boolean success = adminService.updateAdStatus(isbn, isAd);
-	    result.put("success", success);
-	    return result;
-	}
-
-	@Autowired
-	private OrderService orderService;
-
-	@RequestMapping(value = "/traking", method = RequestMethod.GET)
-	public String trackingList(Principal principal, Model model) {
-		if (principal == null) {
-			return "redirect:/member/login";
-		}
-
-		String userid = principal.getName();
-
-		if (!"ROLE_TRAKING".equals(userid) && !"ROLE_ADMIN".equals(userid)) {
-			//return "redirect:/member/login";
-		}
-
-		List<OrderVO> deliveryList = orderService.getAllOrderList();
-
-		model.addAttribute("deliveryList", deliveryList);
-		model.addAttribute("contentPage", "/WEB-INF/views/admin/traking.jsp");
-
-		return "layout/layout";
-	}
-
-	@RequestMapping(value = "/updateTracking", method = RequestMethod.POST)
-	public String updateTracking(
-			@RequestParam("orderId") int orderId,
-			@RequestParam("trakingstatus") String trakingstatus) {
-		try {
-			orderService.updateTrackingStatus(orderId, trakingstatus);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return "redirect:/admin/traking";
-	}
-	
-	
-	// 고객관리 변경
-	@Autowired
-	private MemberService memberService;
-	
-	@RequestMapping(value = "/member/updateRole", method = RequestMethod.GET)
-    public String updateRole(
-            @RequestParam("username") String username,
-            @RequestParam("role") String role,
-            RedirectAttributes redirectAttributes) {
-        
-        try {
-            // 1. 비즈니스 로직 수행 (DB의 회원 권한 업데이트)
-            // memberService.updateMemberRole(username, role);
-            
-            // 2. 성공 메시지 설정 (JSP의 ${message} 부분에 표시됨)
-            redirectAttributes.addFlashAttribute("message", username + " 회원의 권한이 성공적으로 변경되었습니다.");
-            memberService.upRole(username, role);
-            
-        } catch (Exception e) {
-            // 에러 발생 시 처리
-            redirectAttributes.addFlashAttribute("message", "권한 변경 중 오류가 발생했습니다.");
-        }
-        
-        // 3. 권한 변경 후 지정하신 admin/members 페이지로 리다이렉트(갱신)
-        return "redirect:/admin/members";
-    }
 }

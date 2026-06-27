@@ -12,7 +12,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class BookVO {
- private long isbn;
+ private int isbn;
  private String bookname;
  private String author;
  private String publisher;
@@ -22,9 +22,8 @@ public class BookVO {
  private int likeCount;
  private double averageRating;
  private int ratingCount;
- private int discountRate;
 
- public BookVO(long isbn, String bookname, String author, String publisher, String image, String price, String category) {
+ public BookVO(int isbn, String bookname, String author, String publisher, String image, String price, String category) {
   this.isbn = isbn;
   this.bookname = bookname;
   this.author = author;
@@ -32,14 +31,5 @@ public class BookVO {
   this.image = image;
   this.price = price;
   this.category = category;
- }
-
- public int getDiscountedPrice() {
-  try {
-   int p = Integer.parseInt(price.replaceAll("[^0-9]", ""));
-   return p - (p * discountRate / 100);
-  } catch (Exception e) {
-   return 0;
-  }
  }
 }

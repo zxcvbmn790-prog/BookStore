@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookSalesVO {
-    private long isbn;
+    private int isbn;
     private String bookname;
     private int totalQuantity; // 총 판매수량
     private int totalSales;    // 총 매출액
