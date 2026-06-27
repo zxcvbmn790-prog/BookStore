@@ -363,6 +363,184 @@ public class MemberController {
 			return false;
 		}
 	}
+	
+	// ==================== 아이디 찾기 ====================
+
+		@RequestMapping(value = "findId", method = RequestMethod.GET)
+		public String findId(Model model) {
+			model.addAttribute("contentPage", "/WEB-INF/views/member/findId.jsp");
+			return "layout/layout";
+		}
+
+		@RequestMapping(value = "findId/sendOtp", method = RequestMethod.POST)
+		@ResponseBody
+		public ResponseEntity<?> findIdSendOtp(@RequestParam("email") String email, HttpSession session) {
+			if (email == null || email.trim().isEmpty()) {
+				return ResponseEntity.badRequest().body(Map.of("result", "fail", "message", "이메일을 입력해주세요."));
+			}
+
+			MemberVO member = memberService.findUsernameByEmail(email.trim());
+			if (member == null) {
+				return ResponseEntity.badRequest().body(
+						Map.of("result", "fail", "message", "해당 이메일로 가입된 계정을 찾을 수 없습니다.")
+				);
+			}
+
+			String otp = generateOtp();
+			long expiry = System.currentTimeMillis() + OTP_VALIDITY_MS;
+
+			session.setAttribute("findIdOtp", otp);
+			session.setAttribute("findIdOtpExpiry", expiry);
+			session.setAttribute("findIdEmail", email.trim());
+			session.setAttribute("findIdVerified", false);
+
+			try {
+				emailService.sendOtpEmail(email.trim(), member.getNickname(), otp, "아이디 찾기");
+				return ResponseEntity.ok(
+						Map.of("result", "success", "message", "인증번호가 발송되었습니다.", "remainingSec", 180)
+				);
+			} catch (Exception e) {
+				return ResponseEntity.badRequest().body(
+						Map.of("result", "fail", "message", e.getMessage())
+				);
+			}
+		}
+
+		@RequestMapping(value = "findId/verifyOtp", method = RequestMethod.POST)
+		@ResponseBody
+		public ResponseEntity<?> findIdVerifyOtp(@RequestParam("otp") String inputOtp, HttpSession session) {
+			String savedOtp = (String) session.getAttribute("findIdOtp");
+			Long expiry = (Long) session.getAttribute("findIdOtpExpiry");
+			String email = (String) session.getAttribute("findIdEmail");
+
+			if (savedOtp == null || expiry == null || email == null) {
+				return ResponseEntity.badRequest().body(
+						Map.of("result", "expired", "message", "인증 세션이 만료되었습니다. 인증번호를 다시 발송해주세요.")
+				);
+			}
+			if (System.currentTimeMillis() > expiry) {
+				return ResponseEntity.badRequest().body(
+						Map.of("result", "expired", "message", "인증번호가 만료되었습니다. 다시 발송해주세요.")
+				);
+			}
+			if (!savedOtp.equals(inputOtp.trim())) {
+				return ResponseEntity.badRequest().body(
+						Map.of("result", "mismatch", "message", "인증번호가 일치하지 않습니다.")
+				);
+			}
+
+			MemberVO member = memberService.findUsernameByEmail(email);
+			if (member == null) {
+				return ResponseEntity.badRequest().body(
+						Map.of("result", "fail", "message", "계정 정보를 확인할 수 없습니다.")
+				);
+			}
+
+			session.removeAttribute("findIdOtp");
+			session.removeAttribute("findIdOtpExpiry");
+			session.removeAttribute("findIdEmail");
+			session.removeAttribute("findIdVerified");
+
+			return ResponseEntity.ok(
+					Map.of("result", "success", "username", member.getUsername())
+			);
+		}
+
+		// ==================== 비밀번호 찾기 ====================
+
+		@RequestMapping(value = "findPassword", method = RequestMethod.GET)
+		public String findPassword(Model model) {
+			model.addAttribute("contentPage", "/WEB-INF/views/member/findPassword.jsp");
+			return "layout/layout";
+		}
+
+		@RequestMapping(value = "findPassword/sendOtp", method = RequestMethod.POST)
+		@ResponseBody
+		public ResponseEntity<?> findPasswordSendOtp(
+				@RequestParam("username") String username,
+				@RequestParam("email") String email,
+				HttpSession session) {
+			if (username == null || username.trim().isEmpty()
+					|| email == null || email.trim().isEmpty()) {
+				return ResponseEntity.badRequest().body(Map.of("result", "fail", "message", "아이디와 이메일을 모두 입력해주세요."));
+			}
+
+			MemberVO member = memberService.findMemberByUsernameAndEmail(username.trim(), email.trim());
+			if (member == null) {
+				return ResponseEntity.badRequest().body(
+						Map.of("result", "fail", "message", "아이디와 이메일이 일치하는 계정을 찾을 수 없습니다.")
+				);
+			}
+
+			String otp = generateOtp();
+			long expiry = System.currentTimeMillis() + OTP_VALIDITY_MS;
+
+			session.setAttribute("findPwOtp", otp);
+			session.setAttribute("findPwOtpExpiry", expiry);
+			session.setAttribute("findPwUsername", member.getUsername());
+			session.setAttribute("findPwEmail", email.trim());
+
+			try {
+				emailService.sendOtpEmail(email.trim(), member.getNickname(), otp, "비밀번호 찾기");
+				return ResponseEntity.ok(
+						Map.of("result", "success", "message", "인증번호가 발송되었습니다.", "remainingSec", 180)
+				);
+			} catch (Exception e) {
+				return ResponseEntity.badRequest().body(
+						Map.of("result", "fail", "message", e.getMessage())
+				);
+			}
+		}
+
+		@RequestMapping(value = "findPassword/verifyOtp", method = RequestMethod.POST)
+		@ResponseBody
+		public ResponseEntity<?> findPasswordVerifyOtp(@RequestParam("otp") String inputOtp, HttpSession session) {
+			String savedOtp = (String) session.getAttribute("findPwOtp");
+			Long expiry = (Long) session.getAttribute("findPwOtpExpiry");
+			String username = (String) session.getAttribute("findPwUsername");
+			String email = (String) session.getAttribute("findPwEmail");
+
+			if (savedOtp == null || expiry == null || username == null || email == null) {
+				return ResponseEntity.badRequest().body(
+						Map.of("result", "expired", "message", "인증 세션이 만료되었습니다. 인증번호를 다시 발송해주세요.")
+				);
+			}
+			if (System.currentTimeMillis() > expiry) {
+				return ResponseEntity.badRequest().body(
+						Map.of("result", "expired", "message", "인증번호가 만료되었습니다. 다시 발송해주세요.")
+				);
+			}
+			if (!savedOtp.equals(inputOtp.trim())) {
+				return ResponseEntity.badRequest().body(
+						Map.of("result", "mismatch", "message", "인증번호가 일치하지 않습니다.")
+				);
+			}
+
+			MemberVO member = memberService.findMemberByUsernameAndEmail(username, email);
+			if (member == null) {
+				return ResponseEntity.badRequest().body(
+						Map.of("result", "fail", "message", "계정 정보를 확인할 수 없습니다.")
+				);
+			}
+
+			try {
+				String tempPassword = memberService.resetPasswordToTemp(username);
+				emailService.sendTempPasswordEmail(email, member.getNickname(), tempPassword);
+
+				session.removeAttribute("findPwOtp");
+				session.removeAttribute("findPwOtpExpiry");
+				session.removeAttribute("findPwUsername");
+				session.removeAttribute("findPwEmail");
+
+				return ResponseEntity.ok(
+						Map.of("result", "success", "message", "임시 비밀번호가 이메일로 발송되었습니다.")
+				);
+			} catch (Exception e) {
+				return ResponseEntity.badRequest().body(
+						Map.of("result", "fail", "message", e.getMessage())
+				);
+			}
+		}
 
 	// ==================== 헬퍼 ====================
 

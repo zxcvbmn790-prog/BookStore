@@ -118,8 +118,12 @@
         </a>
 
         <div class="auth-links">
-            <a href="${pageContext.request.contextPath}/member/register">회원가입 하러 가기</a>
-        </div>
+		    <a href="${pageContext.request.contextPath}/member/register">회원가입 하러 가기</a>
+		    <span style="color:#d1d5db; margin: 0 6px;">|</span>
+		    <a href="${pageContext.request.contextPath}/member/findId">아이디 찾기</a>
+		    <span style="color:#d1d5db; margin: 0 6px;">|</span>
+		    <a href="${pageContext.request.contextPath}/member/findPassword">비밀번호 찾기</a>
+		</div>
     </div>
 </section>
 

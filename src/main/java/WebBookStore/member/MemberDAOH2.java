@@ -242,4 +242,21 @@ public class MemberDAOH2 implements MemberDAO, InitializingBean {
 		}
 		return 0;
 	}
+	
+	@Override
+	public MemberVO findByEmail(String email) {
+		String sql = "SELECT " + MEMBER_COLUMNS + " FROM member WHERE email = ?";
+		try (Connection conn = ds.getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setString(1, email);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					return mapRow(rs);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 }

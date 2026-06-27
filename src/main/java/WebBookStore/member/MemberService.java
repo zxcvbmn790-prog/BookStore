@@ -146,4 +146,55 @@ public class MemberService implements UserDetailsService {
 		return dao.upRole(username, role);
 		
 	}
+	
+	// ==================== 아이디 찾기 / 비밀번호 찾기 ====================
+
+		private static final String KAKAO_ID_PREFIX = "kakao_";
+
+		/**
+		 * 이메일로 가입된(일반) 아이디를 찾는다. 카카오 전용 계정은 제외.
+		 */
+		public MemberVO findUsernameByEmail(String email) {
+			MemberVO member = dao.findByEmail(email);
+			if (member == null) return null;
+			if (member.getUsername() != null && member.getUsername().startsWith(KAKAO_ID_PREFIX)) {
+				return null;
+			}
+			return member;
+		}
+
+		/**
+		 * 아이디와 이메일이 모두 일치하는 회원인지 확인한다. (비밀번호 찾기 1단계 검증)
+		 */
+		public MemberVO findMemberByUsernameAndEmail(String username, String email) {
+			MemberVO member = dao.findByUsername(username);
+			if (member == null) return null;
+			if (member.getUsername().startsWith(KAKAO_ID_PREFIX)) return null;
+			if (member.getEmail() == null || !member.getEmail().equalsIgnoreCase(email.trim())) {
+				return null;
+			}
+			return member;
+		}
+
+		/**
+		 * 임시 비밀번호를 생성하여 DB에 반영하고, 평문 임시 비밀번호를 반환한다. (이메일 발송용)
+		 */
+		public String resetPasswordToTemp(String username) {
+			String tempPassword = generateTempPassword();
+			int updated = dao.updatePassword(username, pwe.encode(tempPassword));
+			if (updated <= 0) {
+				throw new RuntimeException("비밀번호 재설정에 실패했습니다.");
+			}
+			return tempPassword;
+		}
+
+		private String generateTempPassword() {
+			String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$";
+			java.security.SecureRandom random = new java.security.SecureRandom();
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < 10; i++) {
+				sb.append(chars.charAt(random.nextInt(chars.length())));
+			}
+			return sb.toString();
+		}
 }
