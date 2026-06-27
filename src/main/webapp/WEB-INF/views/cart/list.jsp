@@ -34,24 +34,17 @@
                                     </div>
                                 </td>
 
-                                <td>
-                                <c:choose>
-                                    <c:when test="${cart.discountRate > 0}">
-                                        <div style="text-decoration:line-through; color:#999; font-size:12px;">${cart.originalPrice}원</div>
-                                        <div><span style="background:#d9534f; color:#fff; font-size:11px; font-weight:700; padding:1px 5px; border-radius:3px; margin-right:3px;">${cart.discountRate}%</span>${cart.price}원</div>
-                                    </c:when>
-                                    <c:otherwise>${cart.price}원</c:otherwise>
-                                </c:choose>
-                            </td>
+                                <td>${cart.price}원</td>
 
                                 <td>
-                                    <input type="number" value="${cart.amount}" min="1" class="qty-input"
-                                           data-isbn="${cart.isbn}"
-                                           data-price="${cart.price}"
-                                           onchange="updateQty(this)">
+                                    <form action="${pageContext.request.contextPath}/cart/update" method="post" class="qty-update-form">
+                                        <input type="hidden" name="isbn" value="${cart.isbn}">
+                                        <input type="number" name="amount" value="${cart.amount}" min="1" class="qty-input">
+                                        <button type="submit" class="small-btn">변경</button>
+                                    </form>
                                 </td>
 
-                                <td class="strong cart-subtotal" data-isbn="${cart.isbn}">${cart.totalPrice}원</td>
+                                <td class="strong">${cart.totalPrice}원</td>
 
                                 <td>
                                     <form action="${pageContext.request.contextPath}/cart/delete" method="post">
@@ -87,30 +80,3 @@
         </c:otherwise>
     </c:choose>
 </section>
-
-<script>
-function updateQty(input) {
-    var amount = parseInt(input.value) || 1;
-    if (amount < 1) { amount = 1; input.value = 1; }
-
-    var isbn = input.getAttribute('data-isbn');
-    var unitPrice = parseInt(input.getAttribute('data-price').replace(/[^0-9]/g, '')) || 0;
-
-    var subtotalCell = document.querySelector('.cart-subtotal[data-isbn="' + isbn + '"]');
-    subtotalCell.textContent = (unitPrice * amount).toLocaleString() + '원';
-
-    var allSubtotals = document.querySelectorAll('.cart-subtotal');
-    var total = 0;
-    for (var i = 0; i < allSubtotals.length; i++) {
-        total += parseInt(allSubtotals[i].textContent.replace(/[^0-9]/g, '')) || 0;
-    }
-    var summaryEl = document.querySelector('.summary-card strong');
-    if (summaryEl) summaryEl.textContent = total.toLocaleString() + '원';
-
-    fetch('${pageContext.request.contextPath}/cart/update', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'isbn=' + isbn + '&amount=' + amount
-    });
-}
-</script>

@@ -10,8 +10,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import WebBookStore.search.HangulUtil;
-
 @Repository
 public class UserBookDAO {
 
@@ -41,10 +39,9 @@ public class UserBookDAO {
 
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
-					BookVO book = new BookVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
+					BookVO book = new BookVO(rs.getInt("isbn"), rs.getString("bookname"), rs.getString("author"),
 							rs.getString("publisher"), rs.getString("image"), rs.getString("price"),
 							rs.getString("category"));
-					try { book.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e2) {}
 					list.add(book);
 				}
 			}
@@ -85,13 +82,12 @@ public class UserBookDAO {
 			}
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
-					BookVO book = new BookVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
+					BookVO book = new BookVO(rs.getInt("isbn"), rs.getString("bookname"), rs.getString("author"),
 							rs.getString("publisher"), rs.getString("image"), rs.getString("price"),
 							rs.getString("category"));
 					book.setLikeCount(rs.getInt("like_count"));
 					book.setAverageRating(rs.getDouble("avg_rating"));
 					book.setRatingCount(rs.getInt("rating_count"));
-					try { book.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e2) {}
 					list.add(book);
 				}
 			}
@@ -123,18 +119,16 @@ public class UserBookDAO {
 		return 0;
 	}
 
-	public BookVO findByIsbn(long isbn) {
+	public BookVO findByIsbn(int isbn) {
 		String sql = "SELECT * FROM book WHERE isbn = ?";
 
 		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setLong(1, isbn);
+			ps.setInt(1, isbn);
 			try (ResultSet rs = ps.executeQuery()) {
 				if (rs.next()) {
-					BookVO book = new BookVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
+					return new BookVO(rs.getInt("isbn"), rs.getString("bookname"), rs.getString("author"),
 							rs.getString("publisher"), rs.getString("image"), rs.getString("price"),
 							rs.getString("category"));
-					try { book.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e2) {}
-					return book;
 				}
 			}
 		} catch (Exception e) {
@@ -158,13 +152,12 @@ public class UserBookDAO {
 
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
-					BookVO book = new BookVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
+					BookVO book = new BookVO(rs.getInt("isbn"), rs.getString("bookname"), rs.getString("author"),
 							rs.getString("publisher"), rs.getString("image"), rs.getString("price"),
 							rs.getString("category"));
 					book.setLikeCount(rs.getInt("like_count"));
 					book.setAverageRating(rs.getDouble("avg_rating"));
 					book.setRatingCount(rs.getInt("rating_count"));
-					try { book.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e2) {}
 					list.add(book);
 				}
 			}
@@ -179,44 +172,17 @@ public class UserBookDAO {
 		return list;
 	}
 
-	public List<BookVO> findDiscountedBooks() {
-		List<BookVO> list = new ArrayList<>();
-		ensureFeedbackTables();
-		String sql = "SELECT b.*, "
-				+ "COALESCE((SELECT COUNT(*) FROM book_like bl WHERE bl.isbn = b.isbn), 0) AS like_count, "
-				+ "COALESCE((SELECT AVG(br.rating) FROM book_rating br WHERE br.isbn = b.isbn), 0) AS avg_rating, "
-				+ "COALESCE((SELECT COUNT(*) FROM book_rating br WHERE br.isbn = b.isbn), 0) AS rating_count "
-				+ "FROM book b WHERE b.discount_rate > 0 ORDER BY b.discount_rate DESC";
-
-		try (PreparedStatement ps = conn.prepareStatement(sql);
-			 ResultSet rs = ps.executeQuery()) {
-			while (rs.next()) {
-				BookVO book = new BookVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
-						rs.getString("publisher"), rs.getString("image"), rs.getString("price"),
-						rs.getString("category"));
-				book.setLikeCount(rs.getInt("like_count"));
-				book.setAverageRating(rs.getDouble("avg_rating"));
-				book.setRatingCount(rs.getInt("rating_count"));
-				book.setDiscountRate(rs.getInt("discount_rate"));
-				list.add(book);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return list;
-	}
-
 	private void ensureFeedbackTables() {
 		String createLikeTable = "CREATE TABLE IF NOT EXISTS book_like ("
 				+ "like_id INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "isbn BIGINT NOT NULL, "
+				+ "isbn INT NOT NULL, "
 				+ "userid VARCHAR(100) NOT NULL, "
 				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
 				+ "CONSTRAINT uk_book_like UNIQUE (isbn, userid))";
 
 		String createRatingTable = "CREATE TABLE IF NOT EXISTS book_rating ("
 				+ "rating_id INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "isbn BIGINT NOT NULL, "
+				+ "isbn INT NOT NULL, "
 				+ "userid VARCHAR(100) NOT NULL, "
 				+ "rating INT NOT NULL, "
 				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
@@ -231,17 +197,17 @@ public class UserBookDAO {
 		}
 	}
 
-	public BookFeedbackVO getBookFeedback(long isbn, String loginUser) {
+	public BookFeedbackVO getBookFeedback(int isbn, String loginUser) {
 		String createLikeTable = "CREATE TABLE IF NOT EXISTS book_like ("
 				+ "like_id INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "isbn BIGINT NOT NULL, "
+				+ "isbn INT NOT NULL, "
 				+ "userid VARCHAR(100) NOT NULL, "
 				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
 				+ "CONSTRAINT uk_book_like UNIQUE (isbn, userid))";
 
 		String createRatingTable = "CREATE TABLE IF NOT EXISTS book_rating ("
 				+ "rating_id INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "isbn BIGINT NOT NULL, "
+				+ "isbn INT NOT NULL, "
 				+ "userid VARCHAR(100) NOT NULL, "
 				+ "rating INT NOT NULL, "
 				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
@@ -261,9 +227,9 @@ public class UserBookDAO {
 			BookFeedbackVO feedback = new BookFeedbackVO(0, 0.0, 0, null, false);
 
 			try (PreparedStatement ps = conn.prepareStatement(summarySql)) {
-				ps.setLong(1, isbn);
-				ps.setLong(2, isbn);
-				ps.setLong(3, isbn);
+				ps.setInt(1, isbn);
+				ps.setInt(2, isbn);
+				ps.setInt(3, isbn);
 				try (ResultSet rs = ps.executeQuery()) {
 					if (rs.next()) {
 						feedback.setLikeCount(rs.getInt("like_count"));
@@ -275,7 +241,7 @@ public class UserBookDAO {
 
 			if (loginUser != null && !loginUser.trim().isEmpty()) {
 				try (PreparedStatement ps = conn.prepareStatement(likedSql)) {
-					ps.setLong(1, isbn);
+					ps.setInt(1, isbn);
 					ps.setString(2, loginUser);
 					try (ResultSet rs = ps.executeQuery()) {
 						if (rs.next()) {
@@ -285,7 +251,7 @@ public class UserBookDAO {
 				}
 
 				try (PreparedStatement ps = conn.prepareStatement(myRatingSql)) {
-					ps.setLong(1, isbn);
+					ps.setInt(1, isbn);
 					ps.setString(2, loginUser);
 					try (ResultSet rs = ps.executeQuery()) {
 						if (rs.next()) {
@@ -303,10 +269,10 @@ public class UserBookDAO {
 		return new BookFeedbackVO(0, 0.0, 0, null, false);
 	}
 
-	public boolean toggleLike(long isbn, String userid) {
+	public boolean toggleLike(int isbn, String userid) {
 		String createLikeTable = "CREATE TABLE IF NOT EXISTS book_like ("
 				+ "like_id INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "isbn BIGINT NOT NULL, "
+				+ "isbn INT NOT NULL, "
 				+ "userid VARCHAR(100) NOT NULL, "
 				+ "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
 				+ "CONSTRAINT uk_book_like UNIQUE (isbn, userid))";
@@ -319,7 +285,7 @@ public class UserBookDAO {
 		try {
 			boolean alreadyLiked = false;
 			try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
-				ps.setLong(1, isbn);
+				ps.setInt(1, isbn);
 				ps.setString(2, userid);
 				try (ResultSet rs = ps.executeQuery()) {
 					if (rs.next()) {
@@ -329,7 +295,7 @@ public class UserBookDAO {
 			}
 
 			try (PreparedStatement ps = conn.prepareStatement(alreadyLiked ? deleteSql : insertSql)) {
-				ps.setLong(1, isbn);
+				ps.setInt(1, isbn);
 				ps.setString(2, userid);
 				return ps.executeUpdate() > 0;
 			}
@@ -340,12 +306,12 @@ public class UserBookDAO {
 		return false;
 	}
 
-	public boolean saveRating(long isbn, String userid, int rating) {
+	public boolean saveRating(int isbn, String userid, int rating) {
 		String mergeSql = "MERGE INTO book_rating (isbn, userid, rating, updated_at) KEY (isbn, userid) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
 
 		ensureFeedbackTables();
 		try (PreparedStatement ps = conn.prepareStatement(mergeSql)) {
-			ps.setLong(1, isbn);
+			ps.setInt(1, isbn);
 			ps.setString(2, userid);
 			ps.setInt(3, rating);
 			return ps.executeUpdate() > 0;
@@ -356,11 +322,11 @@ public class UserBookDAO {
 	}
 
 
-	public boolean deleteRating(long isbn, String userid) {
+	public boolean deleteRating(int isbn, String userid) {
 		String sql = "DELETE FROM book_rating WHERE isbn = ? AND userid = ?";
 		ensureFeedbackTables();
 		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setLong(1, isbn);
+			ps.setInt(1, isbn);
 			ps.setString(2, userid);
 			ps.executeUpdate();
 			return true;
@@ -369,90 +335,4 @@ public class UserBookDAO {
 		}
 		return false;
 	}
-
-	public List<String> findAllBookNames() {
-		List<String> titles = new ArrayList<String>();
-		String sql = "SELECT bookname FROM book WHERE bookname IS NOT NULL ORDER BY bookname";
-
-		try (PreparedStatement ps = conn.prepareStatement(sql);
-				ResultSet rs = ps.executeQuery()) {
-			while (rs.next()) {
-				titles.add(rs.getString("bookname"));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return titles;
-	}
-
-	public List<BookVO> searchByBookName(String keyword) {
-		List<BookVO> list = new ArrayList<BookVO>();
-		ensureFeedbackTables();
-
-		String word = keyword == null ? "" : keyword.trim().toLowerCase();
-		if (word.isEmpty()) return list;
-
-		String sql = "SELECT b.*, "
-				+ "COALESCE((SELECT COUNT(*) FROM book_like bl WHERE bl.isbn = b.isbn), 0) AS like_count, "
-				+ "COALESCE((SELECT AVG(br.rating) FROM book_rating br WHERE br.isbn = b.isbn), 0) AS avg_rating, "
-				+ "COALESCE((SELECT COUNT(*) FROM book_rating br WHERE br.isbn = b.isbn), 0) AS rating_count "
-				+ "FROM book b ORDER BY b.bookname";
-
-		try (PreparedStatement ps = conn.prepareStatement(sql);
-				ResultSet rs = ps.executeQuery()) {
-			while (rs.next()) {
-				BookVO book = new BookVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
-						rs.getString("publisher"), rs.getString("image"), rs.getString("price"),
-						rs.getString("category"));
-				book.setLikeCount(rs.getInt("like_count"));
-				book.setAverageRating(rs.getDouble("avg_rating"));
-				book.setRatingCount(rs.getInt("rating_count"));
-
-				if (isSearchMatched(book, word)) {
-					list.add(book);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return list;
-	}
-
-	private boolean isSearchMatched(BookVO book, String word) {
-		String title = book.getBookname() == null ? "" : book.getBookname().toLowerCase();
-		String author = book.getAuthor() == null ? "" : book.getAuthor().toLowerCase();
-		String publisher = book.getPublisher() == null ? "" : book.getPublisher().toLowerCase();
-		String category = book.getCategory() == null ? "" : book.getCategory().toLowerCase();
-
-		if (title.contains(word) || author.contains(word) || publisher.contains(word) || category.contains(word)) {
-			return true;
-		}
-
-		if (HangulUtil.hasChosung(word)) {
-			String chosungTitle = HangulUtil.toChosung(title);
-			return chosungTitle.contains(word);
-		}
-
-		return false;
-	}
-
-	public List<BookVO> findAdBooks() {
-		List<BookVO> list = new ArrayList<>();
-		String sql = "SELECT * FROM book WHERE is_ad = TRUE ORDER BY isbn";
-		try (PreparedStatement ps = conn.prepareStatement(sql);
-			 ResultSet rs = ps.executeQuery()) {
-			while (rs.next()) {
-				BookVO book = new BookVO(rs.getLong("isbn"), rs.getString("bookname"), rs.getString("author"),
-						rs.getString("publisher"), rs.getString("image"), rs.getString("price"),
-						rs.getString("category"));
-				try { book.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e2) {}
-				list.add(book);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return list;
-	}
-
 }

@@ -10,8 +10,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import WebBookStore.member.MemberVO;
-
 @Repository
 public class AdminDAO {
 
@@ -30,15 +28,8 @@ public class AdminDAO {
 			ResultSet rs = ps.executeQuery();
 			List<AdminVO> list = new ArrayList<AdminVO>();
 			while (rs.next()) {
-				AdminVO vo = new AdminVO();
-					vo.setIsbn(rs.getLong("isbn"));
-					vo.setBookname(rs.getString("bookname"));
-					vo.setAuthor(rs.getString("author"));
-					vo.setPublisher(rs.getString("publisher"));
-					vo.setImage(rs.getString("image"));
-					vo.setPrice(rs.getString("price"));
-					try { vo.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e) {}
-					list.add(vo);
+				list.add(new AdminVO(rs.getInt("isbn"), rs.getString("bookname"), rs.getString("author"),
+						rs.getString("publisher"), rs.getString("image"), rs.getString("price")));
 			}
 			rs.close();
 			ps.close();
@@ -51,19 +42,15 @@ public class AdminDAO {
 
 	// 등록
 	public int insert(AdminVO book) {
-		String sql = "INSERT INTO book "
-		        + "(isbn, bookname, author, publisher, image, price, category, discount_rate) "
-		        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO book VALUES (?, ?, ?, ?, ?, ?)";
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
-			ps.setLong(1, book.getIsbn());
+			ps.setInt(1, book.getIsbn());
 			ps.setString(2, book.getBookname());
 			ps.setString(3, book.getAuthor());
 			ps.setString(4, book.getPublisher());
 			ps.setString(5, book.getImage());
 			ps.setString(6, book.getPrice());
-			ps.setString(7, null);
-			ps.setInt(8, book.getDiscountRate());
 			int result = ps.executeUpdate();
 			ps.close();
 			return result;
@@ -75,7 +62,7 @@ public class AdminDAO {
 
 	// 수정
 	public int update(AdminVO book) {
-		String sql = "UPDATE book SET bookname=?, author=?, publisher=?, image=?, price=?, discount_rate=? WHERE isbn=?";
+		String sql = "UPDATE book SET bookname=?, author=?, publisher=?, image=?, price=? WHERE isbn=?";
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setString(1, book.getBookname());
@@ -83,8 +70,7 @@ public class AdminDAO {
 			ps.setString(3, book.getPublisher());
 			ps.setString(4, book.getImage());
 			ps.setString(5, book.getPrice());
-			ps.setInt(6, book.getDiscountRate());
-			ps.setLong(7, book.getIsbn());
+			ps.setInt(6, book.getIsbn());
 			int result = ps.executeUpdate();
 			ps.close();
 			return result;
@@ -94,18 +80,18 @@ public class AdminDAO {
 		}
 	}
 
-	public int delete(long isbn) {
+	public int delete(int isbn) {
 		String sqlCart = "DELETE FROM cart WHERE isbn = ?";
 		String sqlBook = "DELETE FROM book WHERE isbn = ?";
 
 		try {
 			PreparedStatement psCart = conn.prepareStatement(sqlCart);
-			psCart.setLong(1, isbn);
+			psCart.setInt(1, isbn);
 			psCart.executeUpdate();
 			psCart.close();
 
 			PreparedStatement psBook = conn.prepareStatement(sqlBook);
-			psBook.setLong(1, isbn);
+			psBook.setInt(1, isbn);
 			int result = psBook.executeUpdate();
 			psBook.close();
 
@@ -117,21 +103,15 @@ public class AdminDAO {
 	}
 
 	// 단건 조회
-	public AdminVO findById(long isbn) {
+	public AdminVO findById(int isbn) {
 		String sql = "SELECT * FROM book WHERE isbn = ?";
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
-			ps.setLong(1, isbn);
+			ps.setInt(1, isbn);
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-				AdminVO book = new AdminVO();
-				book.setIsbn(rs.getLong("isbn"));
-				book.setBookname(rs.getString("bookname"));
-				book.setAuthor(rs.getString("author"));
-				book.setPublisher(rs.getString("publisher"));
-				book.setImage(rs.getString("image"));
-				book.setPrice(rs.getString("price"));
-				try { book.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e) {}
+				AdminVO book = new AdminVO(rs.getInt("isbn"), rs.getString("bookname"), rs.getString("author"),
+						rs.getString("publisher"), rs.getString("image"), rs.getString("price"));
 				rs.close();
 				ps.close();
 				return book;
@@ -248,7 +228,7 @@ public class AdminDAO {
 
 	        while (rs.next()) {
 	            BookSalesVO vo = new BookSalesVO();
-	            vo.setIsbn(rs.getLong("isbn"));
+	            vo.setIsbn(rs.getInt("isbn"));
 	            vo.setBookname(rs.getString("bookname"));
 	            vo.setTotalQuantity(rs.getInt("total_quantity"));
 	            vo.setTotalSales(rs.getInt("total_sales"));
@@ -265,127 +245,25 @@ public class AdminDAO {
 	}
 
 
-	public List<MemberVO> getMemberList() {
-	    List<MemberVO> list = new ArrayList<>();
-
-	    String sql = "SELECT num, id, pw, email, hp, nickname, role, "
-	            + "default_receiver, default_phone, default_address, "
-	            + "mileage, total_mileage, grade "
-	            + "FROM member ORDER BY num DESC";
-
-	    try (PreparedStatement ps = conn.prepareStatement(sql);
-	         ResultSet rs = ps.executeQuery()) {
-
-	        while (rs.next()) {
-	            MemberVO member = new MemberVO();
-
-	            member.setId(rs.getInt("num"));
-	            member.setUsername(rs.getString("id"));
-	            member.setPassword(rs.getString("pw"));
-	            member.setEmail(rs.getString("email"));
-	            member.setPhone(rs.getString("hp"));
-	            member.setNickname(rs.getString("nickname"));
-	            member.setRole(rs.getString("role"));
-
-	            member.setDefaultReceiver(rs.getString("default_receiver"));
-	            member.setDefaultPhone(rs.getString("default_phone"));
-	            member.setDefaultAddress(rs.getString("default_address"));
-
-	            member.setMileage(rs.getInt("mileage"));
-	            member.setTotalMileage(rs.getInt("total_mileage"));
-	            member.setGrade(rs.getString("grade"));
-
-	            list.add(member);
-	        }
-
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-
-	    return list;
-	}
-
-	public List<AdminVO> searchBooks(String keyword) {
-		List<AdminVO> list = new ArrayList<>();
-		String sql = "SELECT * FROM book";
-		boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
-		if (hasKeyword) {
-			sql += " WHERE bookname LIKE ? OR author LIKE ? OR CAST(isbn AS VARCHAR) LIKE ?";
-		}
-		sql += " ORDER BY isbn";
-
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			if (hasKeyword) {
-				String kw = "%" + keyword.trim() + "%";
-				ps.setString(1, kw);
-				ps.setString(2, kw);
-				ps.setString(3, kw);
-			}
-			try (ResultSet rs = ps.executeQuery()) {
-				while (rs.next()) {
-					AdminVO vo = new AdminVO();
-					vo.setIsbn(rs.getLong("isbn"));
-					vo.setBookname(rs.getString("bookname"));
-					vo.setAuthor(rs.getString("author"));
-					vo.setPublisher(rs.getString("publisher"));
-					vo.setImage(rs.getString("image"));
-					vo.setPrice(rs.getString("price"));
-					try { vo.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e) {}
-					try { vo.setAd(rs.getBoolean("is_ad")); } catch (Exception e) {}
-					list.add(vo);
-				}
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return list;
-	}
-
-	public int updateAdStatus(long isbn, boolean isAd) {
-		String sql = "UPDATE book SET is_ad = ? WHERE isbn = ?";
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setBoolean(1, isAd);
-			ps.setLong(2, isbn);
-			return ps.executeUpdate();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return 0;
-		}
-	}
-
-	public List<AdminVO> getAdBooks() {
-		List<AdminVO> list = new ArrayList<>();
-		String sql = "SELECT isbn, bookname, author, publisher, image, price, discount_rate FROM book WHERE is_ad = TRUE ORDER BY isbn";
-		try (PreparedStatement ps = conn.prepareStatement(sql);
-			 ResultSet rs = ps.executeQuery()) {
+	public List<WebBookStore.member.MemberVO> getMemberList() {
+		List<WebBookStore.member.MemberVO> list = new ArrayList<>();
+		String sql = "SELECT num, id, pw, email, hp, nickname FROM member ORDER BY num DESC";
+		try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 			while (rs.next()) {
-				AdminVO vo = new AdminVO();
-				vo.setIsbn(rs.getLong("isbn"));
-				vo.setBookname(rs.getString("bookname"));
-				vo.setAuthor(rs.getString("author"));
-				vo.setPublisher(rs.getString("publisher"));
-				vo.setImage(rs.getString("image"));
-				vo.setPrice(rs.getString("price"));
-				try { vo.setDiscountRate(rs.getInt("discount_rate")); } catch (Exception e) {}
-				vo.setAd(true);
-				list.add(vo);
+				list.add(new WebBookStore.member.MemberVO(
+					    rs.getInt("num"),
+					    rs.getString("id"),
+					    rs.getString("pw"),
+					    rs.getString("email"),
+					    rs.getString("hp"),
+					    rs.getString("nickname"),
+					    "ROLE_USER"
+					));
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return list;
-	}
-
-	public int updateDiscountRate(long isbn, int discountRate) {
-		String sql = "UPDATE book SET discount_rate = ? WHERE isbn = ?";
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setInt(1, discountRate);
-			ps.setLong(2, isbn);
-			return ps.executeUpdate();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return 0;
-		}
 	}
 
 	public int deleteMember(String username) {
