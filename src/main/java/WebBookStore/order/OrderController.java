@@ -32,7 +32,7 @@ public class OrderController {
 	@Autowired
 	private MemberService memberService;
 
-	@RequestMapping(value = "/checkout", method = RequestMethod.GET)
+	@RequestMapping(value = "/checkout2", method = RequestMethod.GET)
 	public String checkout(HttpSession session, HttpServletRequest request, Model model) {
 	    // 1. 로그인한 회원 아이디를 가져온다.
 	    String loginUser = (String) session.getAttribute("loginUser");
@@ -92,7 +92,7 @@ public class OrderController {
 	    return "layout/layout";
 	}
 
-	@RequestMapping(value = "/pay", method = RequestMethod.POST)
+	@RequestMapping(value = "/pay2", method = RequestMethod.POST)
 	public String pay(String receiver, String phone, String address, Integer useMileage,
 	        HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 

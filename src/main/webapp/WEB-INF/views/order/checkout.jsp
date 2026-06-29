@@ -6,7 +6,7 @@
     <div class="section-head">
         <span class="section-badge">CHECKOUT</span>
         <h2>주문 / 결제</h2>
-        <p>주문 정보를 확인하고 배송정보를 입력해.</p>
+        <p>주문 정보를 확인하고 배송정보를 입력해주세요.</p>
     </div>
 
     <div class="cart-panel">
@@ -35,7 +35,7 @@
             <div class="shipping-box">
                 <h3>배송 정보</h3>
 
-                <form action="${pageContext.request.contextPath}/order/pay" method="post" class="shipping-form" id="orderForm">
+                <form id="orderForm" class="shipping-form">
                     <div class="shipping-row">
                         <label for="receiver">받는 사람</label>
                         <input type="text"
@@ -61,18 +61,11 @@
                     <div class="shipping-row">
                         <label for="zonecode">배송 주소</label>
                         <div class="address-group">
-                            <!-- 우편번호 (name 없음 - 서버로 안 보냄) -->
                             <input type="text" id="zonecode" class="shipping-input" placeholder="우편번호" readonly>
                             <button type="button" class="action-btn outline" onclick="execDaumPostcode()">우편번호 찾기</button>
                         </div>
-
-                        <!-- 도로명주소 (name 없음 - 서버로 안 보냄) -->
                         <input type="text" id="roadAddress" class="shipping-input" placeholder="도로명 주소" readonly>
-
-                        <!-- 상세주소 (직접입력, name 없음) -->
                         <input type="text" id="detailAddress" class="shipping-input" placeholder="상세주소">
-
-                        <!-- 실제로 서버에 전송되는 필드: 우편번호+도로명+상세주소를 합친 문자열 -->
                         <input type="hidden" id="address" name="address">
                     </div>
 
@@ -85,7 +78,6 @@
 					                   value="${member.grade} / 적립률 ${mileageRate}%"
 					                   readonly>
 					        </div>
-					
 					        <div class="shipping-row">
 					            <label>보유 마일리지</label>
 					            <input type="text"
@@ -93,7 +85,6 @@
 					                   value="${member.mileage} P"
 					                   readonly>
 					        </div>
-					
 					        <div class="shipping-row">
 					            <label for="useMileage">사용할 마일리지</label>
 					            <input type="number"
@@ -105,16 +96,15 @@
 					                   max="${member.mileage}">
 					        </div>
 					    </c:when>
-					
 					    <c:otherwise>
-					        <input type="hidden" name="useMileage" value="0">
+					        <input type="hidden" id="useMileage" name="useMileage" value="0">
 					    </c:otherwise>
 					</c:choose>
 
                     <div class="checkout-summary-inline">
                         <div class="summary-card">
                             <span>총 상품 금액</span>
-                            <strong>${sumMoney}원</strong>
+                            <strong id="totalAmount">${sumMoney}원</strong>
                         </div>
                         <c:if test="${isMember}">
                             <div class="summary-card">
@@ -123,6 +113,8 @@
                             </div>
                         </c:if>
                     </div>
+
+                    <input type="hidden" id="rawSumMoney" value="${sumMoney}">
 
                     <div class="cart-actions">
                         <a href="${pageContext.request.contextPath}/cart/list" class="action-btn outline">장바구니로 돌아가기</a>
@@ -134,9 +126,28 @@
     </div>
 </section>
 
-<!-- 카카오 우편번호 서비스 -->
 <script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="https://js.tosspayments.com/v1/payment"></script>
+
 <script>
+// 토스 클라이언트 키 초기화 (테스트용)
+//const clientKey = 'test_ck_D5b3M7QHXSMwLNQGg7Vo3W4kvR2K';
+const clientKey = 'test_ck_Gv6LjeKD8aXOdnl1lpYkrwYxAdXy';
+const tossPayments = TossPayments(clientKey);
+
+// 마일리지 입력 시 실시간 화면 금액 반영 (선택)
+const useMileageInput = document.getElementById('useMileage');
+if(useMileageInput) {
+    useMileageInput.addEventListener('input', function() {
+        const rawMoney = parseInt(document.getElementById('rawSumMoney').value);
+        let mileage = parseInt(this.value) || 0;
+        if(mileage > parseInt(this.max)) mileage = this.max;
+        
+        const finalAmount = rawMoney - mileage;
+        document.getElementById('totalAmount').innerText = (finalAmount < 0 ? 0 : finalAmount) + '원';
+    });
+}
+
 function execDaumPostcode() {
     new kakao.Postcode({
         oncomplete: function(data) {
@@ -175,11 +186,56 @@ function updateFullAddress() {
 
 document.getElementById('detailAddress').addEventListener('input', updateFullAddress);
 
-// 폼 제출 전 주소 검증
+// 🔥 주문 완료 제출 시 토스결제창 연결 흐름 컨트롤
 document.getElementById('orderForm').addEventListener('submit', function(e) {
-    if (!document.getElementById('address').value.trim()) {
+    e.preventDefault(); // 기본 폼 전송 중단
+
+    const addressVal = document.getElementById('address').value.trim();
+    if (!addressVal) {
         alert('주소를 입력해주세요.');
-        e.preventDefault();
+        return;
     }
+
+    // 1. 서버에 가주문(배송지 정보 저장 및 orderId 생성) 생성 요청
+    const formData = {
+        receiver: document.getElementById('receiver').value,
+        phone: document.getElementById('phone').value,
+        address: addressVal,
+        useMileage: document.getElementById('useMileage') ? parseInt(document.getElementById('useMileage').value) || 0 : 0
+    };
+
+    fetch('${pageContext.request.contextPath}/order/prepare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('주문 정보 생성에 실패했습니다.');
+        return res.json();
+    })
+    .then(data => {
+        // 2. 가주문 생성이 성공하면 받은 orderId와 금액으로 토스 결제창 호출
+        if(data.success) {
+            tossPayments.requestPayment('카드', {
+                amount: data.amount,
+                orderId: data.orderId,
+                orderName: data.orderName,
+                successUrl: window.location.origin + '${pageContext.request.contextPath}/order/success',
+                failUrl: window.location.origin + '${pageContext.request.contextPath}/order/fail'
+            })
+            .catch(function (error) {
+                if (error.code === 'USER_CANCEL') {
+                    alert('결제를 취소하셨습니다.');
+                } else {
+                    alert(error.message);
+                }
+            });
+        } else {
+            alert(data.message || '주문 준비 실패');
+        }
+    })
+    .catch(err => {
+        alert(err.message);
+    });
 });
 </script>
