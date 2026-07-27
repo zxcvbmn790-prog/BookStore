@@ -65,3 +65,12 @@ SELECT FORMATDATETIME(order_date, 'yyyy') AS period_label,
 FROM orders
 GROUP BY FORMATDATETIME(order_date, 'yyyy')
 ORDER BY period_label DESC;
+
+-- 사용자별 구매 스탬프 현황
+-- 책 1권 구매 시 스탬프 1개 적립
+-- 스탬프 10개 달성 시 랜덤 마일리지 지급 후 남은 스탬프부터 다시 시작
+CREATE TABLE IF NOT EXISTS stamp (
+    userid VARCHAR(100) PRIMARY KEY,
+    stamp_count INT DEFAULT 0,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
