@@ -1,4 +1,4 @@
-# BOOK FOREST · 온라인 서점 플랫폼
+# BOOK STORE · 온라인 서점 플랫폼
 
 > Spring MVC 기반 온라인 서점 — 도서 탐색·구매부터 실시간 상담, 회원 등급·마일리지, 관리자 통계까지 하나로 구현한 웹 애플리케이션
 
@@ -162,4 +162,4 @@ mvn tomcat7:run            # 내장 플러그인, http://localhost:8080
 
 ---
 
-<p align="center"><b>📖 BOOK FOREST — Team Project </b></p>
+<p align="center"><b>📖 BOOK STORE — Team Project </b></p>
