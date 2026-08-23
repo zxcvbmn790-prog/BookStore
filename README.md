@@ -107,7 +107,7 @@ mvn tomcat7:run            # 내장 플러그인, http://localhost:8080
 
 ---
 
-## 🔗 주요 엔드포인트 (Endpoints)
+## 주요 엔드포인트 (Endpoints)
 
 **Member**
 
@@ -162,4 +162,4 @@ mvn tomcat7:run            # 내장 플러그인, http://localhost:8080
 
 ---
 
-<p align="center"><b>📖 BOOK FOREST — Team Project (dev3.3)</b></p>
+<p align="center"><b>📖 BOOK FOREST — Team Project </b></p>
