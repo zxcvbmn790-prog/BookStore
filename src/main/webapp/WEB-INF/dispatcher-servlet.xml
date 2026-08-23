@@ -42,6 +42,8 @@
 			<mvc:exclude-mapping path="/book/list/ajax" />
 			<mvc:exclude-mapping path="/book/view" />
 			<mvc:exclude-mapping path="/book/ads" />
+			<mvc:exclude-mapping path="/book/search" />
+			<mvc:exclude-mapping path="/search/**" />
 
 			<mvc:exclude-mapping path="/member/login" />
 			<mvc:exclude-mapping path="/member/register" />
@@ -75,6 +77,8 @@
 		<security:intercept-url pattern="/book/list/ajax" access="permitAll"/>
 		<security:intercept-url pattern="/book/view" access="permitAll"/>
 		<security:intercept-url pattern="/book/ads" access="permitAll"/>
+		<security:intercept-url pattern="/book/search" access="permitAll"/>
+		<security:intercept-url pattern="/search/**" access="permitAll"/>
 		<security:intercept-url pattern="/cart/**" access="permitAll"/>
 		<security:intercept-url pattern="/order/**" access="permitAll"/>
 

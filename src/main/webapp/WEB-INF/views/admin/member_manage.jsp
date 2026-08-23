@@ -10,6 +10,14 @@
         </div>
     </div>
 
+    <form method="get" action="${pageContext.request.contextPath}/admin/members" class="bm-search-bar" style="margin-bottom:20px;">
+        <input type="text" name="keyword" value="${keyword}" placeholder="아이디 / 닉네임 / 이메일 검색" class="bm-search-input">
+        <button type="submit" class="bm-search-btn">검색</button>
+        <c:if test="${not empty keyword}">
+            <a href="${pageContext.request.contextPath}/admin/members" class="bm-search-reset">전체보기</a>
+        </c:if>
+    </form>
+
     <c:if test="${not empty message}">
         <div class="auth-alert" style="background:#ecfdf3; color:#166534; border-color:#bbf7d0; margin-bottom:20px;">${message}</div>
     </c:if>
@@ -37,14 +45,14 @@
                         <td>${m.phone}</td>
                         <td>
                             <c:if test="${m.role != 'ROLE_ADMIN'}">
-                                <select name="role" onchange="changeRole('${m.username}', this.value)" style="padding: 4px; border-radius: 4px; border: 1px solid #ccc;">
+                                <select name="role" class="role-select" onchange="changeRole('${m.username}', this.value)">
                                     <option value="ROLE_USER" ${m.role == 'ROLE_USER' ? 'selected' : ''}>일반 회원</option>
                                     <option value="ROLE_TRAKING" ${m.role == 'ROLE_TRAKING' ? 'selected' : ''}>트래킹 회원</option>
                                     <option value="ROLE_ADMIN" ${m.role == 'ROLE_ADMIN' ? 'selected' : ''}>관리자</option>
                                 </select>
                             </c:if>
                             <c:if test="${m.role == 'ROLE_ADMIN'}">
-                                <span style="font-weight: bold; color: #dc2626;">최고 관리자</span>
+                                <span style="display:inline-block; padding:5px 12px; background:#fef2f2; color:#dc2626; border-radius:8px; font-size:13px; font-weight:700;">최고 관리자</span>
                             </c:if>
                         </td>
                         <td>
