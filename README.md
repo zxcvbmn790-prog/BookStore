@@ -6,16 +6,15 @@
 
 ---
 
-## 프로젝트 소개 (Overview)
+## 프로젝트 소개
 
 - **목적**: 도서 탐색·검색·구매, 고객 상담(실시간 채팅·QnA), 회원 등급/마일리지, 관리자 운영을 아우르는 온라인 서점 플랫폼
 - **아키텍처**: 표준 Spring MVC 계층 구조 — **Controller → Service → DAO → VO**
-- **버전 흐름**: `dev3.0`(핵심 커머스·인증) → `dev3.1`(검색·통계·광고) → `dev3.2`(안정화) → `dev3.3`(보안 강화, reCAPTCHA)
 - **기본 계정**: 최초 기동 시 자동 생성 — 관리자 `admin / 1234`, 일반 `user / 1234`
 
 ---
 
-## 주요 기능 (Features)
+## 주요 기능
 
 ### 사용자 (User)
 -  **회원가입·로그인** — Email OTP 인증(Gmail SMTP, 6자리·3분 유효) + Google reCAPTCHA v2, 아이디 중복 확인
@@ -41,8 +40,8 @@
 
 **Backend**
 - **Language** : Java 21
-- **Framework** : Spring MVC 5.3.39, Spring JDBC (JdbcTemplate)
-- **Security** : Spring Security 5.8.16 (인증·인가, reCAPTCHA 연동)
+- **Framework** : Spring MVC, Spring JDBC (JdbcTemplate)
+- **Security** : Spring Security (인증·인가, reCAPTCHA 연동)
 - **Realtime** : Spring WebSocket
 - **Library** : Lombok, Jackson, OpenCSV, Apache Commons(FileUpload·IO·Text·Codec), JavaMail
 
@@ -53,17 +52,17 @@
 **Database**
 - H2 Database (로컬 개발) / Oracle `ojdbc11` (운영)
 
-**외부 연동 (External)**
+**외부 연동**
 - Kakao API (도서 ISBN 조회 · OAuth2 로그인)
 - Google reCAPTCHA v2
 - Gmail SMTP (OTP 메일 발송)
 
-**빌드 · 실행 (Build & Run)**
+**빌드 · 실행**
 - Maven (WAR 패키징) · Apache Tomcat 9+
 
 ---
 
-## 프로젝트 구조 (Structure)
+## 프로젝트 구조
 
 ```
 BookStore/
@@ -90,7 +89,7 @@ BookStore/
 
 ---
 
-## 빌드 및 실행 (Getting Started)
+## 빌드 및 실행
 
 ```bash
 # 1) WAR 빌드
@@ -107,7 +106,7 @@ mvn tomcat7:run            # 내장 플러그인, http://localhost:8080
 
 ---
 
-## 주요 엔드포인트 (Endpoints)
+## 주요 엔드포인트
 
 **Member**
 
